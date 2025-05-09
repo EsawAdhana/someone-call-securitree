@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://cth50jrg7t17j"]
+
+[ext_resource type="Script" uid="uid://bryha18yiy038" path="res://golfcourse.gd" id="1_5nn2n"]
+[ext_resource type="Texture2D" uid="uid://dvk3ijexyd2q5" path="res://golfcourse.jpg" id="2_syrt8"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_5nn2n")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(514, 208)
+texture = ExtResource("2_syrt8")
+
+[node name="BackToMap" type="Button" parent="."]
+offset_left = 975.0
+offset_top = 577.0
+offset_right = 1079.0
+offset_bottom = 608.0
+scale = Vector2(1.40005, 1.40005)
+text = "Back to Map"
+metadata/_edit_use_anchors_ = true

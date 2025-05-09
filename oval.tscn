@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://b4i3furoeimts"]
+
+[ext_resource type="Script" uid="uid://bvtp2cr3i0ta3" path="res://oval.gd" id="1_5po4y"]
+[ext_resource type="Texture2D" uid="uid://b724ry3dcvpfi" path="res://oval.jpg" id="2_p3bcv"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_5po4y")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(724, 266)
+scale = Vector2(0.8, 0.8)
+texture = ExtResource("2_p3bcv")
+
+[node name="BackToMap" type="Button" parent="."]
+offset_left = 975.0
+offset_top = 577.0
+offset_right = 1079.0
+offset_bottom = 608.0
+scale = Vector2(1.40005, 1.40005)
+text = "Back to Map"
+metadata/_edit_use_anchors_ = true

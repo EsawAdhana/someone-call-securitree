@@ -1,0 +1,85 @@
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Python
+__pycache__/
+lib/
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+Last login: Sun Apr 20 10:09:47 on ttys001
+➜  ~ git:(main) ✗ ls
+Applications             Library                  Public
+Creative Cloud Files     MonkeyHouse              Qt
+Desktop                  Movies                   portfolio
+Documents                Music                    someone-call-securi-tree
+Downloads                Pictures
+➜  ~ git:(main) ✗ git init
+Reinitialized existing Git repository in /Users/esawadhana/.git/
+➜  ~ git:(main) ✗ touch .gitignore
+
+➜  ~ git:(main) ✗ code .gitignore
+# Environment variables
+# Environment variables
+.env
+.env.local
+.env.development
+
+# Environment variables
+.env
+.env.local
+.env.development
+
+zsh: command not found: code
+# Environment variables
+.env
+.env.local
+.env.development
+
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+B# Godot 4+ specific ignores
+.godot/
+/android/
+~
+~
+~
+~
+~
+-- INSERT -B# Godot 4+ specific ignores
+-- INSERT --
+:

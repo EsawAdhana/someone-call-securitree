@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://0870o3h6n4c1"]
+
+[ext_resource type="Script" uid="uid://87e7kiqc7bum" path="res://stadium.gd" id="1_jp60y"]
+[ext_resource type="Texture2D" uid="uid://coux0i0kquw43" path="res://entrance.jpg" id="2_qdk54"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_jp60y")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(609, 166)
+texture = ExtResource("2_qdk54")
+
+[node name="BackToMap" type="Button" parent="."]
+offset_left = 975.0
+offset_top = 577.0
+offset_right = 1079.0
+offset_bottom = 608.0
+scale = Vector2(1.40005, 1.40005)
+text = "Back to Map"
+metadata/_edit_use_anchors_ = true

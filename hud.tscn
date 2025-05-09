@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://d0n40ef0exlix"]
+
+[node name="CanvasLayer" type="CanvasLayer"]
+
+[node name="ScoreLabel" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="LivesLabel" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="ButtonLocationLabel" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="GameOverPanel" type="Panel" parent="."]
+visible = false
+offset_right = 121.0
+offset_bottom = 121.0
+scale = Vector2(9.48057, 5.35334)
+
+[node name="GameOverLabel" type="Label" parent="GameOverPanel"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 25.0
+offset_right = 107.0
+offset_bottom = 48.0
+text = "Game Over"
+
+[node name="FinalScoreLabel" type="Label" parent="GameOverPanel"]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 60.0
+offset_right = 138.0
+offset_bottom = 83.0
+scale = Vector2(0.467973, 0.467973)
+text = "Final Score: 0"
+
+[node name="RestartButton" type="Button" parent="GameOverPanel"]
+layout_mode = 0
+offset_left = 42.0
+offset_top = 88.0
+offset_right = 130.0
+offset_bottom = 119.0
+scale = Vector2(0.402399, 0.402399)
+text = "Play Again"
