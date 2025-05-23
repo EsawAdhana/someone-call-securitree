@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://dnenj71ixmuwb"]
+
+[ext_resource type="Script" uid="uid://cmjwxo0x1hdvk" path="res://scripts/character.gd" id="1_glpr6"]
+[ext_resource type="SpriteFrames" uid="uid://boemyfqkmp5su" path="res://assets/characters/cal1.tres" id="2_rkhd4"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_agfs1"]
+size = Vector2(85, 140)
+
+[node name="CharacterBody2D" type="CharacterBody2D"]
+input_pickable = true
+script = ExtResource("1_glpr6")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("2_rkhd4")
+animation = &"walk"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(3.5, 0)
+shape = SubResource("RectangleShape2D_agfs1")

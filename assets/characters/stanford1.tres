@@ -1,0 +1,39 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://cb0vgngdaa0s6"]
+
+[ext_resource type="Texture2D" uid="uid://b02r7n0vdvdqm" path="res://assets/characters/stanford1.png" id="1_xcc4n"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gv0kh"]
+atlas = ExtResource("1_xcc4n")
+region = Rect2(0, 0, 105, 147)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tjx3g"]
+atlas = ExtResource("1_xcc4n")
+region = Rect2(105, 0, 105, 147)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pwgkl"]
+atlas = ExtResource("1_xcc4n")
+region = Rect2(210, 0, 105, 147)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_iu508"]
+atlas = ExtResource("1_xcc4n")
+region = Rect2(315, 0, 105, 147)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gv0kh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tjx3g")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pwgkl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_iu508")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 8.0
+}]

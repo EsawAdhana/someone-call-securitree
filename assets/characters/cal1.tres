@@ -1,0 +1,39 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://boemyfqkmp5su"]
+
+[ext_resource type="Texture2D" uid="uid://c3upifefm3b2u" path="res://assets/characters/cal1.png" id="1_l063e"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_264vo"]
+atlas = ExtResource("1_l063e")
+region = Rect2(0, 0, 105, 154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_veg2f"]
+atlas = ExtResource("1_l063e")
+region = Rect2(105, 0, 105, 154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hf3mn"]
+atlas = ExtResource("1_l063e")
+region = Rect2(210, 0, 105, 154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4kdn5"]
+atlas = ExtResource("1_l063e")
+region = Rect2(315, 0, 105, 154)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_264vo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_veg2f")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hf3mn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4kdn5")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 8.0
+}]

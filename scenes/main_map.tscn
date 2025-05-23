@@ -1,0 +1,55 @@
+[gd_scene load_steps=9 format=3 uid="uid://c601osuc2aat"]
+
+[ext_resource type="Script" uid="uid://dlnb8jsdsw2go" path="res://scripts/main_map.gd" id="1_1xo34"]
+[ext_resource type="Texture2D" uid="uid://bfnflykx4rsot" path="res://assets/Map/Map New Pixel art.png" id="2_kdyc3"]
+[ext_resource type="Script" uid="uid://bkh4tbmwy4iyp" path="res://scripts/game_manager.gd" id="3_hd37j"]
+[ext_resource type="PackedScene" path="res://scenes/top_morale_bar.tscn" id="4_aqgc6"]
+[ext_resource type="PackedScene" path="res://scenes/game_over.tscn" id="6_s3jbg"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_dyl4d"]
+size = Vector2(1182.5, 540)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_km2bi"]
+size = Vector2(247.529, 1553.01)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5hk42"]
+size = Vector2(603.5, 570)
+
+[node name="MainMap" type="Node2D"]
+script = ExtResource("1_1xo34")
+
+[node name="MapBackground" type="Sprite2D" parent="."]
+texture = ExtResource("2_kdyc3")
+
+[node name="Camera2D" type="Camera2D" parent="MapBackground"]
+zoom = Vector2(0.48, 0.48)
+
+[node name="StadiumArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StadiumArea"]
+position = Vector2(1121, -901)
+shape = SubResource("RectangleShape2D_dyl4d")
+
+[node name="HooverTowerArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HooverTowerArea"]
+position = Vector2(349.232, -135)
+rotation = 3.14159
+scale = Vector2(1.08083, 0.525496)
+shape = SubResource("RectangleShape2D_km2bi")
+
+[node name="OvalArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="OvalArea"]
+position = Vector2(-208, -89)
+shape = SubResource("RectangleShape2D_5hk42")
+
+[node name="GameManager" type="Node" parent="."]
+script = ExtResource("3_hd37j")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="TopMoraleBar" parent="UI" instance=ExtResource("4_aqgc6")]
+
+[node name="GameOver" parent="UI" instance=ExtResource("6_s3jbg")]
+visible = false

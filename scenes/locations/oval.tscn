@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cp8rh8naryujt"]
+
+[ext_resource type="PackedScene" uid="uid://exbb84ktpjdm" path="res://scenes/location_template.tscn" id="1_cw237"]
+
+[node name="LocationTemplate" instance=ExtResource("1_cw237")]
+location_name = "Oval"

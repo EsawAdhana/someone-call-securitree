@@ -1,0 +1,364 @@
+[gd_scene load_steps=11 format=3 uid="uid://yb8duu47d4v0"]
+
+[ext_resource type="Script" uid="uid://0gajywupkcfc" path="res://scripts/location_template.gd" id="1_4m73f"]
+[ext_resource type="Texture2D" uid="uid://dty67hnup4k7c" path="res://assets/grass.png" id="1_r81h7"]
+[ext_resource type="PackedScene" uid="uid://0oxf0y6h5x7c" path="res://scenes/inspection_panel.tscn" id="3_u8j71"]
+[ext_resource type="Texture2D" uid="uid://b7lp47wee7mad" path="res://assets/closed_scroll.png" id="4_dx7wg"]
+[ext_resource type="Script" uid="uid://bkh4tbmwy4iyp" path="res://scripts/game_manager.gd" id="5_p3b6r"]
+[ext_resource type="PackedScene" path="res://scenes/top_morale_bar.tscn" id="6_jmgyo"]
+[ext_resource type="PackedScene" path="res://scenes/game_over.tscn" id="7_qf3kh"]
+[ext_resource type="Texture2D" uid="uid://b7a5pslagpjde" path="res://assets/map.png" id="8_8dnw7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6qk4c"]
+bg_color = Color(0.647059, 0.513726, 0.294118, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.458824, 0.309804, 0.196078, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="GDScript" id="GDScript_kchow"]
+script/source = "extends Node2D
+class_name CharacterSpawner
+
+# Exported variables for configuration
+@export var character_scene: PackedScene
+@export var spawn_interval_min: float = 1
+@export var spawn_interval_max: float = 1
+@export var max_characters: int = 5
+@export var stanford_chance: float = 0.6  # 60% chance for Stanford students
+
+# Signal for character interaction
+signal character_clicked(character)
+
+# Internal variables
+var spawn_points: Array = []
+var current_characters: Array = []
+var spawn_timer: Timer
+var character_templates = []
+
+func _ready():
+	# Create a timer for character spawning
+	spawn_timer = Timer.new()
+	spawn_timer.one_shot = true
+	spawn_timer.timeout.connect(_on_spawn_timer_timeout)
+	add_child(spawn_timer)
+	
+	# Try to load the character scene
+	if not character_scene:
+		character_scene = load(\"res://scenes/character.tscn\")
+
+# Set spawn points from parent location
+func set_spawn_points(points: Array):
+	spawn_points = points
+	
+	# Try to start spawning
+	if character_scene and not spawn_points.is_empty():
+		start_spawning()
+
+# Start the spawning process
+func start_spawning():
+	if spawn_points.is_empty():
+		push_error(\"CharacterSpawner: No spawn points available!\")
+		return
+	
+	if not character_scene:
+		push_error(\"CharacterSpawner: No character scene assigned!\")
+		return
+	
+	_set_random_spawn_time()
+
+# Set a random time for the next spawn
+func _set_random_spawn_time():
+	var wait_time = randf_range(spawn_interval_min, spawn_interval_max)
+	spawn_timer.start(wait_time)
+
+# Timer timeout - spawn a new character if conditions allow
+func _on_spawn_timer_timeout():
+	if current_characters.size() < max_characters:
+		spawn_character()
+	
+	# Set the timer for the next spawn
+	_set_random_spawn_time()
+
+# Main function to spawn a character
+func spawn_character():
+	# Basic checks
+	if spawn_points.is_empty() or not character_scene:
+		return
+	
+	if current_characters.size() >= max_characters:
+		return
+	
+	# Choose a random spawn point
+	var spawn_point_index = randi() % spawn_points.size()
+	var spawn_point = spawn_points[spawn_point_index]
+	
+	# Create the character instance
+	var character = character_scene.instantiate()
+	if not character:
+		return
+	
+	# Position the character at the spawn point
+	character.global_position = spawn_point.global_position
+	
+	# Configure character
+	character.character_type = 0 if randf() < stanford_chance else 1
+	
+	# Apply character template if available
+	if not character_templates.is_empty():
+		var template_index = randi() % character_templates.size()
+		var template = character_templates[template_index]
+		
+		if character.has_node(\"AnimatedSprite2D\") and template is SpriteFrames:
+			var sprite = character.get_node(\"AnimatedSprite2D\")
+			sprite.sprite_frames = template
+	
+	# Set up random variant properties
+	_setup_character_variants(character)
+	
+	# Choose a random position within the screen to walk to
+	var viewport_size = get_viewport_rect().size
+	var target_position = Vector2(
+		randf_range(50, viewport_size.x - 50),
+		randf_range(50, viewport_size.y - 50)
+	)
+	
+	# Set the target position
+	character.target_position = target_position
+	
+	# Connect the signals
+	character.character_clicked.connect(_on_character_clicked)
+	character.character_exited.connect(_on_character_exited)
+	
+	# Add the character to the scene
+	get_parent().add_child(character)
+	current_characters.append(character)
+	
+	# Start animation
+	if character.has_node(\"AnimatedSprite2D\"):
+		var sprite = character.get_node(\"AnimatedSprite2D\")
+		sprite.play(\"walk\")
+
+# Set up character variant properties
+func _setup_character_variants(character):
+	# Generate name based on character type
+	var first_names = [\"Alex\", \"Taylor\", \"Jordan\", \"Casey\", \"Riley\", \"Morgan\", \"Avery\", \"Quinn\"]
+	var stanford_last_names = [\"Smith\", \"Johnson\", \"Williams\", \"Jones\", \"Brown\"]
+	var berkeley_last_names = [\"Garcia\", \"Rodriguez\", \"Martinez\", \"Hernandez\", \"Lopez\"]
+	
+	var first_name = first_names[randi() % first_names.size()]
+	var last_name
+	
+	if character.character_type == 0:  # Stanford
+		last_name = stanford_last_names[randi() % stanford_last_names.size()]
+	else:  # Berkeley
+		last_name = berkeley_last_names[randi() % berkeley_last_names.size()]
+	
+	character.variant_name = first_name + \" \" + last_name
+	
+	# Random gameplay variations
+	character.has_id = randf() < 0.9  # 90% chance to have ID
+	character.valid_major = randf() < 0.8  # 80% chance to have valid major
+
+# Handle character being clicked
+func _on_character_clicked(character):
+	# Emit the signal to let the location know
+	character_clicked.emit(character)
+		
+# Handle character exiting the scene
+func _on_character_exited(character):
+	if current_characters.has(character):
+		current_characters.erase(character)
+"
+
+[node name="LocationTemplate" type="Node2D"]
+script = ExtResource("1_4m73f")
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("1_r81h7")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Control" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="ScrollButton" type="Button" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 120.0
+offset_top = -200.0
+offset_right = 200.0
+offset_bottom = -80.0
+grow_vertical = 0
+focus_mode = 0
+mouse_default_cursor_shape = 2
+flat = true
+
+[node name="ScrollSprite" type="Sprite2D" parent="CanvasLayer/Control/ScrollButton"]
+position = Vector2(40, 60)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("4_dx7wg")
+
+[node name="MinimapButton" type="Button" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -150.0
+offset_top = 65.0
+offset_right = -10.0
+offset_bottom = 205.0
+grow_horizontal = 0
+tooltip_text = "Click to view full map"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+flat = true
+
+[node name="MinimapSprite" type="Sprite2D" parent="CanvasLayer/Control/MinimapButton"]
+modulate = Color(1.1, 1.1, 1.1, 1)
+position = Vector2(70, 70)
+scale = Vector2(0.06, 0.06)
+texture = ExtResource("8_8dnw7")
+
+[node name="MinimapBorder" type="Panel" parent="CanvasLayer/Control/MinimapButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BookInterface" type="Control" parent="CanvasLayer/Control"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_right = 40.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="Panel" parent="CanvasLayer/Control/BookInterface"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_6qk4c")
+
+[node name="Content" type="Label" parent="CanvasLayer/Control/BookInterface"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -250.0
+offset_right = 350.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Welcome to StanfordTree's Guide to Campus!
+
+This book contains important information about Stanford University and the mysterious events unfolding on campus."
+autowrap_mode = 2
+
+[node name="PageLabel" type="Label" parent="CanvasLayer/Control/BookInterface"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -44.0
+offset_top = -100.0
+offset_right = 44.0
+offset_bottom = -74.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Page 1 of 3"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="CanvasLayer/Control/BookInterface"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = 370.0
+offset_top = -290.0
+offset_right = 390.0
+offset_bottom = -270.0
+grow_horizontal = 0
+text = "X"
+
+[node name="PrevButton" type="Button" parent="CanvasLayer/Control/BookInterface"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -80.0
+offset_right = -60.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "<"
+
+[node name="NextButton" type="Button" parent="CanvasLayer/Control/BookInterface"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 60.0
+offset_top = -80.0
+offset_right = 100.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+text = ">"
+
+[node name="UI#InspectionPanel" parent="." instance=ExtResource("3_u8j71")]
+visible = false
+
+[node name="CharacterSpawner" type="Node2D" parent="."]
+script = SubResource("GDScript_kchow")
+
+[node name="GameManager" type="Node" parent="."]
+script = ExtResource("5_p3b6r")
+
+[node name="UI" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="TopMoraleBar" parent="UI" instance=ExtResource("6_jmgyo")]
+
+[node name="GameOver" parent="UI" instance=ExtResource("7_qf3kh")]
+visible = false

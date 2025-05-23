@@ -1,0 +1,39 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://belsumgigud22"]
+
+[ext_resource type="Texture2D" uid="uid://belgscvhbxq7g" path="res://assets/characters/stanford3.png" id="1_qqhmr"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qqhmr"]
+atlas = ExtResource("1_qqhmr")
+region = Rect2(0, 0, 105, 154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hxf2w"]
+atlas = ExtResource("1_qqhmr")
+region = Rect2(105, 0, 105, 154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nb8xg"]
+atlas = ExtResource("1_qqhmr")
+region = Rect2(210, 0, 105, 154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0bt1y"]
+atlas = ExtResource("1_qqhmr")
+region = Rect2(315, 0, 105, 154)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qqhmr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hxf2w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nb8xg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0bt1y")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 8.0
+}]

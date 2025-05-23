@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://coy6sj4fithpb"]
+
+[ext_resource type="PackedScene" uid="uid://exbb84ktpjdm" path="res://scenes/location_template.tscn" id="1_cheif"]
+
+[node name="LocationTemplate" instance=ExtResource("1_cheif")]
+location_name = "Hoover Tower"
