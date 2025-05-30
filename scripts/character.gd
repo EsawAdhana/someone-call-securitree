@@ -8,6 +8,7 @@ extends CharacterBody2D
 var variant_name: String = "Unknown"
 var has_id: bool = true
 var valid_major: bool = true
+var l1_id: String = ""  # Store the L1ID for the character
 
 # Walking and destinations
 var target_position: Vector2 = Vector2.ZERO
