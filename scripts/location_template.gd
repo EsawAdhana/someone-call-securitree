@@ -15,6 +15,7 @@ var direct_spawner = null
 var game_camera = null
 var current_selected_character = null  # Track the currently selected character
 var game_manager = null  # Reference to the game manager
+var global_character_manager = null  # Reference to the global character manager
 
 # References to scroll textures
 var closed_scroll_texture
@@ -22,6 +23,7 @@ var open_scroll_texture
 var scroll_sprite
 
 func _ready():
+	print("LOCATION: Ready called for ", self)
 	print("LOCATION: Location template initializing...")
 	
 	# Set up the camera if it doesn't exist
@@ -29,6 +31,9 @@ func _ready():
 	
 	# Set up the game manager
 	setup_game_manager()
+	
+	# Set up the global character manager
+	setup_global_character_manager()
 	
 	# Set up UI elements
 	setup_ui_elements()
@@ -53,6 +58,9 @@ func _ready():
 	# Initialize the direct spawner with a slight delay
 	await get_tree().create_timer(0.2).timeout
 	setup_direct_spawner()
+	
+	# Restore any existing characters for this location
+	restore_location_characters()
 
 func setup_camera():
 	# Check if we already have a camera
@@ -92,6 +100,18 @@ func setup_game_manager():
 				print("LOCATION: Using existing game manager in this scene")
 		else:
 			print("LOCATION: Using existing game manager from root")
+
+func setup_global_character_manager():
+	# Try to find the global character manager in the scene tree
+	global_character_manager = get_node("/root/GlobalCharacterManager")
+	
+	# If it doesn't exist, create it
+	if not global_character_manager:
+		global_character_manager = Node.new()
+		global_character_manager.set_script(load("res://scripts/global_character_manager.gd"))
+		global_character_manager.name = "GlobalCharacterManager"
+		get_tree().get_root().add_child(global_character_manager)
+		print("LOCATION: Created new GlobalCharacterManager")
 
 func setup_ui_elements():
 	# Set up the inspection panel
@@ -410,6 +430,7 @@ func _on_exit_pressed():
 	current_selected_character = null
 	# Reset camera position
 	reset_camera_position()
+	save_characters_to_global_manager()
 
 # Handle remove NPC button pressed
 func _on_remove_npc_pressed(character):
@@ -418,6 +439,10 @@ func _on_remove_npc_pressed(character):
 	current_selected_character = null
 	# Reset camera position
 	reset_camera_position()
+	
+	# Remove the character from the global manager
+	if global_character_manager:
+		global_character_manager.remove_character(location_name, character)
 	
 	# Advance time by 15 minutes
 	advance_time(15)
@@ -474,6 +499,7 @@ func _input(event):
 	# Check for ESC key to return to map
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		print("LOCATION: ESC key pressed, returning to map")
+		save_characters_to_global_manager()
 		get_tree().change_scene_to_file("res://scenes/main_map.tscn")
 
 # Handle mouse enter event for scroll button
@@ -527,4 +553,133 @@ func setup_minimap_button():
 # Handle minimap button pressed
 func _on_minimap_button_pressed():
 	print("LOCATION: Minimap button pressed, going to main map")
+	save_characters_to_global_manager()
 	get_tree().change_scene_to_file("res://scenes/main_map.tscn")
+
+# Restore characters for this location
+func restore_location_characters():
+	if not global_character_manager:
+		return
+
+	var now = Time.get_unix_time_from_system()
+	var characters_data = global_character_manager.get_characters_data(location_name)
+	for data in characters_data:
+		print("Restoring character: ", data)
+		var character_scene = load("res://scenes/character.tscn")
+		var character = character_scene.instantiate()
+		
+		# Simulate movement while away
+		var pos = data["position"]
+		var next_pos = data.get("next_position", pos)
+		var dir = data.get("walk_direction", Vector2.ZERO)
+		var speed = data.get("walking_speed", 50.0)
+		var last_time = data.get("last_update_time", now)
+		var dt = max(0, now - last_time)
+		
+		if data.get("is_walking", true):
+			# Use interpolation between last position and next position for smoother movement
+			var interpolation = min(1.0, dt * speed / max(pos.distance_to(next_pos), 0.001))
+			pos = pos.lerp(next_pos, interpolation)
+			
+			# Calculate future position based on direction and time
+			pos += dir * speed * dt
+		
+		# Set basic properties
+		character.global_position = pos
+		character.character_type = data["character_type"]
+		character.variant_name = data["variant_name"]
+		character.has_id = data["has_id"]
+		character.valid_major = data["valid_major"]
+		character.target_position = data.get("target_position", character.global_position)
+		character.is_walking = data.get("is_walking", true)
+		character.walk_direction = dir
+		character.walking_speed = speed
+		character.velocity = data.get("velocity", Vector2.ZERO)
+		character.just_spawned = data.get("just_spawned", false)
+		character.initial_position = data.get("initial_position", pos)
+		
+		# Set visual properties
+		character.modulate = data.get("modulate", Color(1, 1, 1, 1))
+		character.scale = data.get("scale", Vector2(1, 1))
+		
+		# Add to scene
+		add_child(character)
+		character.show()
+		character.visible = true
+		
+		# Set up sprite properties
+		if character.has_node("AnimatedSprite2D"):
+			var sprite = character.animated_sprite
+			if data.has("sprite_path") and data["sprite_path"] != "":
+				var frames = load(data["sprite_path"])
+				if frames:
+					sprite.sprite_frames = frames
+			
+			# Restore sprite state
+			if data.has("current_animation"):
+				sprite.play(data["current_animation"])
+				if data.has("sprite_frame"):
+					sprite.frame = data["sprite_frame"]
+			
+			# Restore sprite orientation
+			sprite.flip_h = data.get("sprite_flip_h", false)
+		
+		print("Added character to scene: ", character, " parent: ", character.get_parent())
+		
+		# Resume walking with a small delay to ensure proper initialization
+		if character.has_method("resume_walking") and character.is_walking:
+			await get_tree().create_timer(0.1).timeout
+			character.resume_walking()
+	
+	for c in get_children():
+		print("Child of location after restore: ", c)
+
+func save_characters_to_global_manager():
+	if global_character_manager:
+		global_character_manager.clear_location(location_name)
+		var now = Time.get_unix_time_from_system()
+		for character in get_tree().get_nodes_in_group("characters"):
+			print("Saving character: ", character)
+			var anim_name = ""
+			var sprite_path = ""
+			var sprite_flip_h = false
+			var sprite_frame = 0
+			
+			if character.has_node("AnimatedSprite2D"):
+				var sprite = character.animated_sprite
+				anim_name = sprite.animation
+				sprite_flip_h = sprite.flip_h
+				sprite_frame = sprite.frame
+				if sprite.sprite_frames:
+					sprite_path = sprite.sprite_frames.resource_path
+			
+			# Calculate next position based on current movement
+			var next_pos = character.global_position
+			if character.is_walking:
+				# Simulate a small time step to get the next position
+				next_pos += character.walk_direction * character.walking_speed * 0.016  # One frame at 60fps
+			
+			var data = {
+				"position": character.global_position,
+				"next_position": next_pos,  # Store next position for smoother transitions
+				"character_type": character.character_type,
+				"variant_name": character.variant_name,
+				"has_id": character.has_id,
+				"valid_major": character.valid_major,
+				"target_position": character.target_position,
+				"is_walking": character.is_walking,
+				"walk_direction": character.walk_direction,
+				"walking_speed": character.walking_speed,
+				"velocity": character.velocity,
+				"just_spawned": character.just_spawned,
+				"current_animation": anim_name,
+				"sprite_path": sprite_path,
+				"sprite_flip_h": sprite_flip_h,
+				"sprite_frame": sprite_frame,
+				"last_update_time": now,
+				"modulate": character.modulate,
+				"scale": character.scale,
+				"initial_position": character.initial_position
+			}
+			global_character_manager.add_character_data(location_name, data)
+			character.queue_free()

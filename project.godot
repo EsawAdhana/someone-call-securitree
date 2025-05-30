@@ -15,6 +15,10 @@ run/main_scene="uid://c601osuc2aat"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+GlobalCharacterManager="*res://scripts/global_character_manager.gd"
+
 [display]
 
 window/size/mode=2

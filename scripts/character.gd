@@ -30,6 +30,9 @@ func _ready():
 	# Store initial position for debugging
 	initial_position = global_position
 	
+	# Add to characters group for tracking
+	add_to_group("characters")
+	
 	# CRITICAL: Make sure input detection works
 	input_pickable = true
 	print("CHARACTER DEBUG: input_pickable set to " + str(input_pickable))
