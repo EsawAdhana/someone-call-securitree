@@ -42,6 +42,12 @@ func _ready():
 	mouse_exited.connect(_on_mouse_exited)
 	input_event.connect(_on_input_event)
 	
+	# Connect to inspection panel signals
+	var inspection_panel = get_node("/root/Main/InspectionPanel")
+	if inspection_panel:
+		inspection_panel.exit_pressed.connect(_on_inspection_exit.bind())
+		print("CHARACTER DEBUG: Connected to inspection panel exit signal")
+	
 	print("CHARACTER DEBUG: All input signals connected")
 	
 	# Start animation
@@ -208,23 +214,14 @@ func resume_walking():
 	print("CHARACTER DEBUG: Resuming walking for: " + variant_name)
 	# Force is_walking to true
 	is_walking = true
-	# Ensure velocity is not zero
-	velocity = walk_direction * walking_speed
 	
 	# Ensure animation is playing
 	if animated_sprite:
 		animated_sprite.play()
 		print("CHARACTER DEBUG: Animation restarted")
 	
-	# Recalculate direction to target if needed
-	if target_position == Vector2.ZERO or global_position.distance_to(target_position) < 20:
-		# Choose a new exit point
-		start_walking()
-	else:
-		# Use existing target
-		walk_direction = (target_position - global_position).normalized()
-		face_walk_direction()
-	
+	# Choose a new target and direction
+	choose_new_target()
 	print("CHARACTER DEBUG: New walking direction: " + str(walk_direction))
 
 func choose_new_target():
@@ -238,3 +235,9 @@ func choose_new_target():
 	)
 	walk_direction = (target_position - global_position).normalized()
 	face_walk_direction()
+
+# Handle inspection panel exit
+func _on_inspection_exit(character):
+	if character == self:
+		print("CHARACTER DEBUG: Handling inspection exit for: " + variant_name)
+		# No need for additional logic here since resume_walking is called directly

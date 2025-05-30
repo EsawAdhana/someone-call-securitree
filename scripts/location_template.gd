@@ -138,68 +138,55 @@ func setup_inspection_panel():
 	# Check for existing inspection panel in the UI layer
 	inspection_panel = ui_layer.get_node_or_null("InspectionPanel")
 	
-	# There's a bug in Godot where the node might be named "UI#InspectionPanel"
-	# Try to find it in the main scene if not in UI
 	if not inspection_panel:
-		var possible_panel = get_node_or_null("UI#InspectionPanel")
-		if possible_panel:
-			# Remove it from current parent and add it to UI with correct name
-			possible_panel.get_parent().remove_child(possible_panel)
-			possible_panel.name = "InspectionPanel"
-			ui_layer.add_child(possible_panel)
-			inspection_panel = possible_panel
-			print("LOCATION: Fixed panel location from UI#InspectionPanel to UI/InspectionPanel")
-	
-	if inspection_panel:
-		print("LOCATION: Found existing inspection panel at", inspection_panel.get_path())
-	else:
 		# Try to load the inspection panel scene if not specified in the Inspector
 		if not inspection_panel_scene:
 			inspection_panel_scene = load("res://scenes/inspection_panel.tscn")
 			if not inspection_panel_scene:
 				push_error("Failed to load inspection_panel.tscn. Please check the path.")
 				return
-
+		
 		# Instantiate the inspection panel
 		inspection_panel = inspection_panel_scene.instantiate()
 		if not inspection_panel:
 			push_error("Failed to instantiate inspection panel scene.")
 			return
-
+		
 		# Make sure the name is correct
 		inspection_panel.name = "InspectionPanel"
 		
 		# Add it to the UI layer
 		ui_layer.add_child(inspection_panel)
 		print("LOCATION: Inspection panel added to UI layer at path:", inspection_panel.get_path())
+	else:
+		print("LOCATION: Found existing inspection panel at", inspection_panel.get_path())
 	
 	# Hide it initially
 	inspection_panel.visible = false
 	
-	# Connect the approve and reject signals from the inspection panel
-	if inspection_panel.has_signal("character_approved"):
+	# Connect signals
+	if inspection_panel:
+		# Disconnect existing connections if any
 		if inspection_panel.character_approved.is_connected(_on_character_approved):
 			inspection_panel.character_approved.disconnect(_on_character_approved)
-		inspection_panel.character_approved.connect(_on_character_approved)
-		print("LOCATION: character_approved signal connected")
-	
-	if inspection_panel.has_signal("character_rejected"):
 		if inspection_panel.character_rejected.is_connected(_on_character_rejected):
 			inspection_panel.character_rejected.disconnect(_on_character_rejected)
-		inspection_panel.character_rejected.connect(_on_character_rejected)
-		print("LOCATION: character_rejected signal connected")
-		
-	if inspection_panel.has_signal("exit_pressed"):
 		if inspection_panel.exit_pressed.is_connected(_on_exit_pressed):
 			inspection_panel.exit_pressed.disconnect(_on_exit_pressed)
-		inspection_panel.exit_pressed.connect(_on_exit_pressed)
-		print("LOCATION: exit_pressed signal connected")
-		
-	if inspection_panel.has_signal("remove_npc_pressed"):
 		if inspection_panel.remove_npc_pressed.is_connected(_on_remove_npc_pressed):
 			inspection_panel.remove_npc_pressed.disconnect(_on_remove_npc_pressed)
+		if inspection_panel.camera_reset_requested.is_connected(reset_camera_position):
+			inspection_panel.camera_reset_requested.disconnect(reset_camera_position)
+		
+		# Connect signals
+		inspection_panel.character_approved.connect(_on_character_approved)
+		inspection_panel.character_rejected.connect(_on_character_rejected)
+		inspection_panel.exit_pressed.connect(_on_exit_pressed)
 		inspection_panel.remove_npc_pressed.connect(_on_remove_npc_pressed)
-		print("LOCATION: remove_npc_pressed signal connected")
+		inspection_panel.camera_reset_requested.connect(reset_camera_position)
+		print("LOCATION: Connected all inspection panel signals")
+	else:
+		push_error("LOCATION: Failed to create inspection panel!")
 
 func setup_scroll_button_and_book():
 	print("LOCATION: Setting up scroll button and book interface...")

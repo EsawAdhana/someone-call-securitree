@@ -2,8 +2,9 @@ extends Control
 
 signal character_approved(character)
 signal character_rejected(character)
-signal exit_pressed
+signal exit_pressed(character)
 signal remove_npc_pressed
+signal camera_reset_requested
 
 var current_character = null
 var has_spoken_to = {}  # Dictionary to track characters we've spoken to
@@ -70,6 +71,8 @@ func show_character_info(character):
 	# Pause the character's movement - this should already be paused in character's click handler
 	# But we'll set it again to be sure
 	character.is_walking = false
+	# Disable input while inspecting
+	character.input_pickable = false
 	
 	# Display character type info for debugging purposes
 	var character_type_name = "Stanford" if character.character_type == 0 else "Berkeley"
@@ -97,21 +100,25 @@ func show_character_info(character):
 
 func hide_panel():
 	visible = false
+	if current_character:
+		# Re-enable input on the character before clearing reference
+		current_character.input_pickable = true
 	current_character = null
 	print("Inspection Panel: Hidden")
 
 func _on_exit_button_pressed():
 	print("Inspection Panel: Exit pressed")
-	exit_pressed.emit()
 	
 	if current_character:
-		# Add a small delay before resuming walking
-		await get_tree().create_timer(0.1).timeout
-		
-		print("Inspection Panel: Resuming character walking after exit")
+		print("Inspection Panel: Triggering walk resumption")
+		# First resume walking
 		current_character.resume_walking()
-		current_character = null
+		# Then emit signals
+		exit_pressed.emit(current_character)
+		camera_reset_requested.emit()  # Request camera reset
+		print("Inspection Panel: Exit signal emitted for character")
 	
+	# Hide panel and clear reference
 	hide_panel()
 
 func _on_approve_button_pressed():
