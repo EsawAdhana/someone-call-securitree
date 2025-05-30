@@ -3,9 +3,17 @@ extends Node2D
 # Dictionary to map area names to scene paths
 var location_scenes = {
 	"StadiumArea": "res://scenes/locations/stadium.tscn",
-	"OvalArea": "res://scenes/locations/oval.tscn",
 	"HooverTowerArea": "res://scenes/locations/hoover_tower.tscn",
-	# Add all other locations here
+	"MainQuadArea": "res://scenes/locations/main_quad.tscn",
+	"GSBArea": "res://scenes/locations/gsb.tscn",
+	"GreenLibraryArea": "res://scenes/locations/green_library.tscn",
+	"MeyerGreenArea": "res://scenes/locations/meyer_green.tscn",
+	"TresidderArea": "res://scenes/locations/tresidder.tscn",
+	"FarrillagaArea": "res://scenes/locations/farillaga.tscn",
+	"Y2E2Area": "res://scenes/locations/y2e2.tscn",
+	"CoDaArea": "res://scenes/locations/coda.tscn",
+	"CantorArea": "res://scenes/locations/cantor.tscn",
+	"FloMoArea": "res://scenes/locations/flomo.tscn"
 }
 
 func _ready():

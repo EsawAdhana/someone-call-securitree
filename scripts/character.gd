@@ -38,15 +38,10 @@ func _ready():
 	print("CHARACTER DEBUG: input_pickable set to " + str(input_pickable))
 	
 	# Connect input signals
-	if not mouse_entered.is_connected(_on_mouse_entered):
-		mouse_entered.connect(_on_mouse_entered)
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
+	input_event.connect(_on_input_event)
 	
-	if not mouse_exited.is_connected(_on_mouse_exited):
-		mouse_exited.connect(_on_mouse_exited)
-	
-	if not input_event.is_connected(_on_input_event):
-		input_event.connect(_on_input_event)
-		
 	print("CHARACTER DEBUG: All input signals connected")
 	
 	# Start animation
@@ -91,34 +86,36 @@ func _physics_process(delta):
 		# Get viewport boundaries
 		var viewport_rect = get_viewport_rect()
 		var viewport_size = viewport_rect.size
+		var margin = 50  # Keep characters away from the edges
 		
-		# Check if character hits viewport boundaries and bounce
-		if global_position.x <= 50 or global_position.x >= viewport_size.x - 50:
-			walk_direction.x *= -1  # Reverse x direction
-			face_walk_direction()
-		if global_position.y <= 50 or global_position.y >= viewport_size.y - 50:
-			walk_direction.y *= -1  # Reverse y direction
+		# Check if character hits viewport boundaries and bounce or choose new target
+		var should_change_target = false
+		if global_position.x <= margin or global_position.x >= viewport_size.x - margin:
+			if randf() < 0.5:  # 50% chance to bounce, 50% to choose new target
+				walk_direction.x *= -1  # Bounce
+				face_walk_direction()
+			else:
+				should_change_target = true
+		
+		if global_position.y <= margin or global_position.y >= viewport_size.y - margin:
+			if randf() < 0.5:  # 50% chance to bounce, 50% to choose new target
+				walk_direction.y *= -1  # Bounce
+				face_walk_direction()
+			else:
+				should_change_target = true
 		
 		# Keep character within bounds
-		global_position.x = clamp(global_position.x, 50, viewport_size.x - 50)
-		global_position.y = clamp(global_position.y, 50, viewport_size.y - 50)
+		global_position.x = clamp(global_position.x, margin, viewport_size.x - margin)
+		global_position.y = clamp(global_position.y, margin, viewport_size.y - margin)
+		
+		# Check if character reached destination or should change target
+		if should_change_target or global_position.distance_to(target_position) < 10:
+			choose_new_target()
 		
 		# Clear the just_spawned flag after moving a bit
 		if just_spawned and global_position.distance_to(initial_position) > 50:
 			just_spawned = false
 			print("CHARACTER DEBUG: No longer just spawned")
-		
-		# Check if character reached destination
-		if global_position.distance_to(target_position) < 10:
-			print("CHARACTER DEBUG: Reached target, picking new random target")
-			# Pick a new random target within the viewport
-			var new_target = Vector2(
-				randf_range(50, viewport_size.x - 50),
-				randf_range(50, viewport_size.y - 50)
-			)
-			target_position = new_target
-			walk_direction = (target_position - global_position).normalized()
-			face_walk_direction()
 
 # Input handling - CRITICAL for character interaction
 func _on_input_event(viewport, event, shape_idx):
@@ -156,21 +153,7 @@ func _on_mouse_exited():
 func start_walking():
 	print("CHARACTER DEBUG: Starting to walk")
 	is_walking = true
-	
-	# Choose a random position to walk to if we don't have one yet
-	if target_position == Vector2.ZERO:
-		var viewport_size = get_viewport_rect().size
-		print("CHARACTER DEBUG: Viewport size for random target: " + str(viewport_size))
-		target_position = Vector2(
-			randf_range(50, viewport_size.x - 50),
-			randf_range(50, viewport_size.y - 50)
-		)
-		print("CHARACTER DEBUG: New random target: " + str(target_position))
-	
-	# Calculate direction to target
-	walk_direction = (target_position - global_position).normalized()
-	print("CHARACTER DEBUG: Walking direction: " + str(walk_direction))
-	face_walk_direction()
+	choose_new_target()
 
 func face_walk_direction():
 	# Flip sprite based on walk direction
@@ -243,3 +226,15 @@ func resume_walking():
 		face_walk_direction()
 	
 	print("CHARACTER DEBUG: New walking direction: " + str(walk_direction))
+
+func choose_new_target():
+	var viewport_size = get_viewport_rect().size
+	var margin = 50
+	
+	# Pick a new random target within the viewport
+	target_position = Vector2(
+		randf_range(margin, viewport_size.x - margin),
+		randf_range(margin, viewport_size.y - margin)
+	)
+	walk_direction = (target_position - global_position).normalized()
+	face_walk_direction()

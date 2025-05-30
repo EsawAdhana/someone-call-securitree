@@ -180,6 +180,7 @@ func _on_character_exited(character):
 script = ExtResource("1_4m73f")
 
 [node name="Background" type="Sprite2D" parent="."]
+centered = true
 texture = ExtResource("1_r81h7")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
