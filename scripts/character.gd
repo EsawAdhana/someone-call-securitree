@@ -2,7 +2,7 @@ extends CharacterBody2D
 
 # Character types and properties
 @export var character_type: int = 0  # 0 = Stanford, 1 = Berkeley
-@export var walking_speed: float = 50.0
+@export var walking_speed: float = 200.0
 
 # Variant properties (for gameplay)
 var variant_name: String = "Unknown"
@@ -29,6 +29,9 @@ var debug_frame_count: int = 0
 func _ready():
 	# Store initial position for debugging
 	initial_position = global_position
+	
+	# Add to characters group for tracking
+	add_to_group("characters")
 	
 	# CRITICAL: Make sure input detection works
 	input_pickable = true

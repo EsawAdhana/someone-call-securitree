@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://b7lp47wee7mad" path="res://assets/closed_scroll.png" id="4_dx7wg"]
 [ext_resource type="Script" uid="uid://bkh4tbmwy4iyp" path="res://scripts/game_manager.gd" id="5_p3b6r"]
 [ext_resource type="PackedScene" path="res://scenes/top_morale_bar.tscn" id="6_jmgyo"]
-[ext_resource type="PackedScene" path="res://scenes/game_over.tscn" id="7_qf3kh"]
+[ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="7_qf3kh"]
 [ext_resource type="Texture2D" uid="uid://b7a5pslagpjde" path="res://assets/map.png" id="8_8dnw7"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6qk4c"]
@@ -217,10 +217,10 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -150.0
+offset_left = -250.0
 offset_top = 65.0
 offset_right = -10.0
-offset_bottom = 205.0
+offset_bottom = 306.0
 grow_horizontal = 0
 tooltip_text = "Click to view full map"
 focus_mode = 0
@@ -229,8 +229,8 @@ flat = true
 
 [node name="MinimapSprite" type="Sprite2D" parent="CanvasLayer/Control/MinimapButton"]
 modulate = Color(1.1, 1.1, 1.1, 1)
-position = Vector2(70, 70)
-scale = Vector2(0.06, 0.06)
+position = Vector2(113, 118)
+scale = Vector2(0.0496963, 0.0486705)
 texture = ExtResource("8_8dnw7")
 
 [node name="MinimapBorder" type="Panel" parent="CanvasLayer/Control/MinimapButton"]
@@ -238,6 +238,9 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -12.0
+offset_top = -1.0
+offset_right = -2.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2

@@ -10,10 +10,16 @@ config_version=5
 
 [application]
 
-config/name="new"
-run/main_scene="uid://c601osuc2aat"
-config/features=PackedStringArray("4.4", "Forward Plus")
+config/name="Someone Call Securitree"
+run/main_scene="res://scenes/main_map.tscn"
+config/features=PackedStringArray("4.2", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+LocationManager="*res://scripts/location_manager.gd"
+GameManager="*res://scripts/game_manager.gd"
+GlobalCharacterManager="*res://scripts/global_character_manager.gd"
 
 [display]
 

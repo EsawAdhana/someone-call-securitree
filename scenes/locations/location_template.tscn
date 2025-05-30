@@ -1,0 +1,44 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/base_location.gd" id="1_base"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_left"]
+size = Vector2(20, 600)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_right"]
+size = Vector2(20, 600)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_top"]
+size = Vector2(800, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bottom"]
+size = Vector2(800, 20)
+
+[node name="LocationBase" type="Node2D"]
+script = ExtResource("1_base")
+
+[node name="ExitAreas" type="Node2D" parent="."]
+
+[node name="LeftExit" type="Area2D" parent="ExitAreas"]
+position = Vector2(-400, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitAreas/LeftExit"]
+shape = SubResource("RectangleShape2D_left")
+
+[node name="RightExit" type="Area2D" parent="ExitAreas"]
+position = Vector2(400, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitAreas/RightExit"]
+shape = SubResource("RectangleShape2D_right")
+
+[node name="TopExit" type="Area2D" parent="ExitAreas"]
+position = Vector2(0, -300)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitAreas/TopExit"]
+shape = SubResource("RectangleShape2D_top")
+
+[node name="BottomExit" type="Area2D" parent="ExitAreas"]
+position = Vector2(0, 300)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitAreas/BottomExit"]
+shape = SubResource("RectangleShape2D_bottom") 

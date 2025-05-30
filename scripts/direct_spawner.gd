@@ -2,8 +2,8 @@ extends Node2D
 
 # Character spawning configuration
 @export var character_scene: PackedScene
-@export var spawn_interval_min: float = 2.0
-@export var spawn_interval_max: float = 5.0
+@export var spawn_interval_min: float = 8.0
+@export var spawn_interval_max: float = 15.0
 @export var max_characters: int = 5
 @export var stanford_chance: float = 0.6  # 60% chance for Stanford students
 
