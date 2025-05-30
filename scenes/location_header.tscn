@@ -61,7 +61,7 @@ theme_override_constants/margin_bottom = 10
 [node name="LocationNameLabel" type="Label" parent="MarginContainer/HBoxContainer/LocationPanel/MarginContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 36
 text = "LOCATION NAME"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -87,6 +87,6 @@ stretch_mode = 5
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0.87451, 0.87451, 0.87451, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 20
 text = "The minimap"
 horizontal_alignment = 1

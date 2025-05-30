@@ -79,14 +79,14 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.87451, 0.87451, 0.87451, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 36
 text = "Day: 1"
 
 [node name="TimeLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/TimeDisplay/MarginContainer/TimeHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.87451, 0.87451, 0.87451, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 36
 text = "Time: 9:00 AM"
 horizontal_alignment = 2
 
@@ -109,7 +109,7 @@ layout_mode = 2
 [node name="RulesTitleLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/InfoSections/RulesSection/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.921569, 0.921569, 0.921569, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 24
 text = "RULES"
 horizontal_alignment = 1
 
@@ -148,7 +148,7 @@ layout_mode = 2
 [node name="ManifestoTitleLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/InfoSections/ManifestoSection/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.921569, 0.921569, 0.921569, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 24
 text = "MANIFESTO"
 horizontal_alignment = 1
 
@@ -183,7 +183,7 @@ layout_mode = 2
 [node name="CampusInfoTitleLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/InfoSections/CampusInfoSection/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.921569, 0.921569, 0.921569, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 24
 text = "CAMPUS INFO"
 horizontal_alignment = 1
 

@@ -7,13 +7,13 @@
 [ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="6_s3jbg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dyl4d"]
-size = Vector2(891.25, 540)
+size = Vector2(891.25, 601)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_km2bi"]
-size = Vector2(247.529, 1553.01)
+size = Vector2(377, 648)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kdyc3"]
-size = Vector2(1054.5, 460)
+size = Vector2(1054.5, 615)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4synu"]
 size = Vector2(620.5, 443)
@@ -49,26 +49,24 @@ script = ExtResource("1_1xo34")
 texture = ExtResource("2_kdyc3")
 
 [node name="Camera2D" type="Camera2D" parent="MapBackground"]
-zoom = Vector2(0.48, 0.48)
+zoom = Vector2(0.45, 0.45)
 
 [node name="StadiumArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StadiumArea"]
-position = Vector2(1902.62, -1180)
+position = Vector2(1902.62, -1149.5)
 shape = SubResource("RectangleShape2D_dyl4d")
 
 [node name="HooverTowerArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HooverTowerArea"]
-position = Vector2(1153, 259)
-rotation = 3.14159
-scale = Vector2(1.08083, 0.525496)
+position = Vector2(1185.5, 301)
 shape = SubResource("RectangleShape2D_km2bi")
 
 [node name="MainQuadArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MainQuadArea"]
-position = Vector2(186.75, 298)
+position = Vector2(186.75, 220.5)
 shape = SubResource("RectangleShape2D_kdyc3")
 
 [node name="GSBArea" type="Area2D" parent="."]

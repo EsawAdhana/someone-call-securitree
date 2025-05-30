@@ -52,7 +52,7 @@ theme_override_constants/separation = 5
 [node name="TitleLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.921569, 0.921569, 0.921569, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 24
 text = "MORALE"
 horizontal_alignment = 1
 
