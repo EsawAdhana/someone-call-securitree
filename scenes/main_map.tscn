@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dlnb8jsdsw2go" path="res://scripts/main_map.gd" id="1_1xo34"]
 [ext_resource type="Texture2D" uid="uid://b7a5pslagpjde" path="res://assets/map.png" id="2_kdyc3"]
 [ext_resource type="Script" uid="uid://bkh4tbmwy4iyp" path="res://scripts/game_manager.gd" id="3_hd37j"]
-[ext_resource type="PackedScene" path="res://scenes/top_morale_bar.tscn" id="4_aqgc6"]
+[ext_resource type="PackedScene" uid="uid://cuwhd0tobccni" path="res://scenes/top_morale_bar.tscn" id="4_aqgc6"]
 [ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="6_s3jbg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dyl4d"]
@@ -42,6 +42,30 @@ shape = SubResource("RectangleShape2D_km2bi")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="OvalArea"]
 position = Vector2(394, -281)
+shape = SubResource("RectangleShape2D_5hk42")
+
+[node name="MemorialChurchArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MemorialChurchArea"]
+position = Vector2(800, 0)
+shape = SubResource("RectangleShape2D_5hk42")
+
+[node name="ArrillagaArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ArrillagaArea"]
+position = Vector2(200, 400)
+shape = SubResource("RectangleShape2D_5hk42")
+
+[node name="FountainArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FountainArea"]
+position = Vector2(1000, 200)
+shape = SubResource("RectangleShape2D_5hk42")
+
+[node name="TreeGroveArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TreeGroveArea"]
+position = Vector2(1400, -400)
 shape = SubResource("RectangleShape2D_5hk42")
 
 [node name="GameManager" type="Node" parent="."]

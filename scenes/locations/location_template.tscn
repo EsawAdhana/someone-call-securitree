@@ -1,6 +1,6 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=6 format=3 uid="uid://dqvmlrx0exr5l"]
 
-[ext_resource type="Script" path="res://scripts/base_location.gd" id="1_base"]
+[ext_resource type="Script" uid="uid://0wwaor83r1da" path="res://scripts/base_location.gd" id="1_base"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_left"]
 size = Vector2(20, 600)
@@ -41,4 +41,4 @@ shape = SubResource("RectangleShape2D_top")
 position = Vector2(0, 300)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ExitAreas/BottomExit"]
-shape = SubResource("RectangleShape2D_bottom") 
+shape = SubResource("RectangleShape2D_bottom")

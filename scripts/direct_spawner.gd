@@ -117,10 +117,10 @@ func spawn_character():
 	# Get viewport size for positioning
 	var viewport_size = get_viewport_rect().size
 	
-	# Position character DIRECTLY INSIDE the screen
-	# Pick a random position inside the visible area of the screen
-	var pos_x = randf_range(100, viewport_size.x - 100)
-	var pos_y = randf_range(100, viewport_size.y - 100)
+	# Position character DIRECTLY INSIDE the screen with safe margins
+	var margin = 100
+	var pos_x = randf_range(margin, viewport_size.x - margin)
+	var pos_y = randf_range(margin, viewport_size.y - margin)
 	var spawn_position = Vector2(pos_x, pos_y)
 	
 	character.global_position = spawn_position
@@ -139,12 +139,12 @@ func spawn_character():
 	# Keep trying to find a target position that's different from the spawn position
 	while attempts < 10:
 		target_position = Vector2(
-			randf_range(100, viewport_size.x - 100),
-			randf_range(100, viewport_size.y - 100)
+			randf_range(margin, viewport_size.x - margin),
+			randf_range(margin, viewport_size.y - margin)
 		)
 		
 		# If the target is far enough from the spawn position, use it
-		if target_position.distance_to(spawn_position) > 300:
+		if target_position.distance_to(spawn_position) > 200:
 			break
 			
 		attempts += 1
@@ -152,20 +152,16 @@ func spawn_character():
 	character.target_position = target_position
 	print("DIRECT_SPAWNER: Character target set to " + str(target_position))
 	
-	# IMPORTANT: Connect signals - make sure this works!
-	# FIX: Always disconnect before connecting to avoid duplicate connections
+	# Connect signals
 	if character.character_clicked.is_connected(_on_character_clicked):
 		character.character_clicked.disconnect(_on_character_clicked)
 	
 	character.character_clicked.connect(_on_character_clicked)
 	print("DIRECT_SPAWNER: Connected character_clicked signal")
 	
-	if character.character_exited.is_connected(_on_character_exited):
-		character.character_exited.disconnect(_on_character_exited)
-		
-	character.character_exited.connect(_on_character_exited)
+	# We don't need the character_exited signal anymore since characters don't exit
 	
-	# FIX: Add the character as a direct child of this node, not as a sibling
+	# Add the character as a direct child of this node
 	add_child(character)
 	current_characters.append(character)
 	print("DIRECT_SPAWNER: Character added to scene, total characters: " + str(current_characters.size()))
@@ -224,9 +220,3 @@ func _on_character_clicked(character):
 	
 	# Forward the signal to whoever is listening (should be LocationTemplate)
 	character_clicked.emit(character)
-
-# Handle character exiting the scene
-func _on_character_exited(character):
-	print("DIRECT_SPAWNER: Character exited")
-	if current_characters.has(character):
-		current_characters.erase(character)

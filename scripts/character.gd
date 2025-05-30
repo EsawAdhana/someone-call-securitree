@@ -88,10 +88,21 @@ func _physics_process(delta):
 		velocity = walk_direction * walking_speed
 		move_and_slide()
 		
-		# Check viewport boundaries
+		# Get viewport boundaries
 		var viewport_rect = get_viewport_rect()
-		var in_viewport = viewport_rect.has_point(global_position)
-
+		var viewport_size = viewport_rect.size
+		
+		# Check if character hits viewport boundaries and bounce
+		if global_position.x <= 50 or global_position.x >= viewport_size.x - 50:
+			walk_direction.x *= -1  # Reverse x direction
+			face_walk_direction()
+		if global_position.y <= 50 or global_position.y >= viewport_size.y - 50:
+			walk_direction.y *= -1  # Reverse y direction
+		
+		# Keep character within bounds
+		global_position.x = clamp(global_position.x, 50, viewport_size.x - 50)
+		global_position.y = clamp(global_position.y, 50, viewport_size.y - 50)
+		
 		# Clear the just_spawned flag after moving a bit
 		if just_spawned and global_position.distance_to(initial_position) > 50:
 			just_spawned = false
@@ -99,15 +110,15 @@ func _physics_process(delta):
 		
 		# Check if character reached destination
 		if global_position.distance_to(target_position) < 10:
-			print("CHARACTER DEBUG: Reached target, now walking to exit")
-			# Character reached target position, now exit the screen
-			walk_to_exit()
-		
-		# Check if character is off-screen (but not if just spawned)
-		if not just_spawned and not in_viewport:
-			print("CHARACTER DEBUG: Character is off-screen, emitting exit signal")
-			character_exited.emit(self)
-			queue_free()
+			print("CHARACTER DEBUG: Reached target, picking new random target")
+			# Pick a new random target within the viewport
+			var new_target = Vector2(
+				randf_range(50, viewport_size.x - 50),
+				randf_range(50, viewport_size.y - 50)
+			)
+			target_position = new_target
+			walk_direction = (target_position - global_position).normalized()
+			face_walk_direction()
 
 # Input handling - CRITICAL for character interaction
 func _on_input_event(viewport, event, shape_idx):
@@ -159,27 +170,6 @@ func start_walking():
 	# Calculate direction to target
 	walk_direction = (target_position - global_position).normalized()
 	print("CHARACTER DEBUG: Walking direction: " + str(walk_direction))
-	face_walk_direction()
-
-func walk_to_exit():
-	# Choose a random edge of the screen to exit from
-	var viewport_size = get_viewport_rect().size
-	print("CHARACTER DEBUG: Viewport size for exit: " + str(viewport_size))
-	var exit_side = randi() % 4 # 0: top, 1: right, 2: bottom, 3: left
-	
-	match exit_side:
-		0: # top
-			target_position = Vector2(randf_range(0, viewport_size.x), -50)
-		1: # right
-			target_position = Vector2(viewport_size.x + 50, randf_range(0, viewport_size.y))
-		2: # bottom
-			target_position = Vector2(randf_range(0, viewport_size.x), viewport_size.y + 50)
-		3: # left
-			target_position = Vector2(-50, randf_range(0, viewport_size.y))
-	
-	print("CHARACTER DEBUG: New exit target: " + str(target_position) + " (via side " + str(exit_side) + ")")
-	walk_direction = (target_position - global_position).normalized()
-	print("CHARACTER DEBUG: New exit direction: " + str(walk_direction))
 	face_walk_direction()
 
 func face_walk_direction():
@@ -246,7 +236,7 @@ func resume_walking():
 	# Recalculate direction to target if needed
 	if target_position == Vector2.ZERO or global_position.distance_to(target_position) < 20:
 		# Choose a new exit point
-		walk_to_exit()
+		start_walking()
 	else:
 		# Use existing target
 		walk_direction = (target_position - global_position).normalized()

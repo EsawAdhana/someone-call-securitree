@@ -1,6 +1,6 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=4 format=3 uid="uid://cuwhd0tobccni"]
 
-[ext_resource type="Script" path="res://scripts/top_morale_bar.gd" id="1_s1hde"]
+[ext_resource type="Script" uid="uid://cp301lij2lwna" path="res://scripts/top_morale_bar.gd" id="1_s1hde"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u4gkw"]
 bg_color = Color(0.141176, 0.2, 0.145098, 0.901961)
@@ -61,4 +61,4 @@ layout_mode = 2
 theme_override_styles/fill = SubResource("StyleBoxFlat_xn1mg")
 max_value = 100.0
 value = 100.0
-show_percentage = false 
+show_percentage = false
