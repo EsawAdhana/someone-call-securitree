@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://cw7dl8hraigh"]
+
+[ext_resource type="PackedScene" uid="uid://yb8duu47d4v0" path="res://scenes/location_template.tscn" id="1_cheif"]
+[ext_resource type="Texture2D" uid="uid://wygvawg3co8i" path="res://assets/backgrounds/Y2E2.png" id="2_kdyc3"]
+
+[node name="LocationTemplate" instance=ExtResource("1_cheif")]
+location_name = "Y2E2"
+
+[node name="Background" parent="." index="0"]
+texture = ExtResource("2_kdyc3")
+scale = Vector2(0.5, 0.5)

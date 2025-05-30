@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://c601osuc2aat"]
+[gd_scene load_steps=18 format=3 uid="uid://c601osuc2aat"]
 
 [ext_resource type="Script" uid="uid://dlnb8jsdsw2go" path="res://scripts/main_map.gd" id="1_1xo34"]
 [ext_resource type="Texture2D" uid="uid://b5xvl6b2yk3ox" path="res://assets/Map/MapNewPixelArt.png" id="2_map_texture"]
@@ -10,10 +10,37 @@
 size = Vector2(1182.5, 540)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_km2bi"]
-size = Vector2(247.529, 1553.01)
+size = Vector2(377, 648)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_5hk42"]
-size = Vector2(603.5, 570)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kdyc3"]
+size = Vector2(1054.5, 615)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4synu"]
+size = Vector2(620.5, 443)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cyf2o"]
+size = Vector2(635, 445)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_64gt2"]
+size = Vector2(779, 430)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2xk3c"]
+size = Vector2(650, 532)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ulx81"]
+size = Vector2(551, 528)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6adrn"]
+size = Vector2(777, 385.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cyt25"]
+size = Vector2(739, 410)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ubaj7"]
+size = Vector2(653, 464.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sa572"]
+size = Vector2(818, 424.5)
 
 [node name="MainMap" type="Node2D"]
 script = ExtResource("1_1xo34")
@@ -37,7 +64,7 @@ rotation = 3.14159
 scale = Vector2(1.08083, 0.525496)
 shape = SubResource("RectangleShape2D_km2bi")
 
-[node name="OvalArea" type="Area2D" parent="."]
+[node name="MainQuadArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="OvalArea"]
 position = Vector2(143.40576171875, 235.07421875)

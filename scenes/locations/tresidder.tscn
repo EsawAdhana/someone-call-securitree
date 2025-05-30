@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://b7c2xn5qchd66"]
+
+[ext_resource type="PackedScene" uid="uid://yb8duu47d4v0" path="res://scenes/location_template.tscn" id="1_cheif"]
+[ext_resource type="Texture2D" uid="uid://cdq0ib6rq0udl" path="res://assets/backgrounds/Tressider.png" id="2_kdyc3"]
+
+[node name="LocationTemplate" instance=ExtResource("1_cheif")]
+location_name = "Tresidder Union"
+
+[node name="Background" parent="." index="0"]
+texture = ExtResource("2_kdyc3")
+scale = Vector2(0.5, 0.5) 

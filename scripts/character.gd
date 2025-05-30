@@ -8,6 +8,7 @@ extends CharacterBody2D
 var variant_name: String = "Unknown"
 var has_id: bool = true
 var valid_major: bool = true
+var l1_id: String = ""  # Store the L1ID for the character
 
 # Walking and destinations
 var target_position: Vector2 = Vector2.ZERO
@@ -38,15 +39,16 @@ func _ready():
 	print("CHARACTER DEBUG: input_pickable set to " + str(input_pickable))
 	
 	# Connect input signals
-	if not mouse_entered.is_connected(_on_mouse_entered):
-		mouse_entered.connect(_on_mouse_entered)
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
+	input_event.connect(_on_input_event)
 	
-	if not mouse_exited.is_connected(_on_mouse_exited):
-		mouse_exited.connect(_on_mouse_exited)
+	# Connect to inspection panel signals
+	var inspection_panel = get_node("/root/Main/InspectionPanel")
+	if inspection_panel:
+		inspection_panel.exit_pressed.connect(_on_inspection_exit.bind())
+		print("CHARACTER DEBUG: Connected to inspection panel exit signal")
 	
-	if not input_event.is_connected(_on_input_event):
-		input_event.connect(_on_input_event)
-		
 	print("CHARACTER DEBUG: All input signals connected")
 	
 	# Start animation
@@ -88,26 +90,39 @@ func _physics_process(delta):
 		velocity = walk_direction * walking_speed
 		move_and_slide()
 		
-		# Check viewport boundaries
+		# Get viewport boundaries
 		var viewport_rect = get_viewport_rect()
-		var in_viewport = viewport_rect.has_point(global_position)
-
+		var viewport_size = viewport_rect.size
+		var margin = 50  # Keep characters away from the edges
+		
+		# Check if character hits viewport boundaries and bounce or choose new target
+		var should_change_target = false
+		if global_position.x <= margin or global_position.x >= viewport_size.x - margin:
+			if randf() < 0.5:  # 50% chance to bounce, 50% to choose new target
+				walk_direction.x *= -1  # Bounce
+				face_walk_direction()
+			else:
+				should_change_target = true
+		
+		if global_position.y <= margin or global_position.y >= viewport_size.y - margin:
+			if randf() < 0.5:  # 50% chance to bounce, 50% to choose new target
+				walk_direction.y *= -1  # Bounce
+				face_walk_direction()
+			else:
+				should_change_target = true
+		
+		# Keep character within bounds
+		global_position.x = clamp(global_position.x, margin, viewport_size.x - margin)
+		global_position.y = clamp(global_position.y, margin, viewport_size.y - margin)
+		
+		# Check if character reached destination or should change target
+		if should_change_target or global_position.distance_to(target_position) < 10:
+			choose_new_target()
+		
 		# Clear the just_spawned flag after moving a bit
 		if just_spawned and global_position.distance_to(initial_position) > 50:
 			just_spawned = false
 			print("CHARACTER DEBUG: No longer just spawned")
-		
-		# Check if character reached destination
-		if global_position.distance_to(target_position) < 10:
-			print("CHARACTER DEBUG: Reached target, now walking to exit")
-			# Character reached target position, now exit the screen
-			walk_to_exit()
-		
-		# Check if character is off-screen (but not if just spawned)
-		if not just_spawned and not in_viewport:
-			print("CHARACTER DEBUG: Character is off-screen, emitting exit signal")
-			character_exited.emit(self)
-			queue_free()
 
 # Input handling - CRITICAL for character interaction
 func _on_input_event(viewport, event, shape_idx):
@@ -145,42 +160,7 @@ func _on_mouse_exited():
 func start_walking():
 	print("CHARACTER DEBUG: Starting to walk")
 	is_walking = true
-	
-	# Choose a random position to walk to if we don't have one yet
-	if target_position == Vector2.ZERO:
-		var viewport_size = get_viewport_rect().size
-		print("CHARACTER DEBUG: Viewport size for random target: " + str(viewport_size))
-		target_position = Vector2(
-			randf_range(50, viewport_size.x - 50),
-			randf_range(50, viewport_size.y - 50)
-		)
-		print("CHARACTER DEBUG: New random target: " + str(target_position))
-	
-	# Calculate direction to target
-	walk_direction = (target_position - global_position).normalized()
-	print("CHARACTER DEBUG: Walking direction: " + str(walk_direction))
-	face_walk_direction()
-
-func walk_to_exit():
-	# Choose a random edge of the screen to exit from
-	var viewport_size = get_viewport_rect().size
-	print("CHARACTER DEBUG: Viewport size for exit: " + str(viewport_size))
-	var exit_side = randi() % 4 # 0: top, 1: right, 2: bottom, 3: left
-	
-	match exit_side:
-		0: # top
-			target_position = Vector2(randf_range(0, viewport_size.x), -50)
-		1: # right
-			target_position = Vector2(viewport_size.x + 50, randf_range(0, viewport_size.y))
-		2: # bottom
-			target_position = Vector2(randf_range(0, viewport_size.x), viewport_size.y + 50)
-		3: # left
-			target_position = Vector2(-50, randf_range(0, viewport_size.y))
-	
-	print("CHARACTER DEBUG: New exit target: " + str(target_position) + " (via side " + str(exit_side) + ")")
-	walk_direction = (target_position - global_position).normalized()
-	print("CHARACTER DEBUG: New exit direction: " + str(walk_direction))
-	face_walk_direction()
+	choose_new_target()
 
 func face_walk_direction():
 	# Flip sprite based on walk direction
@@ -235,21 +215,30 @@ func resume_walking():
 	print("CHARACTER DEBUG: Resuming walking for: " + variant_name)
 	# Force is_walking to true
 	is_walking = true
-	# Ensure velocity is not zero
-	velocity = walk_direction * walking_speed
 	
 	# Ensure animation is playing
 	if animated_sprite:
 		animated_sprite.play()
 		print("CHARACTER DEBUG: Animation restarted")
 	
-	# Recalculate direction to target if needed
-	if target_position == Vector2.ZERO or global_position.distance_to(target_position) < 20:
-		# Choose a new exit point
-		walk_to_exit()
-	else:
-		# Use existing target
-		walk_direction = (target_position - global_position).normalized()
-		face_walk_direction()
-	
+	# Choose a new target and direction
+	choose_new_target()
 	print("CHARACTER DEBUG: New walking direction: " + str(walk_direction))
+
+func choose_new_target():
+	var viewport_size = get_viewport_rect().size
+	var margin = 50
+	
+	# Pick a new random target within the viewport
+	target_position = Vector2(
+		randf_range(margin, viewport_size.x - margin),
+		randf_range(margin, viewport_size.y - margin)
+	)
+	walk_direction = (target_position - global_position).normalized()
+	face_walk_direction()
+
+# Handle inspection panel exit
+func _on_inspection_exit(character):
+	if character == self:
+		print("CHARACTER DEBUG: Handling inspection exit for: " + variant_name)
+		# No need for additional logic here since resume_walking is called directly

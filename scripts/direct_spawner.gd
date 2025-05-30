@@ -117,10 +117,10 @@ func spawn_character():
 	# Get viewport size for positioning
 	var viewport_size = get_viewport_rect().size
 	
-	# Position character DIRECTLY INSIDE the screen
-	# Pick a random position inside the visible area of the screen
-	var pos_x = randf_range(100, viewport_size.x - 100)
-	var pos_y = randf_range(100, viewport_size.y - 100)
+	# Position character DIRECTLY INSIDE the screen with safe margins
+	var margin = 100
+	var pos_x = randf_range(margin, viewport_size.x - margin)
+	var pos_y = randf_range(margin, viewport_size.y - margin)
 	var spawn_position = Vector2(pos_x, pos_y)
 	
 	character.global_position = spawn_position
@@ -139,12 +139,12 @@ func spawn_character():
 	# Keep trying to find a target position that's different from the spawn position
 	while attempts < 10:
 		target_position = Vector2(
-			randf_range(100, viewport_size.x - 100),
-			randf_range(100, viewport_size.y - 100)
+			randf_range(margin, viewport_size.x - margin),
+			randf_range(margin, viewport_size.y - margin)
 		)
 		
 		# If the target is far enough from the spawn position, use it
-		if target_position.distance_to(spawn_position) > 300:
+		if target_position.distance_to(spawn_position) > 200:
 			break
 			
 		attempts += 1
@@ -152,20 +152,16 @@ func spawn_character():
 	character.target_position = target_position
 	print("DIRECT_SPAWNER: Character target set to " + str(target_position))
 	
-	# IMPORTANT: Connect signals - make sure this works!
-	# FIX: Always disconnect before connecting to avoid duplicate connections
+	# Connect signals
 	if character.character_clicked.is_connected(_on_character_clicked):
 		character.character_clicked.disconnect(_on_character_clicked)
 	
 	character.character_clicked.connect(_on_character_clicked)
 	print("DIRECT_SPAWNER: Connected character_clicked signal")
 	
-	if character.character_exited.is_connected(_on_character_exited):
-		character.character_exited.disconnect(_on_character_exited)
-		
-	character.character_exited.connect(_on_character_exited)
+	# We don't need the character_exited signal anymore since characters don't exit
 	
-	# FIX: Add the character as a direct child of this node, not as a sibling
+	# Add the character as a direct child of this node
 	add_child(character)
 	current_characters.append(character)
 	print("DIRECT_SPAWNER: Character added to scene, total characters: " + str(current_characters.size()))
@@ -199,20 +195,62 @@ func spawn_character():
 
 # Set up random character properties
 func setup_character_variants(character):
-	# Generate name based on character type
-	var first_names = ["Alex", "Taylor", "Jordan", "Casey", "Riley", "Morgan", "Avery", "Quinn"]
-	var stanford_last_names = ["Smith", "Johnson", "Williams", "Jones", "Brown"]
-	var berkeley_last_names = ["Garcia", "Rodriguez", "Martinez", "Hernandez", "Lopez"]
+	# List of available L1IDs with gender information
+	var l1_ids = {
+		"AlexKim_ID_1": "M",
+		"JessicaLi_ID_2": "F",
+		"RyanField_ID_3": "M",
+		"MayaPatel_ID_4": "F",
+		"DanielChen_ID_5": "M",
+		"SibanaAdhana_ID_6": "F",
+		"KelvinNguyen_ID_7": "M",
+		"HannahScott_ID_8": "F",
+		"SamGreen_ID_9": "M",
+		"TenzinSherpa_ID_10": "F"  # Corrected: Tenzin is female
+	}
 	
-	var first_name = first_names[randi() % first_names.size()]
-	var last_name
+	# Get the character's sprite gender based on sprite variant
+	var sprite_gender = "M"  # Default to male
+	if character.has_node("AnimatedSprite2D"):
+		var sprite = character.get_node("AnimatedSprite2D")
+		if sprite and sprite.sprite_frames:
+			var sprite_path = sprite.sprite_frames.resource_path
+			# Determine gender based on sprite variant
+			if "cal4" in sprite_path or "stanford3" in sprite_path:
+				sprite_gender = "F"  # Only cal4 and stanford3 are female
+			else:
+				sprite_gender = "M"  # All other sprites are male
 	
-	if character.character_type == 0:  # Stanford
-		last_name = stanford_last_names[randi() % stanford_last_names.size()]
-	else:  # Berkeley
-		last_name = berkeley_last_names[randi() % berkeley_last_names.size()]
+	# Filter L1IDs by gender
+	var matching_l1_ids = []
+	for id in l1_ids:
+		if l1_ids[id] == sprite_gender:
+			matching_l1_ids.append(id)
+	
+	# If no matching IDs found, use any available ID (fallback)
+	if matching_l1_ids.is_empty():
+		matching_l1_ids = l1_ids.keys()
+	
+	# Select a random matching L1ID
+	var l1_id = matching_l1_ids[randi() % matching_l1_ids.size()]
+	
+	# Extract first and last name from L1ID
+	var name_parts = l1_id.split("_")[0]  # Get the part before _ID_
+	var first_name = ""
+	var last_name = ""
+	
+	# Find the position where the second capital letter appears (start of last name)
+	var last_name_start = 1
+	while last_name_start < name_parts.length():
+		if name_parts[last_name_start].to_upper() == name_parts[last_name_start]:
+			break
+		last_name_start += 1
+	
+	first_name = name_parts.substr(0, last_name_start)
+	last_name = name_parts.substr(last_name_start)
 	
 	character.variant_name = first_name + " " + last_name
+	character.l1_id = l1_id  # Store the L1ID for later use
 	
 	# Random gameplay variations
 	character.has_id = randf() < 0.9  # 90% chance to have ID
@@ -224,9 +262,3 @@ func _on_character_clicked(character):
 	
 	# Forward the signal to whoever is listening (should be LocationTemplate)
 	character_clicked.emit(character)
-
-# Handle character exiting the scene
-func _on_character_exited(character):
-	print("DIRECT_SPAWNER: Character exited")
-	if current_characters.has(character):
-		current_characters.erase(character)

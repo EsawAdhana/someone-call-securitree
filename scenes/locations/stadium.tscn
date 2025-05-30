@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://c6d1axufgh4fr"]
+[gd_scene load_steps=3 format=3 uid="uid://dw7dl8hraigj"]
 
-[ext_resource type="PackedScene" uid="uid://exbb84ktpjdm" path="res://scenes/location_template.tscn" id="1_bfyoo"]
+[ext_resource type="PackedScene" uid="uid://yb8duu47d4v0" path="res://scenes/location_template.tscn" id="1_cheif"]
+[ext_resource type="Texture2D" uid="uid://clglovunkpcbs" path="res://assets/backgrounds/Stadium.png" id="2_kdyc3"]
 
-[node name="LocationTemplate" instance=ExtResource("1_bfyoo")]
-location_name = "Stadium"
+[node name="LocationTemplate" instance=ExtResource("1_cheif")]
+location_name = "Stanford Stadium"
+
+[node name="Background" parent="." index="0"]
+texture = ExtResource("2_kdyc3")
+scale = Vector2(0.5, 0.5)

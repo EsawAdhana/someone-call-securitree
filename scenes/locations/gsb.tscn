@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://c2qxjp2yvn8xu"]
+
+[ext_resource type="PackedScene" uid="uid://yb8duu47d4v0" path="res://scenes/location_template.tscn" id="1_cheif"]
+[ext_resource type="Texture2D" uid="uid://b5ms6b0fjf2tx" path="res://assets/backgrounds/GSB.png" id="2_kdyc3"]
+
+[node name="LocationTemplate" instance=ExtResource("1_cheif")]
+location_name = "Graduate School of Business"
+
+[node name="Background" parent="." index="0"]
+texture = ExtResource("2_kdyc3")
+scale = Vector2(0.5, 0.5) 

@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://0oxf0y6h5x7c" path="res://scenes/inspection_panel.tscn" id="3_u8j71"]
 [ext_resource type="Texture2D" uid="uid://b7lp47wee7mad" path="res://assets/closed_scroll.png" id="4_dx7wg"]
 [ext_resource type="Script" uid="uid://bkh4tbmwy4iyp" path="res://scripts/game_manager.gd" id="5_p3b6r"]
-[ext_resource type="PackedScene" path="res://scenes/top_morale_bar.tscn" id="6_jmgyo"]
+[ext_resource type="PackedScene" uid="uid://cuwhd0tobccni" path="res://scenes/top_morale_bar.tscn" id="6_jmgyo"]
 [ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="7_qf3kh"]
 [ext_resource type="Texture2D" uid="uid://b5xvl6b2yk3ox" path="res://assets/Map/MapNewPixelArt.png" id="8_8dnw7"]
 
