@@ -563,10 +563,18 @@ func restore_location_characters():
 
 	var now = Time.get_unix_time_from_system()
 	var characters_data = global_character_manager.get_characters_data(location_name)
+	
+	# Create a dictionary to track restored characters
+	var restored_characters = {}
+	
 	for data in characters_data:
 		print("Restoring character: ", data)
 		var character_scene = load("res://scenes/character.tscn")
 		var character = character_scene.instantiate()
+		
+		# Store the character reference
+		var character_id = character.get_instance_id()
+		restored_characters[character_id] = character
 		
 		# Simulate movement while away
 		var pos = data["position"]
@@ -625,11 +633,17 @@ func restore_location_characters():
 			sprite.flip_h = data.get("sprite_flip_h", false)
 		
 		print("Added character to scene: ", character, " parent: ", character.get_parent())
-		
-		# Resume walking with a small delay to ensure proper initialization
-		if character.has_method("resume_walking") and character.is_walking:
-			await get_tree().create_timer(0.1).timeout
-			character.resume_walking()
+	
+	# Add a delay before resuming walking for all characters
+	await get_tree().create_timer(0.5).timeout
+	
+	# Now resume walking for all valid characters
+	for character_id in restored_characters:
+		var character = restored_characters[character_id]
+		if is_instance_valid(character) and character.has_method("resume_walking") and character.is_walking:
+			# Double check that the character is still valid and in the scene tree
+			if is_instance_valid(character) and character.is_inside_tree():
+				character.resume_walking()
 	
 	for c in get_children():
 		print("Child of location after restore: ", c)
