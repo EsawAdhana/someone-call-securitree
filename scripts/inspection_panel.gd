@@ -2,32 +2,20 @@ extends Control
 
 signal character_approved(character)
 signal character_rejected(character)
-signal exit_pressed(character)
+signal exit_pressed
 signal remove_npc_pressed
-signal camera_reset_requested
 
 var current_character = null
 var has_spoken_to = {}  # Dictionary to track characters we've spoken to
+var current_file_index = 0
+var character_files = ["ID Card", "Criminal Record", "Academic History"]
 
 # UI components
 @onready var exit_button = $PanelContainer/MarginContainer/VBoxContainer/HeaderContainer/ExitButton
+@onready var dialog_label = $PanelContainer/MarginContainer/VBoxContainer/MainContent/MiddleSection/DialogueSection/DialogPanel/MarginContainer/DialogLabel
+@onready var character_icon = $PanelContainer/MarginContainer/VBoxContainer/MainContent/LeftSection/NPCIcon/CharacterIcon
 @onready var approve_button = $PanelContainer/MarginContainer/VBoxContainer/ButtonsSection/ApproveButton
 @onready var reject_button = $PanelContainer/MarginContainer/VBoxContainer/ButtonsSection/RejectButton
-@onready var back_button = $PanelContainer/MarginContainer/VBoxContainer/HeaderContainer/BackButton
-
-# Action buttons
-@onready var interrogate_button = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ActionButtons/InterrogateButton
-@onready var inventory_button = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ActionButtons/InventoryButton
-@onready var transcript_button = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ActionButtons/TranscriptButton
-
-# Content panels
-@onready var id_card = $PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard
-@onready var action_buttons = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ActionButtons
-@onready var dialogue_panel = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels/DialoguePanel
-@onready var inventory_panel = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels/InventoryPanel
-@onready var transcript_panel = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels/TranscriptPanel
-@onready var transcript_image = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels/TranscriptPanel/TranscriptImage
-@onready var dialogue_label = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels/DialoguePanel/Label
 
 # A list of possible dialogues
 var stanford_dialogues = [
@@ -51,9 +39,12 @@ func _ready():
 	visible = false
 	
 	# Disconnect existing connections if any
+	if approve_button.pressed.is_connected(_on_approve_button_pressed):
+		approve_button.pressed.disconnect(_on_approve_button_pressed)
+		
 	if reject_button.pressed.is_connected(_on_reject_button_pressed):
 		reject_button.pressed.disconnect(_on_reject_button_pressed)
-	
+		
 	if exit_button.pressed.is_connected(_on_exit_button_pressed):
 		exit_button.pressed.disconnect(_on_exit_button_pressed)
 	
@@ -67,60 +58,8 @@ func _ready():
 		_on_reject_button_pressed()
 	)
 	exit_button.pressed.connect(_on_exit_button_pressed)
-	back_button.pressed.connect(_on_back_button_pressed)
-	
-	# Connect action button signals
-	interrogate_button.pressed.connect(func(): _switch_panel("dialogue"))
-	inventory_button.pressed.connect(func(): _switch_panel("inventory"))
-	transcript_button.pressed.connect(func(): _switch_panel("transcript"))
-	
-	# Hide all panels initially
-	_hide_all_panels()
 	
 	print("Inspection Panel: All button signals connected in _ready")
-
-func _hide_all_panels():
-	dialogue_panel.visible = false
-	inventory_panel.visible = false
-	transcript_panel.visible = false
-
-func _show_main_view():
-	back_button.visible = false
-	id_card.visible = true
-	action_buttons.visible = true
-	_hide_all_panels()
-
-func _show_content_view():
-	back_button.visible = true
-	id_card.visible = false
-	action_buttons.visible = false
-
-func _on_back_button_pressed():
-	_show_main_view()
-
-func _switch_panel(panel_name: String):
-	_show_content_view()
-	_hide_all_panels()
-	
-	match panel_name:
-		"dialogue":
-			dialogue_panel.visible = true
-			if current_character:
-				var character_type_name = "Stanford" if current_character.character_type == 0 else "Berkeley"
-				if character_type_name == "Stanford":
-					dialogue_label.text = "\"" + stanford_dialogues[randi() % stanford_dialogues.size()] + "\""
-				else:
-					dialogue_label.text = "\"" + berkeley_dialogues[randi() % berkeley_dialogues.size()] + "\""
-		"inventory":
-			inventory_panel.visible = true
-		"transcript":
-			transcript_panel.visible = true
-			if current_character:
-				# Load the transcript image based on the character's name
-				var transcript_path = "res://assets/L1_transcripts/" + current_character.variant_name.replace(" ", "") + "_Transcript_" + str(get_transcript_number(current_character.variant_name)) + ".png"
-				var transcript_texture = load(transcript_path)
-				if transcript_texture:
-					transcript_image.texture = transcript_texture
 
 func show_character_info(character):
 	if character == null:
@@ -128,55 +67,59 @@ func show_character_info(character):
 		
 	current_character = character
 	
-	# Pause the character's movement
+	# Pause the character's movement - this should already be paused in character's click handler
+	# But we'll set it again to be sure
 	character.is_walking = false
-	character.input_pickable = false
 	
-	# Get the character's sprite frame and set it as the portrait
-	if character.has_node("AnimatedSprite2D"):
-		var sprite = character.get_node("AnimatedSprite2D")
-		if sprite and sprite.sprite_frames:
-			var frame_texture = sprite.sprite_frames.get_frame_texture("walk", 0)
-			$PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard/VBoxContainer/IDPlaceholder.texture = frame_texture
+	# Display character type info for debugging purposes
+	var character_type_name = "Stanford" if character.character_type == 0 else "Berkeley"
+	print("Inspection Panel: Showing character info for %s - Type: %s" % [character.variant_name, character_type_name])
 	
-	# Load the L1ID image if available
-	if character.l1_id != "":
-		var id_texture = load("res://assets/L1_id/" + character.l1_id + ".PNG")
-		if id_texture:
-			$PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard/VBoxContainer/IDPlaceholder.texture = id_texture
+	# Set dialogue based on character type
+	if character.character_type == 0:  # Stanford
+		dialog_label.text = "\"" + stanford_dialogues[randi() % stanford_dialogues.size()] + "\""
+	else:  # Berkeley
+		dialog_label.text = "\"" + berkeley_dialogues[randi() % berkeley_dialogues.size()] + "\""
+	
+	# Set the character icon
+	if character.character_type == 0:
+		character_icon.modulate = Color(0.8, 0, 0)  # Stanford red
+	else:
+		character_icon.modulate = Color(0, 0, 0.8)  # Berkeley blue
+	
+	# Check if we've spoken to this character before
+	var character_id = character.get_instance_id()
+	has_spoken_to[character_id] = true
 	
 	# Show the panel
 	visible = true
-	_show_main_view()  # Start with main view
 	print("Inspection Panel: Now displaying character info for", character.variant_name)
 
 func hide_panel():
 	visible = false
-	if current_character:
-		# Re-enable input on the character before clearing reference
-		current_character.input_pickable = true
 	current_character = null
 	print("Inspection Panel: Hidden")
 
 func _on_exit_button_pressed():
 	print("Inspection Panel: Exit pressed")
+	exit_pressed.emit()
 	
-	if current_character:
-		print("Inspection Panel: Triggering walk resumption")
-		# First resume walking
-		current_character.resume_walking()
-		# Then emit signals
-		exit_pressed.emit(current_character)
-		camera_reset_requested.emit()  # Request camera reset
-		print("Inspection Panel: Exit signal emitted for character")
+	if current_character and is_instance_valid(current_character):
+		# Add a small delay before resuming walking
+		await get_tree().create_timer(0.1).timeout
+		
+		print("Inspection Panel: Resuming character walking after exit")
+		# Double check the character is still valid after the delay
+		if is_instance_valid(current_character):
+			current_character.resume_walking()
+		current_character = null
 	
-	# Hide panel and clear reference
 	hide_panel()
 
 func _on_approve_button_pressed():
 	print("Inspection Panel: APPROVE button pressed!")
 	
-	if current_character:
+	if current_character and is_instance_valid(current_character):
 		print("Inspection Panel: Character approved:", current_character.variant_name)
 		
 		# Store character reference in case it gets cleared
@@ -188,14 +131,18 @@ func _on_approve_button_pressed():
 		# Add a small delay before resuming walking
 		await get_tree().create_timer(0.1).timeout
 		
-		# Make the character resume walking FIRST
-		print("Inspection Panel: Making character resume walking...")
-		character_ref.resume_walking()
-		print("Inspection Panel: Character resume_walking() called")
+		# Make the character resume walking FIRST - but check if still valid
+		if is_instance_valid(character_ref):
+			print("Inspection Panel: Making character resume walking...")
+			character_ref.resume_walking()
+			print("Inspection Panel: Character resume_walking() called")
+		else:
+			print("Inspection Panel: Character no longer valid, skipping resume_walking")
 		
-		# Emit signal AFTER resuming walking
-		print("Inspection Panel: Emitting character_approved signal")
-		character_approved.emit(character_ref)
+		# Emit signal AFTER resuming walking (only if character is still valid)
+		if is_instance_valid(character_ref):
+			print("Inspection Panel: Emitting character_approved signal")
+			character_approved.emit(character_ref)
 		
 		# Clear the current character reference
 		current_character = null
@@ -203,7 +150,7 @@ func _on_approve_button_pressed():
 func _on_reject_button_pressed():
 	print("Inspection Panel: REJECT button pressed!")
 	
-	if current_character:
+	if current_character and is_instance_valid(current_character):
 		print("Inspection Panel: Character rejected:", current_character.variant_name)
 		
 		# Store character reference in case it gets cleared
@@ -212,14 +159,18 @@ func _on_reject_button_pressed():
 		# Hide the panel before making character disappear
 		hide_panel()
 		
-		# Make the character disappear FIRST
-		print("Inspection Panel: Making character disappear...")
-		character_ref.disappear()
-		print("Inspection Panel: Character disappear() called")
+		# Make the character disappear FIRST - but check if still valid
+		if is_instance_valid(character_ref):
+			print("Inspection Panel: Making character disappear...")
+			character_ref.disappear()
+			print("Inspection Panel: Character disappear() called")
+		else:
+			print("Inspection Panel: Character no longer valid, skipping disappear")
 		
-		# Emit signal AFTER disappear
-		print("Inspection Panel: Emitting character_rejected signal")
-		character_rejected.emit(character_ref)
+		# Emit signal AFTER disappear (only if character is still valid)
+		if is_instance_valid(character_ref):
+			print("Inspection Panel: Emitting character_rejected signal")
+			character_rejected.emit(character_ref)
 		
 		# Clear the current character reference
 		current_character = null
@@ -231,18 +182,3 @@ func get_random_stanford_major():
 func get_random_berkeley_major():
 	var majors = ["EECS", "Business", "Chemistry", "Political Science", "Mathematics", "Media Studies"]
 	return majors[randi() % majors.size()]
-
-# Helper function to get transcript number based on character name
-func get_transcript_number(character_name: String) -> int:
-	match character_name:
-		"Alex Kim": return 1
-		"Jessica Li": return 2
-		"Ryan Field": return 3
-		"Maya Patel": return 4
-		"Daniel Chen": return 5
-		"Sibana Adhana": return 6
-		"Kelvin Nguyen": return 7
-		"Hannah Scott": return 8
-		"Sam Green": return 9
-		"Tenzin Sherpa": return 10
-		_: return 1  # Default to first transcript if name not found
