@@ -61,7 +61,7 @@ theme_override_constants/margin_bottom = 10
 [node name="LocationNameLabel" type="Label" parent="MarginContainer/HBoxContainer/LocationPanel/MarginContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 36
+theme_override_font_sizes/font_size = 28
 text = "LOCATION NAME"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -77,7 +77,7 @@ layout_mode = 2
 size_flags_vertical = 4
 
 [node name="MinimapButton" type="TextureButton" parent="MarginContainer/HBoxContainer/MinimapContainer"]
-custom_minimum_size = Vector2(130, 130)
+custom_minimum_size = Vector2(228, 228)
 layout_mode = 2
 texture_normal = ExtResource("2_4okyh")
 ignore_texture_size = true

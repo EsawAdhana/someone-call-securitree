@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 [gd_scene load_steps=3 format=3 uid="uid://cuwhd0tobccni"]
 
 [ext_resource type="Script" path="res://scripts/morale_bar.gd" id="1_koxbw"]
+=======
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/top_morale_bar.gd" id="1_s1hde"]
+>>>>>>> e599c2f2331d73e7739fff36976c935d7f3d0d88
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jbvhr"]
 bg_color = Color(0.2, 0.8, 0.2, 1.0)
@@ -39,19 +45,34 @@ theme_override_constants/separation = 5
 
 [node name="Label" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
+<<<<<<< HEAD
 theme_override_font_sizes/font_size = 20
 text = "Campus Morale"
+=======
+theme_override_colors/font_color = Color(0.921569, 0.921569, 0.921569, 1)
+theme_override_font_sizes/font_size = 16
+text = "MORALE"
+>>>>>>> e599c2f2331d73e7739fff36976c935d7f3d0d88
 horizontal_alignment = 1
 vertical_alignment = 1
 
+<<<<<<< HEAD
 [node name="ProgressBar" type="ProgressBar" parent="MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 30)
+=======
+[node name="MoraleProgressBar" type="ProgressBar" parent="PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+>>>>>>> e599c2f2331d73e7739fff36976c935d7f3d0d88
 layout_mode = 2
 theme_override_styles/fill = SubResource("StyleBoxFlat_jbvhr")
 value = 100.0
+<<<<<<< HEAD
 
 [node name="PercentLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "100%"
 horizontal_alignment = 1 
+=======
+show_percentage = false 
+>>>>>>> e599c2f2331d73e7739fff36976c935d7f3d0d88
