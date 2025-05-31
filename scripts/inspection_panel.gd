@@ -228,19 +228,31 @@ func _show_content_view():
 	action_buttons.visible = false
 
 func _on_back_button_pressed():
-	_show_main_view()
+	AudioManager.play_ui_click()  # Play UI click when going back
+	_switch_panel("main")
 
 func _switch_panel(panel_name: String):
-	_show_content_view()
-	_hide_all_panels()
+	AudioManager.play_ui_click()  # Play UI click when switching panels
+	current_view = panel_name
 	
+	# Hide all panels first
+	dialogue_panel.visible = false
+	inventory_panel.visible = false
+	transcript_panel.visible = false
+	id_card.visible = false
+	action_buttons.visible = false
+	
+	# Show the selected panel
 	match panel_name:
+		"main":
+			id_card.visible = true
+			action_buttons.visible = true
 		"dialogue":
-			_show_dialogue_view()
+			dialogue_panel.visible = true
 		"inventory":
-			_show_inventory_view()
+			inventory_panel.visible = true
 		"transcript":
-			_show_transcript_view()
+			transcript_panel.visible = true
 
 func create_dialogue_entry(question: String, answer: String) -> VBoxContainer:
 	var entry = VBoxContainer.new()
@@ -509,70 +521,24 @@ func hide_panel():
 	print("Inspection Panel: Hidden")
 
 func _on_exit_button_pressed():
-	print("Inspection Panel: Exit pressed")
-	
-	if current_character:
-		print("Inspection Panel: Triggering walk resumption")
-		# First resume walking
-		current_character.resume_walking()
-		# Then emit signals
-		exit_pressed.emit(current_character)
-		camera_reset_requested.emit()  # Request camera reset
-		print("Inspection Panel: Exit signal emitted for character")
-	
-	# Hide panel and clear reference
-	hide_panel()
+	AudioManager.play_ui_click()  # Play UI click when exiting
+	exit_pressed.emit(current_character)
+	visible = false
 
 func _on_approve_button_pressed():
-	print("Inspection Panel: APPROVE button pressed!")
-	
 	if current_character:
-		print("Inspection Panel: Character approved:", current_character.variant_name)
-		
-		# Store character reference in case it gets cleared
-		var character_ref = current_character
-		
-		# Hide the panel before resuming walking
-		hide_panel()
-		
-		# Add a small delay before resuming walking
-		await get_tree().create_timer(0.1).timeout
-		
-		# Make the character resume walking FIRST
-		print("Inspection Panel: Making character resume walking...")
-		character_ref.resume_walking()
-		print("Inspection Panel: Character resume_walking() called")
-		
-		# Emit signal AFTER resuming walking
-		print("Inspection Panel: Emitting character_approved signal")
-		character_approved.emit(character_ref)
-		
-		# Clear the current character reference
-		current_character = null
+		AudioManager.play_ui_click()  # Play UI click when approving
+		character_approved.emit(current_character)
+		visible = false
 
 func _on_reject_button_pressed():
-	print("Inspection Panel: REJECT button pressed!")
-	
 	if current_character:
-		print("Inspection Panel: Character rejected:", current_character.variant_name)
-		
-		# Store character reference in case it gets cleared
-		var character_ref = current_character
-		
-		# Hide the panel before making character disappear
-		hide_panel()
-		
-		# Make the character disappear FIRST
-		print("Inspection Panel: Making character disappear...")
-		character_ref.disappear()
-		print("Inspection Panel: Character disappear() called")
-		
-		# Emit signal AFTER disappear
-		print("Inspection Panel: Emitting character_rejected signal")
-		character_rejected.emit(character_ref)
-		
-		# Clear the current character reference
-		current_character = null
+		AudioManager.play_ui_click()  # Play UI click when rejecting
+		# Play pop sound after a short delay to match the disappear animation
+		await get_tree().create_timer(0.3).timeout
+		AudioManager.play_pop()
+		character_rejected.emit(current_character)
+		visible = false
 
 func get_random_stanford_major():
 	var majors = ["Computer Science", "Engineering", "Physics", "Economics", "Biology", "Psychology"]

@@ -36,6 +36,9 @@ var location_display_names = {
 var tooltip_label: Label
 
 func _ready():
+	# Start playing background music
+	AudioManager.play_background_music()
+	
 	# Create tooltip label
 	tooltip_label = Label.new()
 	tooltip_label.add_theme_font_size_override("font_size", 24)
@@ -106,4 +109,5 @@ func _on_area_input_event(viewport, event, shape_idx, area):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		var scene_path = location_scenes.get(area.name)
 		if scene_path:
+			AudioManager.play_npc_click()  # Play swish sound when changing locations
 			get_tree().change_scene_to_file(scene_path)

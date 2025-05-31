@@ -22,6 +22,7 @@ GameManager="*res://scripts/game_manager.gd"
 GlobalCharacterManager="*res://scripts/global_character_manager.gd"
 MoraleManager="*res://scripts/morale_manager.gd"
 GlobalUI="*res://scenes/global_ui.tscn"
+AudioManager="*res://scripts/audio_manager.gd"
 
 [display]
 

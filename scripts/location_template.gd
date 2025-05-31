@@ -232,24 +232,28 @@ func _on_scroll_button_pressed():
 	$CanvasLayer/Control/BookInterface.visible = true
 	current_page = 0
 	update_book_content()
+	AudioManager.play_ui_click()  # Play UI click when opening book
 	print("LOCATION: Book interface opened")
 
 func _on_book_close_button_pressed():
 	# Hide the book interface
 	book_open = false
 	$CanvasLayer/Control/BookInterface.visible = false
+	AudioManager.play_ui_click()  # Play UI click when closing book
 	print("LOCATION: Book interface closed")
 
 func _on_book_next_button_pressed():
 	if current_page < total_pages - 1:
 		current_page += 1
 		update_book_content()
+		AudioManager.play_npc_click()  # Play funny swish sound when changing pages
 		print("LOCATION: Book page turned to next page")
 
 func _on_book_prev_button_pressed():
 	if current_page > 0:
 		current_page -= 1
 		update_book_content()
+		AudioManager.play_npc_click()  # Play funny swish sound when changing pages
 		print("LOCATION: Book page turned to previous page")
 
 func update_book_content():
@@ -472,6 +476,7 @@ func setup_minimap_button():
 # Handle minimap button pressed
 func _on_minimap_button_pressed():
 	print("LOCATION: Minimap button pressed, going to main map")
+	AudioManager.play_ui_click()  # Play UI click when going to minimap
 	save_characters_to_global_manager()
 	get_tree().change_scene_to_file("res://scenes/main_map.tscn")
 

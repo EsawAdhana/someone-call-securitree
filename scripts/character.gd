@@ -172,6 +172,9 @@ func _on_input_event(viewport, event, shape_idx):
 # Centralized click handling
 func _handle_click():
 	print("CHARACTER DEBUG: Handling click on character: " + variant_name)
+	# Play UI click sound
+	AudioManager.play_ui_click()
+	
 	# Stop character and emit signal
 	is_walking = false
 	if animated_sprite:
