@@ -7,6 +7,5 @@
 location_name = "Hoover Tower"
 
 [node name="Background" parent="." index="0"]
-texture = ExtResource("2_kdyc3")
 scale = Vector2(0.5, 0.5)
-centered = true
+texture = ExtResource("2_kdyc3")

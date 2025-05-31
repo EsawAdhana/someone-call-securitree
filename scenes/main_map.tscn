@@ -49,7 +49,7 @@ script = ExtResource("1_1xo34")
 texture = ExtResource("2_kdyc3")
 
 [node name="Camera2D" type="Camera2D" parent="MapBackground"]
-zoom = Vector2(0.45, 0.45)
+zoom = Vector2(0.25, 0.25)
 
 [node name="StadiumArea" type="Area2D" parent="."]
 

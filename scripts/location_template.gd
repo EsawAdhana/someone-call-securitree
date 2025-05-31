@@ -7,15 +7,15 @@ extends Node2D
 # Book variables
 var book_open = false
 var current_page = 0
-var total_pages = 3  # Total number of placeholder pages
+var total_pages = 3 # Total number of placeholder pages
 
 # Variable to keep track of the inspection panel instance
 var inspection_panel = null
 var direct_spawner = null
 var game_camera = null
-var current_selected_character = null  # Track the currently selected character
-var game_manager = null  # Reference to the game manager
-var global_character_manager = null  # Reference to the global character manager
+var current_selected_character = null # Track the currently selected character
+var game_manager = null # Reference to the game manager
+var global_character_manager = null # Reference to the global character manager
 
 # References to scroll textures
 var closed_scroll_texture
@@ -227,30 +227,32 @@ func setup_scroll_button_and_book():
 		print("LOCATION: Book interface hidden initially")
 
 func _on_scroll_button_pressed():
-	# Show the book interface
-	book_open = true
-	$CanvasLayer/Control/BookInterface.visible = true
-	current_page = 0
-	update_book_content()
-	print("LOCATION: Book interface opened")
+	print("LOCATION: Scroll button pressed")
+	if not book_open:
+		AudioManager.play_pop()
+		show_book()
+	else:
+		hide_book()
 
 func _on_book_close_button_pressed():
+	# Play click sound
+	AudioManager.play_ui_click()
 	# Hide the book interface
 	book_open = false
 	$CanvasLayer/Control/BookInterface.visible = false
 	print("LOCATION: Book interface closed")
 
 func _on_book_next_button_pressed():
+	AudioManager.play_ui_click()
 	if current_page < total_pages - 1:
 		current_page += 1
 		update_book_content()
-		print("LOCATION: Book page turned to next page")
 
 func _on_book_prev_button_pressed():
+	AudioManager.play_ui_click()
 	if current_page > 0:
 		current_page -= 1
 		update_book_content()
-		print("LOCATION: Book page turned to previous page")
 
 func update_book_content():
 	var content = $CanvasLayer/Control/BookInterface/Content
@@ -334,7 +336,7 @@ func center_camera_on_character(character):
 	var viewport_size = get_viewport_rect().size
 	
 	# Calculate the zoom factor and its effect on the viewable area
-	var zoom_factor = 1.5  # Our target zoom
+	var zoom_factor = 1.5 # Our target zoom
 	var scaled_viewport = viewport_size / zoom_factor
 	
 	# Calculate the maximum allowed camera position to keep everything in view
@@ -361,24 +363,22 @@ func center_camera_on_character(character):
 
 # Handle when a character is clicked
 func _on_character_clicked(character):
-	# If there was a previously selected character, resume its movement
-	if current_selected_character and current_selected_character != character:
-		current_selected_character.resume_walking()
+	print("LOCATION: Character clicked:", character.variant_name)
+	# Play click sound
+	AudioManager.play_npc_click()
 	
-	# Update the current selected character
+	# Pause the character's movement
+	character.is_walking = false
+	
+	# Store the current selected character
 	current_selected_character = character
 	
-	# When a character is clicked, center the camera on them
+	# Center camera on character
 	center_camera_on_character(character)
 	
-	# Show the inspection panel
-	print("LOCATION: Character clicked! Name: " + character.variant_name)
-	
+	# Show inspection panel
 	if inspection_panel:
-		print("LOCATION: Showing inspection panel")
 		inspection_panel.show_character_info(character)
-	else:
-		push_error("LOCATION: Inspection panel is null, cannot show character info")
 
 # Handle character approved
 func _on_character_approved(character):
@@ -463,8 +463,8 @@ func _input(event):
 			var mouse_pos = get_global_mouse_position()
 			# Check if we clicked on the current character
 			var character_rect = Rect2(
-				current_selected_character.global_position - Vector2(42.5, 70),  # Half of collision shape size
-				Vector2(85, 140)  # Full collision shape size
+				current_selected_character.global_position - Vector2(42.5, 70), # Half of collision shape size
+				Vector2(85, 140) # Full collision shape size
 			)
 			clicked_on_character = character_rect.has_point(mouse_pos)
 		
@@ -486,6 +486,7 @@ func _input(event):
 	# Check for ESC key to return to map
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		print("LOCATION: ESC key pressed, returning to map")
+		AudioManager.play_pop()
 		save_characters_to_global_manager()
 		get_tree().change_scene_to_file("res://scenes/main_map.tscn")
 
@@ -540,6 +541,7 @@ func setup_minimap_button():
 # Handle minimap button pressed
 func _on_minimap_button_pressed():
 	print("LOCATION: Minimap button pressed, going to main map")
+	AudioManager.play_pop()
 	save_characters_to_global_manager()
 	get_tree().change_scene_to_file("res://scenes/main_map.tscn")
 
@@ -658,11 +660,11 @@ func save_characters_to_global_manager():
 			var next_pos = character.global_position
 			if character.is_walking:
 				# Simulate a small time step to get the next position
-				next_pos += character.walk_direction * character.walking_speed * 0.016  # One frame at 60fps
+				next_pos += character.walk_direction * character.walking_speed * 0.016 # One frame at 60fps
 			
 			var data = {
 				"position": character.global_position,
-				"next_position": next_pos,  # Store next position for smoother transitions
+				"next_position": next_pos, # Store next position for smoother transitions
 				"character_type": character.character_type,
 				"variant_name": character.variant_name,
 				"has_id": character.has_id,
@@ -684,3 +686,17 @@ func save_characters_to_global_manager():
 			}
 			global_character_manager.add_character_data(location_name, data)
 			character.queue_free()
+
+func show_book():
+	# Show the book interface
+	book_open = true
+	$CanvasLayer/Control/BookInterface.visible = true
+	current_page = 0
+	update_book_content()
+	print("LOCATION: Book interface opened")
+
+func hide_book():
+	# Hide the book interface
+	book_open = false
+	$CanvasLayer/Control/BookInterface.visible = false
+	print("LOCATION: Book interface closed")

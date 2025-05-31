@@ -55,7 +55,7 @@ func _ready():
 			var collision_shape = child.get_node("CollisionShape2D")
 			if collision_shape and collision_shape.shape:
 				var highlight = ColorRect.new()
-				highlight.color = Color(1, 1, 0.5, 0.3)  # Soft yellow
+				highlight.color = Color(1, 1, 0.5, 0.3) # Soft yellow
 				highlight.visible = false
 				highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
 				highlight.name = "Highlight"
@@ -64,7 +64,7 @@ func _ready():
 				var shape = collision_shape.shape as RectangleShape2D
 				if shape:
 					highlight.size = shape.size
-					highlight.position = -shape.size / 2  # Center on the collision shape
+					highlight.position = - shape.size / 2 # Center on the collision shape
 					
 					# Apply the same transform as the collision shape
 					highlight.rotation = collision_shape.rotation
@@ -106,4 +106,5 @@ func _on_area_input_event(viewport, event, shape_idx, area):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		var scene_path = location_scenes.get(area.name)
 		if scene_path:
+			AudioManager.play_pop()
 			get_tree().change_scene_to_file(scene_path)

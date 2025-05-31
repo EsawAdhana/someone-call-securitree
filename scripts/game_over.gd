@@ -27,9 +27,13 @@ func show_game_over(days):
 	visible = true
 
 func _on_restart_button_pressed():
+	# Play click sound
+	AudioManager.play_ui_click()
 	# Restart the game
 	get_tree().reload_current_scene()
 
 func _on_quit_button_pressed():
+	# Play click sound
+	AudioManager.play_ui_click()
 	# Quit the game
-	get_tree().quit() 
+	get_tree().quit()

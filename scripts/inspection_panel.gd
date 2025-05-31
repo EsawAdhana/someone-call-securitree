@@ -7,7 +7,7 @@ signal remove_npc_pressed
 signal camera_reset_requested
 
 var current_character = null
-var has_spoken_to = {}  # Dictionary to track characters we've spoken to
+var has_spoken_to = {} # Dictionary to track characters we've spoken to
 
 # UI components
 @onready var exit_button = $PanelContainer/MarginContainer/VBoxContainer/HeaderContainer/ExitButton
@@ -96,9 +96,11 @@ func _show_content_view():
 	action_buttons.visible = false
 
 func _on_back_button_pressed():
+	AudioManager.play_ui_click()
 	_show_main_view()
 
 func _switch_panel(panel_name: String):
+	AudioManager.play_ui_click()
 	_show_content_view()
 	_hide_all_panels()
 	
@@ -147,7 +149,7 @@ func show_character_info(character):
 	
 	# Show the panel
 	visible = true
-	_show_main_view()  # Start with main view
+	_show_main_view() # Start with main view
 	print("Inspection Panel: Now displaying character info for", character.variant_name)
 
 func hide_panel():
@@ -160,6 +162,7 @@ func hide_panel():
 
 func _on_exit_button_pressed():
 	print("Inspection Panel: Exit pressed")
+	AudioManager.play_ui_click()
 	
 	if current_character:
 		print("Inspection Panel: Triggering walk resumption")
@@ -167,7 +170,7 @@ func _on_exit_button_pressed():
 		current_character.resume_walking()
 		# Then emit signals
 		exit_pressed.emit(current_character)
-		camera_reset_requested.emit()  # Request camera reset
+		camera_reset_requested.emit() # Request camera reset
 		print("Inspection Panel: Exit signal emitted for character")
 	
 	# Hide panel and clear reference
@@ -175,6 +178,7 @@ func _on_exit_button_pressed():
 
 func _on_approve_button_pressed():
 	print("Inspection Panel: APPROVE button pressed!")
+	AudioManager.play_ui_click()
 	
 	if current_character:
 		print("Inspection Panel: Character approved:", current_character.variant_name)
@@ -202,6 +206,7 @@ func _on_approve_button_pressed():
 
 func _on_reject_button_pressed():
 	print("Inspection Panel: REJECT button pressed!")
+	AudioManager.play_ui_click()
 	
 	if current_character:
 		print("Inspection Panel: Character rejected:", current_character.variant_name)
@@ -245,4 +250,4 @@ func get_transcript_number(character_name: String) -> int:
 		"Hannah Scott": return 8
 		"Sam Green": return 9
 		"Tenzin Sherpa": return 10
-		_: return 1  # Default to first transcript if name not found
+		_: return 1 # Default to first transcript if name not found
