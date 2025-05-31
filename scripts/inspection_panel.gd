@@ -9,9 +9,13 @@ signal camera_reset_requested
 var current_character = null
 var current_view = "main"  # main, dialogue, inventory, or transcript
 var has_spoken_to = {}  # Dictionary to track characters we've spoken to
+var current_file_index = 0
+var character_files = ["ID Card", "Criminal Record", "Academic History"]
 
 # UI components
 @onready var exit_button = $PanelContainer/MarginContainer/VBoxContainer/HeaderContainer/ExitButton
+@onready var dialog_label = $PanelContainer/MarginContainer/VBoxContainer/MainContent/MiddleSection/DialogueSection/DialogPanel/MarginContainer/DialogLabel
+@onready var character_icon = $PanelContainer/MarginContainer/VBoxContainer/MainContent/LeftSection/NPCIcon/CharacterIcon
 @onready var approve_button = $PanelContainer/MarginContainer/VBoxContainer/ButtonsSection/ApproveButton
 @onready var reject_button = $PanelContainer/MarginContainer/VBoxContainer/ButtonsSection/RejectButton
 @onready var back_button = $PanelContainer/MarginContainer/VBoxContainer/HeaderContainer/BackButton
@@ -177,9 +181,12 @@ func _ready():
 	visible = false
 	
 	# Disconnect existing connections if any
+	if approve_button.pressed.is_connected(_on_approve_button_pressed):
+		approve_button.pressed.disconnect(_on_approve_button_pressed)
+		
 	if reject_button.pressed.is_connected(_on_reject_button_pressed):
 		reject_button.pressed.disconnect(_on_reject_button_pressed)
-	
+		
 	if exit_button.pressed.is_connected(_on_exit_button_pressed):
 		exit_button.pressed.disconnect(_on_exit_button_pressed)
 	
@@ -193,15 +200,6 @@ func _ready():
 		_on_reject_button_pressed()
 	)
 	exit_button.pressed.connect(_on_exit_button_pressed)
-	back_button.pressed.connect(_on_back_button_pressed)
-	
-	# Connect action button signals
-	interrogate_button.pressed.connect(func(): _switch_panel("dialogue"))
-	inventory_button.pressed.connect(func(): _switch_panel("inventory"))
-	transcript_button.pressed.connect(func(): _switch_panel("transcript"))
-	
-	# Hide all panels initially
-	_hide_all_panels()
 	
 	print("Inspection Panel: All button signals connected in _ready")
 
@@ -504,33 +502,30 @@ func show_character_info(character):
 
 func hide_panel():
 	visible = false
-	if current_character:
-		# Re-enable input on the character before clearing reference
-		current_character.input_pickable = true
 	current_character = null
 	print("Inspection Panel: Hidden")
 
 func _on_exit_button_pressed():
 	print("Inspection Panel: Exit pressed")
-	AudioManager.play_ui_click()
+	exit_pressed.emit(current_character)
 	
-	if current_character:
-		print("Inspection Panel: Triggering walk resumption")
-		# First resume walking
-		current_character.resume_walking()
-		# Then emit signals
-		exit_pressed.emit(current_character)
-		camera_reset_requested.emit() # Request camera reset
-		print("Inspection Panel: Exit signal emitted for character")
+	if current_character and is_instance_valid(current_character):
+		# Add a small delay before resuming walking
+		await get_tree().create_timer(0.1).timeout
+		
+		print("Inspection Panel: Resuming character walking after exit")
+		# Double check the character is still valid after the delay
+		if is_instance_valid(current_character):
+			current_character.resume_walking()
+		current_character = null
 	
-	# Hide panel and clear reference
 	hide_panel()
 
 func _on_approve_button_pressed():
 	print("Inspection Panel: APPROVE button pressed!")
 	AudioManager.play_ui_click()
 	
-	if current_character:
+	if current_character and is_instance_valid(current_character):
 		print("Inspection Panel: Character approved:", current_character.variant_name)
 		
 		# Store character reference in case it gets cleared
@@ -542,14 +537,18 @@ func _on_approve_button_pressed():
 		# Add a small delay before resuming walking
 		await get_tree().create_timer(0.1).timeout
 		
-		# Make the character resume walking FIRST
-		print("Inspection Panel: Making character resume walking...")
-		character_ref.resume_walking()
-		print("Inspection Panel: Character resume_walking() called")
+		# Make the character resume walking FIRST - but check if still valid
+		if is_instance_valid(character_ref):
+			print("Inspection Panel: Making character resume walking...")
+			character_ref.resume_walking()
+			print("Inspection Panel: Character resume_walking() called")
+		else:
+			print("Inspection Panel: Character no longer valid, skipping resume_walking")
 		
-		# Emit signal AFTER resuming walking
-		print("Inspection Panel: Emitting character_approved signal")
-		character_approved.emit(character_ref)
+		# Emit signal AFTER resuming walking (only if character is still valid)
+		if is_instance_valid(character_ref):
+			print("Inspection Panel: Emitting character_approved signal")
+			character_approved.emit(character_ref)
 		
 		# Clear the current character reference
 		current_character = null
@@ -558,7 +557,7 @@ func _on_reject_button_pressed():
 	print("Inspection Panel: REJECT button pressed!")
 	AudioManager.play_ui_click()
 	
-	if current_character:
+	if current_character and is_instance_valid(current_character):
 		print("Inspection Panel: Character rejected:", current_character.variant_name)
 		
 		# Store character reference in case it gets cleared
@@ -567,14 +566,18 @@ func _on_reject_button_pressed():
 		# Hide the panel before making character disappear
 		hide_panel()
 		
-		# Make the character disappear FIRST
-		print("Inspection Panel: Making character disappear...")
-		character_ref.disappear()
-		print("Inspection Panel: Character disappear() called")
+		# Make the character disappear FIRST - but check if still valid
+		if is_instance_valid(character_ref):
+			print("Inspection Panel: Making character disappear...")
+			character_ref.disappear()
+			print("Inspection Panel: Character disappear() called")
+		else:
+			print("Inspection Panel: Character no longer valid, skipping disappear")
 		
-		# Emit signal AFTER disappear
-		print("Inspection Panel: Emitting character_rejected signal")
-		character_rejected.emit(character_ref)
+		# Emit signal AFTER disappear (only if character is still valid)
+		if is_instance_valid(character_ref):
+			print("Inspection Panel: Emitting character_rejected signal")
+			character_rejected.emit(character_ref)
 		
 		# Clear the current character reference
 		current_character = null
