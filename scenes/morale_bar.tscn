@@ -3,22 +3,22 @@
 [ext_resource type="Script" path="res://scripts/morale_bar.gd" id="1_koxbw"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jbvhr"]
-bg_color = Color(0.2, 0.8, 0.2, 1.0)
+bg_color = Color(0.129412, 0.129412, 0.129412, 0.901961)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
 border_width_bottom = 4
-border_color = Color(0.1, 0.1, 0.1, 0.5)
+border_color = Color(0.698039, 0.121569, 0.121569, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[node name="TopMoraleBar" type="Control"]
+[node name="MoraleBar" type="Control"]
 layout_mode = 3
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 80.0
+offset_bottom = 40.0
 grow_horizontal = 2
 script = ExtResource("1_koxbw")
 
@@ -26,32 +26,13 @@ script = ExtResource("1_koxbw")
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 80.0
+offset_bottom = 40.0
 grow_horizontal = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 10
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
-layout_mode = 2
-theme_override_constants/separation = 5
-
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Campus Morale"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ProgressBar" type="ProgressBar" parent="MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 30)
+[node name="ProgressBar" type="ProgressBar" parent="MarginContainer"]
 layout_mode = 2
 theme_override_styles/fill = SubResource("StyleBoxFlat_jbvhr")
-value = 100.0
-
-[node name="PercentLabel" type="Label" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "100%"
-horizontal_alignment = 1 
+value = 100.0 

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/top_morale_bar.tscn" id="1"]
+
+[node name="GlobalUI" type="CanvasLayer"]
+layer = 100
+
+[node name="TopMoraleBar" parent="." instance=ExtResource("1")] 

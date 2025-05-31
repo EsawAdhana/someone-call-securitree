@@ -7,6 +7,7 @@ signal remove_npc_pressed
 signal camera_reset_requested
 
 var current_character = null
+var current_view = "main"  # main, dialogue, inventory, or transcript
 var has_spoken_to = {}  # Dictionary to track characters we've spoken to
 
 # UI components
@@ -21,13 +22,11 @@ var has_spoken_to = {}  # Dictionary to track characters we've spoken to
 @onready var transcript_button = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ActionButtons/TranscriptButton
 
 # Content panels
-@onready var id_card = $PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard
-@onready var action_buttons = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ActionButtons
 @onready var dialogue_panel = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels/DialoguePanel
 @onready var inventory_panel = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels/InventoryPanel
 @onready var transcript_panel = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels/TranscriptPanel
-@onready var transcript_image = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels/TranscriptPanel/TranscriptImage
-@onready var dialogue_label = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels/DialoguePanel/Label
+@onready var id_card = $PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard
+@onready var action_buttons = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ActionButtons
 
 # A list of possible dialogues
 var stanford_dialogues = [
@@ -47,6 +46,133 @@ var berkeley_dialogues = [
 ]
 
 func _ready():
+	# Create the content panels if they don't exist
+	if not has_node("PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels"):
+		var content_panels = Control.new()
+		content_panels.name = "ContentPanels"
+		content_panels.size_flags_horizontal = Control.SIZE_FILL
+		content_panels.size_flags_vertical = Control.SIZE_FILL
+		$PanelContainer/MarginContainer/VBoxContainer/MainContent.add_child(content_panels)
+		
+		# Create DialoguePanel with centering container
+		var dialogue_container = CenterContainer.new()
+		dialogue_container.name = "DialogueContainer"
+		dialogue_container.size_flags_horizontal = Control.SIZE_FILL
+		dialogue_container.size_flags_vertical = Control.SIZE_FILL
+		content_panels.add_child(dialogue_container)
+		
+		var dialogue = PanelContainer.new()
+		dialogue.name = "DialoguePanel"
+		dialogue.visible = false
+		dialogue.custom_minimum_size = Vector2(700, 400)
+		dialogue_container.add_child(dialogue)
+		
+		# Add dialogue content
+		var dialogue_margin = MarginContainer.new()
+		dialogue_margin.add_theme_constant_override("margin_left", 20)
+		dialogue_margin.add_theme_constant_override("margin_right", 20)
+		dialogue_margin.add_theme_constant_override("margin_top", 20)
+		dialogue_margin.add_theme_constant_override("margin_bottom", 20)
+		dialogue.add_child(dialogue_margin)
+		
+		var dialogue_scroll = ScrollContainer.new()
+		dialogue_scroll.custom_minimum_size = Vector2(660, 360)
+		dialogue_margin.add_child(dialogue_scroll)
+		
+		var dialogue_vbox = VBoxContainer.new()
+		dialogue_vbox.add_theme_constant_override("separation", 20)  # Space between Q&A pairs
+		dialogue_scroll.add_child(dialogue_vbox)
+		
+		# Store the VBoxContainer reference for adding dialogue entries
+		dialogue_vbox.name = "DialogueVBox"
+		
+		# Create InventoryPanel with centering container
+		var inventory_container = CenterContainer.new()
+		inventory_container.name = "InventoryContainer"
+		inventory_container.size_flags_horizontal = Control.SIZE_FILL
+		inventory_container.size_flags_vertical = Control.SIZE_FILL
+		content_panels.add_child(inventory_container)
+		
+		var inventory = PanelContainer.new()
+		inventory.name = "InventoryPanel"
+		inventory.visible = false
+		inventory.custom_minimum_size = Vector2(700, 400)
+		inventory_container.add_child(inventory)
+		
+		# Add inventory margin container
+		var inventory_margin = MarginContainer.new()
+		inventory_margin.add_theme_constant_override("margin_left", 20)
+		inventory_margin.add_theme_constant_override("margin_right", 20)
+		inventory_margin.add_theme_constant_override("margin_top", 20)
+		inventory_margin.add_theme_constant_override("margin_bottom", 20)
+		inventory.add_child(inventory_margin)
+		
+		# Add inventory grid
+		var inventory_grid = GridContainer.new()
+		inventory_grid.name = "InventoryGrid"
+		inventory_grid.columns = 9  # Minecraft-style inventory width
+		inventory_grid.add_theme_constant_override("h_separation", 4)  # Add some spacing between slots
+		inventory_grid.add_theme_constant_override("v_separation", 4)
+		inventory_margin.add_child(inventory_grid)
+		
+		# Create inventory slots
+		for i in range(27):  # 3 rows of 9 slots
+			var slot = PanelContainer.new()
+			slot.custom_minimum_size = Vector2(64, 64)
+			
+			# Add a dark stylebox to make it look like a slot
+			var style = StyleBoxFlat.new()
+			style.bg_color = Color(0.1, 0.1, 0.1, 1)
+			style.border_width_left = 2
+			style.border_width_top = 2
+			style.border_width_right = 2
+			style.border_width_bottom = 2
+			style.border_color = Color(0.3, 0.3, 0.3, 1)
+			slot.add_theme_stylebox_override("panel", style)
+			
+			inventory_grid.add_child(slot)
+		
+		# Create TranscriptPanel with centering container
+		var transcript_container = CenterContainer.new()
+		transcript_container.name = "TranscriptContainer"
+		transcript_container.size_flags_horizontal = Control.SIZE_FILL
+		transcript_container.size_flags_vertical = Control.SIZE_FILL
+		content_panels.add_child(transcript_container)
+		
+		var transcript = PanelContainer.new()
+		transcript.name = "TranscriptPanel"
+		transcript.visible = false
+		transcript.custom_minimum_size = Vector2(700, 400)
+		transcript_container.add_child(transcript)
+		
+		# Add transcript margin container
+		var transcript_margin = MarginContainer.new()
+		transcript_margin.add_theme_constant_override("margin_left", 20)
+		transcript_margin.add_theme_constant_override("margin_right", 20)
+		transcript_margin.add_theme_constant_override("margin_top", 20)
+		transcript_margin.add_theme_constant_override("margin_bottom", 20)
+		transcript.add_child(transcript_margin)
+		
+		# Add transcript content
+		var transcript_vbox = VBoxContainer.new()
+		transcript_margin.add_child(transcript_vbox)
+		
+		var transcript_image = TextureRect.new()
+		transcript_image.name = "TranscriptImage"
+		transcript_image.expand_mode = TextureRect.EXPAND_FIT_WIDTH
+		transcript_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		transcript_image.custom_minimum_size = Vector2(660, 360)  # Adjusted for margins
+		transcript_vbox.add_child(transcript_image)
+		
+		# Update the references
+		dialogue_panel = dialogue
+		inventory_panel = inventory
+		transcript_panel = transcript
+		
+		# Print the node tree for debugging
+		print("DEBUG: Node tree after setup:")
+		print_node_tree(content_panels)
+	
 	# Hide the panel initially
 	visible = false
 	
@@ -80,11 +206,17 @@ func _ready():
 	print("Inspection Panel: All button signals connected in _ready")
 
 func _hide_all_panels():
-	dialogue_panel.visible = false
-	inventory_panel.visible = false
-	transcript_panel.visible = false
+	if dialogue_panel:
+		dialogue_panel.visible = false
+	
+	if inventory_panel:
+		inventory_panel.visible = false
+	
+	if transcript_panel:
+		transcript_panel.visible = false
 
 func _show_main_view():
+	current_view = "main"
 	back_button.visible = false
 	id_card.visible = true
 	action_buttons.visible = true
@@ -104,51 +236,269 @@ func _switch_panel(panel_name: String):
 	
 	match panel_name:
 		"dialogue":
-			dialogue_panel.visible = true
-			if current_character:
-				var character_type_name = "Stanford" if current_character.character_type == 0 else "Berkeley"
-				if character_type_name == "Stanford":
-					dialogue_label.text = "\"" + stanford_dialogues[randi() % stanford_dialogues.size()] + "\""
-				else:
-					dialogue_label.text = "\"" + berkeley_dialogues[randi() % berkeley_dialogues.size()] + "\""
+			_show_dialogue_view()
 		"inventory":
-			inventory_panel.visible = true
+			_show_inventory_view()
 		"transcript":
-			transcript_panel.visible = true
-			if current_character:
-				# Load the transcript image based on the character's name
-				var transcript_path = "res://assets/L1_transcripts/" + current_character.variant_name.replace(" ", "") + "_Transcript_" + str(get_transcript_number(current_character.variant_name)) + ".png"
+			_show_transcript_view()
+
+func create_dialogue_entry(question: String, answer: String) -> VBoxContainer:
+	var entry = VBoxContainer.new()
+	entry.add_theme_constant_override("separation", 10)  # Reduced space between Q&A pairs
+	
+	# Question container with left alignment
+	var question_margin = MarginContainer.new()
+	question_margin.add_theme_constant_override("margin_left", 20)
+	question_margin.add_theme_constant_override("margin_right", 200)  # Space on right for alignment
+	
+	var question_container = PanelContainer.new()
+	var question_style = StyleBoxFlat.new()
+	question_style.bg_color = Color(0.2, 0.2, 0.2, 0.9)
+	question_style.corner_radius_top_left = 15
+	question_style.corner_radius_top_right = 15
+	question_style.corner_radius_bottom_right = 15
+	question_style.corner_radius_bottom_left = 0  # Sharp corner for chat bubble effect
+	question_container.add_theme_stylebox_override("panel", question_style)
+	
+	var question_padding = MarginContainer.new()
+	question_padding.add_theme_constant_override("margin_left", 15)
+	question_padding.add_theme_constant_override("margin_right", 15)
+	question_padding.add_theme_constant_override("margin_top", 10)
+	question_padding.add_theme_constant_override("margin_bottom", 10)
+	
+	var question_label = Label.new()
+	question_label.text = question
+	question_label.custom_minimum_size = Vector2(200, 0)  # Minimum width for question
+	question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	question_label.add_theme_font_size_override("font_size", 16)
+	
+	question_padding.add_child(question_label)
+	question_container.add_child(question_padding)
+	question_margin.add_child(question_container)
+	entry.add_child(question_margin)
+	
+	# Add minimal space between question and answer
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 5)  # Reduced spacing
+	entry.add_child(spacer)
+	
+	# Answer container with right alignment
+	var answer_margin = MarginContainer.new()
+	answer_margin.add_theme_constant_override("margin_left", 200)  # Space on left for alignment
+	answer_margin.add_theme_constant_override("margin_right", 20)
+	
+	var answer_container = PanelContainer.new()
+	var answer_style = StyleBoxFlat.new()
+	answer_style.bg_color = Color(0.3, 0.3, 0.3, 0.9)
+	answer_style.corner_radius_top_left = 15
+	answer_style.corner_radius_top_right = 15
+	answer_style.corner_radius_bottom_left = 15
+	answer_style.corner_radius_bottom_right = 0  # Sharp corner for chat bubble effect
+	answer_container.add_theme_stylebox_override("panel", answer_style)
+	
+	var answer_padding = MarginContainer.new()
+	answer_padding.add_theme_constant_override("margin_left", 15)
+	answer_padding.add_theme_constant_override("margin_right", 15)
+	answer_padding.add_theme_constant_override("margin_top", 10)
+	answer_padding.add_theme_constant_override("margin_bottom", 10)
+	
+	var answer_label = Label.new()
+	answer_label.text = answer
+	answer_label.custom_minimum_size = Vector2(200, 0)  # Minimum width for answer
+	answer_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	answer_label.add_theme_font_size_override("font_size", 16)
+	
+	answer_padding.add_child(answer_label)
+	answer_container.add_child(answer_padding)
+	answer_margin.add_child(answer_container)
+	entry.add_child(answer_margin)
+	
+	return entry
+
+func _show_dialogue_view():
+	if not current_character:
+		return
+		
+	current_view = "dialogue"
+	back_button.visible = true
+	id_card.visible = false
+	action_buttons.visible = false
+	
+	var char_data = current_character.get_meta("character_data")
+	if char_data:
+		# Find the dialogue VBox
+		var dialogue_vbox = dialogue_panel.find_child("DialogueVBox", true, false)
+		if dialogue_vbox:
+			# Clear existing dialogue
+			for child in dialogue_vbox.get_children():
+				child.queue_free()
+			
+			# Create questions based on character
+			var questions = []
+			
+			# Handle specific Berkeley students with revealing dialogue
+			match char_data["name"]:
+				"Hannah Scott":  # Berkeley student pretending
+					questions = [
+						["Which dorm do you live in?", "Uh... Meier Hall? *nervously*"],
+						["What's your favorite study spot?", "The... uh... Main Quad Library?"],
+						["How often do you eat at Stern?", "Oh, I love Stern! Great... pizza."]  # Stern doesn't serve pizza
+					]
+				"Sam Green":  # Berkeley student pretending
+					questions = [
+						["What clubs are you involved in?", "The Stanford Entrepreneurship Club! We meet in... uh... Building 9."],
+						["Which dining hall do you prefer?", "Definitely Manz dining!"],  # Incorrect name for Manz Hall
+						["Where's your next class?", "Over in the Engineering Center."]  # Using generic name
+					]
+				"Tenzin Sherpa":  # Berkeley student pretending
+					questions = [
+						["Can you direct me to Hoover Tower?", "Oh yeah, it's right next to the student union!"],  # Wrong location
+						["What's your favorite campus tradition?", "I love when we all run through the fountain before finals!"],  # Mixed up traditions
+						["Which year are you?", "Junior, started here right after COVID."]  # Timeline might not match
+					]
+				"Kelvin Nguyen":  # Actual Stanford student
+					questions = [
+						["Which dorm do you live in?", char_data["dorm"]],
+						["What clubs are you involved in?", "I'm the SVSA President and also involved in the Stanford Sustainable Investing Group."],
+						["What's your major?", "Computational Biology - just finished BIOE 214 last quarter."]
+					]
+				_:  # Default Stanford student questions
+					var clubs_response = ", ".join(char_data["clubs"]) if char_data.get("clubs", []).size() > 0 else "Just focusing on classes this quarter."
+					questions = [
+						["Which dorm do you live in?", char_data["dorm"]],
+						["What's your major?", char_data["major"]],
+						["What clubs are you involved in?", clubs_response]
+					]
+			
+			# Create and add each dialogue entry
+			for qa in questions:
+				var entry = create_dialogue_entry(qa[0], qa[1])
+				dialogue_vbox.add_child(entry)
+	
+	dialogue_panel.visible = true
+
+func _show_inventory_view():
+	if not current_character:
+		return
+		
+	current_view = "inventory"
+	back_button.visible = true
+	id_card.visible = false
+	action_buttons.visible = false
+	
+	# Show the inventory panel with the grid
+	inventory_panel.visible = true
+
+func _show_transcript_view():
+	if not current_character:
+		return
+		
+	current_view = "transcript"
+	back_button.visible = true
+	id_card.visible = false
+	action_buttons.visible = false
+	
+	var char_data = current_character.get_meta("character_data")
+	if char_data:
+		print("DEBUG: Loading transcript for character: ", char_data["name"])
+		if transcript_panel:
+			# Try to find the image node using different methods
+			var image = transcript_panel.get_node_or_null("MarginContainer/VBoxContainer/TranscriptImage")
+			if not image:
+				print("DEBUG: Trying alternate path for transcript image")
+				image = transcript_panel.find_child("TranscriptImage", true, false)
+			
+			if image:
+				var transcript_number = get_transcript_number(char_data["name"])
+				var transcript_name = char_data["name"].replace(" ", "")  # Remove spaces
+				var transcript_path = "res://assets/L1_transcripts/" + transcript_name + "_Transcript_" + str(transcript_number) + ".png"
+				print("DEBUG: Attempting to load transcript from: ", transcript_path)
 				var transcript_texture = load(transcript_path)
 				if transcript_texture:
-					transcript_image.texture = transcript_texture
+					image.texture = transcript_texture
+					print("DEBUG: Transcript texture loaded successfully")
+				else:
+					print("DEBUG: Failed to load transcript texture from: ", transcript_path)
+					# Print the directory contents to debug
+					var dir = DirAccess.open("res://assets/L1_transcripts")
+					if dir:
+						print("DEBUG: Contents of L1_transcripts directory:")
+						dir.list_dir_begin()
+						var file_name = dir.get_next()
+						while file_name != "":
+							print("Found file: ", file_name)
+							file_name = dir.get_next()
+			else:
+				print("DEBUG: Transcript image node not found")
+				print("DEBUG: Available nodes in transcript_panel: ", transcript_panel.get_children())
+		else:
+			print("DEBUG: Transcript panel not found")
+	
+	if transcript_panel:
+		transcript_panel.visible = true
+
+# Helper function to print the node tree for debugging
+func print_node_tree(node: Node, indent: String = ""):
+	print(indent + node.name + " (" + node.get_class() + ")")
+	for child in node.get_children():
+		print_node_tree(child, indent + "  ")
 
 func show_character_info(character):
+	print("INSPECTION: Showing character info for:", character.variant_name)
+	
 	if character == null:
+		push_error("INSPECTION: Null character passed to show_character_info")
 		return
 		
 	current_character = character
 	
+	# Make the panel visible
+	visible = true
+	
+	# Show the main view
+	_show_main_view()
+	
 	# Pause the character's movement
 	character.is_walking = false
+	if character.has_node("AnimatedSprite2D"):
+		character.get_node("AnimatedSprite2D").pause()
 	character.input_pickable = false
 	
-	# Get the character's sprite frame and set it as the portrait
-	if character.has_node("AnimatedSprite2D"):
-		var sprite = character.get_node("AnimatedSprite2D")
-		if sprite and sprite.sprite_frames:
-			var frame_texture = sprite.sprite_frames.get_frame_texture("walk", 0)
-			$PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard/VBoxContainer/IDPlaceholder.texture = frame_texture
+	# Get the character's data
+	var char_data = character.get_meta("character_data")
+	if not char_data:
+		push_error("INSPECTION: No character data found in metadata")
+		return
 	
-	# Load the L1ID image if available
-	if character.l1_id != "":
-		var id_texture = load("res://assets/L1_id/" + character.l1_id + ".PNG")
-		if id_texture:
-			$PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard/VBoxContainer/IDPlaceholder.texture = id_texture
+	print("INSPECTION: Character data:", char_data)
 	
-	# Show the panel
-	visible = true
-	_show_main_view()  # Start with main view
-	print("Inspection Panel: Now displaying character info for", character.variant_name)
+	# Update the ID card section - only show name
+	var id_label = $PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard/VBoxContainer/Label
+	id_label.text = char_data["name"]
+	
+	# Load the L1ID image based on character name
+	var id_image = $PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard/VBoxContainer/IDPlaceholder
+	var id_mapping = {
+		"Alex Kim": "AlexKim_ID_1",
+		"Jessica Li": "JessicaLi_ID_2",
+		"Ryan Field": "RyanField_ID_3",
+		"Maya Patel": "MayaPatel_ID_4",
+		"Daniel Chen": "DanielChen_ID_5",
+		"Sibana Adhana": "SibanaAdhana_ID_6",
+		"Kelvin Nguyen": "KelvinNguyen_ID_7",
+		"Hannah Scott": "HannahScott_ID_8",
+		"Sam Green": "SamGreen_ID_9",
+		"Tenzin Sherpa": "TenzinSherpa_ID_10"
+	}
+	
+	var id_filename = id_mapping.get(char_data["name"], "id_card_placeholder")
+	var id_texture = load("res://assets/L1_id/" + id_filename + ".PNG")
+	if id_texture:
+		id_image.texture = id_texture
+	else:
+		print("INSPECTION: Failed to load ID texture for:", id_filename)
+	
+	print("INSPECTION: Panel updated and shown")
 
 func hide_panel():
 	visible = false

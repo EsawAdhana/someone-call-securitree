@@ -1,0 +1,31 @@
+# Godot 4 Project Rules
+
+## Core Principles
+- Use GDScript for game logic (primary language for Godot)
+- Follow Godot's node-based architecture patterns
+- Use signals for communication between nodes
+- Prefer composition over inheritance
+
+## Scene Structure
+- Create modular scenes: GameManager, LocationManager, NPCSpawner, UI components
+- Use Main scene as orchestrator, individual location scenes as subscenes
+- Keep NPC as independent scene with its own logic and state machine
+- Use CanvasLayer for UI elements (health bar, location selector)
+
+## Code Organization
+- Use PascalCase for class names and node names
+- Use snake_case for variables, functions, and file names
+- Group related functionality in autoload singletons (GameState, NPCManager)
+- Keep scene scripts focused on that scene's responsibility
+
+## Performance Considerations
+- Use object pooling for NPCs (don't constantly instantiate/free)
+- Implement viewport culling - only update visible location
+- Use Area2D for NPC boundary detection rather than constant position checks
+- Cache frequently accessed nodes with @onready var
+
+## Godot 4 Specific
+- Use new syntax: @export, @onready, func _ready():
+- Leverage new TileMap system for location backgrounds
+- Use CharacterBody2D for NPCs with built-in collision
+- Implement state machines using match statements or State pattern

@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Someone Call Securitree"
 run/main_scene="res://scenes/main_map.tscn"
-config/features=PackedStringArray("4.4", "Forward Plus")
+config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -20,6 +20,8 @@ config/icon="res://icon.svg"
 LocationManager="*res://scripts/location_manager.gd"
 GameManager="*res://scripts/game_manager.gd"
 GlobalCharacterManager="*res://scripts/global_character_manager.gd"
+MoraleManager="*res://scripts/morale_manager.gd"
+GlobalUI="*res://scenes/global_ui.tscn"
 
 [display]
 

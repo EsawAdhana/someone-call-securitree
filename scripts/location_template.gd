@@ -277,108 +277,37 @@ func update_book_content():
 func setup_direct_spawner():
 	print("LOCATION: Setting up direct spawner...")
 	
-	# Create the spawner directly in the scene, not in CanvasLayer
-	# First, remove any existing DirectSpawner
-	var existing_spawner = get_node_or_null("DirectSpawner")
-	if existing_spawner:
-		existing_spawner.queue_free()
+	# Try to find existing direct spawner
+	direct_spawner = get_node_or_null("DirectSpawner")
 	
-	# Create a new direct spawner
-	direct_spawner = Node2D.new()
-	direct_spawner.name = "DirectSpawner"
+	if not direct_spawner:
+		# Create a new direct spawner
+		direct_spawner = Node2D.new()
+		direct_spawner.set_script(load("res://scripts/direct_spawner.gd"))
+		direct_spawner.name = "DirectSpawner"
+		add_child(direct_spawner)
+		print("LOCATION: Created new direct spawner")
 	
-	# Try to load the script
-	var script = load("res://scripts/direct_spawner.gd")
-	if not script:
-		push_error("Cannot load direct_spawner.gd script")
-		return
-	
-	direct_spawner.set_script(script)
-	
-	# Important: Add it DIRECTLY to the scene root, not inside CanvasLayer
-	add_child(direct_spawner)
-	print("LOCATION: Created new DirectSpawner node directly in scene")
-	
-	# Connect to the character_clicked signal
-	if direct_spawner.character_clicked.is_connected(_on_character_clicked):
-		direct_spawner.character_clicked.disconnect(_on_character_clicked)
-	
-	direct_spawner.character_clicked.connect(_on_character_clicked)
-	print("LOCATION: Connected to DirectSpawner's character_clicked signal")
-	
-	# Load character scene if not already set
-	if not direct_spawner.character_scene:
-		var character_scene = load("res://scenes/character.tscn")
-		if character_scene:
-			direct_spawner.character_scene = character_scene
-			print("LOCATION: Character scene loaded for DirectSpawner")
-		else:
-			push_error("Failed to load character scene!")
-	
-	# Start spawning
-	direct_spawner.start_spawning()
-	print("LOCATION: DirectSpawner started spawning characters")
+	# Connect character clicked signal
+	if not direct_spawner.character_clicked.is_connected(_on_character_clicked):
+		direct_spawner.character_clicked.connect(_on_character_clicked)
+		print("LOCATION: Connected character clicked signal")
 
-# Move the camera to center on a character
-func center_camera_on_character(character):
-	if not game_camera:
-		push_error("LOCATION: Cannot center camera, no camera found")
-		return
-	
-	print("LOCATION: Centering camera on character:", character.variant_name)
-	
-	# Get the character's position
-	var character_pos = character.global_position
-	
-	# Get viewport size
-	var viewport_size = get_viewport_rect().size
-	
-	# Calculate the zoom factor and its effect on the viewable area
-	var zoom_factor = 1.5  # Our target zoom
-	var scaled_viewport = viewport_size / zoom_factor
-	
-	# Calculate the maximum allowed camera position to keep everything in view
-	var max_x = viewport_size.x - (scaled_viewport.x / 2)
-	var max_y = viewport_size.y - (scaled_viewport.y / 2)
-	var min_x = scaled_viewport.x / 2
-	var min_y = scaled_viewport.y / 2
-	
-	# Clamp the target position to keep the camera within bounds
-	var target_pos = Vector2(
-		clamp(character_pos.x, min_x, max_x),
-		clamp(character_pos.y, min_y, max_y)
-	)
-	
-	# Create a tween to smoothly move the camera and zoom
-	var tween = create_tween()
-	tween.tween_property(game_camera, "position", target_pos, 0.5).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	tween.parallel().tween_property(game_camera, "zoom", Vector2(zoom_factor, zoom_factor), 0.5).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	
-	# After centering, position the inspection panel to not overlap
-	await tween.finished
-	if inspection_panel and inspection_panel.has_method("position_panel_away_from_character"):
-		inspection_panel.position_panel_away_from_character(character)
-
-# Handle when a character is clicked
+# Handle character being clicked
 func _on_character_clicked(character):
-	# If there was a previously selected character, resume its movement
-	if current_selected_character and current_selected_character != character:
-		current_selected_character.resume_walking()
+	print("LOCATION: Character clicked:", character.variant_name)
 	
-	# Update the current selected character
+	# Store the current character
 	current_selected_character = character
 	
-	# When a character is clicked, center the camera on them
-	center_camera_on_character(character)
-	
-	# Show the inspection panel
-	print("LOCATION: Character clicked! Name: " + character.variant_name)
-	
+	# Use the inspection_panel reference we already have
 	if inspection_panel:
-		print("LOCATION: Showing inspection panel")
+		# Show the inspection panel
+		inspection_panel.visible = true
 		inspection_panel.show_character_info(character)
+		print("LOCATION: Showing inspection panel for character:", character.variant_name)
 	else:
-		push_error("LOCATION: Inspection panel is null, cannot show character info")
+		push_error("LOCATION: Could not find inspection panel reference")
 
 # Handle character approved
 func _on_character_approved(character):
@@ -411,13 +340,16 @@ func _on_character_rejected(character):
 		game_manager._on_character_rejected(character)
 
 # Handle exit button pressed
-func _on_exit_pressed():
-	print("LOCATION: Exit button pressed")
-	# Clear the current selected character
-	current_selected_character = null
-	# Reset camera position
-	reset_camera_position()
-	save_characters_to_global_manager()
+func _on_exit_pressed(character):
+	print("LOCATION: Exit pressed for character:", character.variant_name if character else "None")
+	
+	if current_selected_character:
+		current_selected_character.resume_walking()
+		current_selected_character = null
+	
+	# Use the inspection_panel reference we already have
+	if inspection_panel:
+		inspection_panel.visible = false
 
 # Handle remove NPC button pressed
 func _on_remove_npc_pressed(character):
