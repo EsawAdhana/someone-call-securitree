@@ -4,11 +4,17 @@ extends CharacterBody2D
 @export var character_type: int = 0  # 0 = Stanford, 1 = Berkeley
 @export var walking_speed: float = 200.0
 
+# List of male names for sprite selection
+const MALE_NAMES = ["Alex", "Daniel", "Kelvin", "Ryan", "Sam"]
+
 # Variant properties (for gameplay)
 var variant_name: String = "Unknown"
 var has_id: bool = true
 var valid_major: bool = true
 var l1_id: String = ""  # Store the L1ID for the character
+var has_been_interacted: bool = false
+var has_been_rejected: bool = false
+var was_rejected: bool = false
 
 # Walking and destinations
 var target_position: Vector2 = Vector2.ZERO
@@ -18,6 +24,8 @@ var just_spawned: bool = true
 
 # Animation references
 @onready var animated_sprite = $AnimatedSprite2D
+@onready var exclamation_mark = $ExclamationMark
+@onready var disappear_timer = $DisappearTimer
 
 # Signals
 signal character_clicked(character)
@@ -31,6 +39,10 @@ func _ready():
 	# Store initial position for debugging
 	initial_position = global_position
 	
+	# Set the correct sprite variant based on name
+	if animated_sprite:
+		set_sprite_variant()
+	
 	# Add to characters group for tracking
 	add_to_group("characters")
 	
@@ -43,11 +55,15 @@ func _ready():
 	mouse_exited.connect(_on_mouse_exited)
 	input_event.connect(_on_input_event)
 	
-	# Connect to inspection panel signals
-	var inspection_panel = get_node("/root/Main/InspectionPanel")
+	# Connect to inspection panel signals - using more robust method
+	await get_tree().create_timer(0.1).timeout  # Small delay to ensure scene is ready
+	var inspection_panel = find_inspection_panel()
 	if inspection_panel:
 		inspection_panel.exit_pressed.connect(_on_inspection_exit.bind())
-		print("CHARACTER DEBUG: Connected to inspection panel exit signal")
+		inspection_panel.character_rejected.connect(_on_character_rejected.bind())
+		print("CHARACTER DEBUG: Connected to inspection panel signals")
+	else:
+		push_warning("CHARACTER DEBUG: Could not find InspectionPanel")
 	
 	print("CHARACTER DEBUG: All input signals connected")
 	
@@ -58,9 +74,31 @@ func _ready():
 	else:
 		print("CHARACTER DEBUG: No AnimatedSprite2D or sprite_frames found")
 	
+	# Show exclamation mark for uninteracted characters
+	if exclamation_mark:
+		exclamation_mark.visible = true
+	
+	# Start disappear timer for all characters
+	disappear_timer.timeout.connect(_on_disappear_timer_timeout)
+	disappear_timer.start()
+	
 	# Start walking after a small delay
-	await get_tree().create_timer(randf_range(0.5, 1.0)).timeout
 	start_walking()
+
+func set_sprite_variant():
+	# Get the first name from the variant_name
+	var first_name = variant_name.split(" ")[0]
+	
+	# Check if it's a male name
+	if first_name in MALE_NAMES:
+		# Randomly choose between stanford1 and stanford2
+		var variant = randi() % 2 + 1  # This gives us 1 or 2
+		print("CHARACTER DEBUG: Male character %s using stanford%d sprite" % [first_name, variant])
+		animated_sprite.animation = "stanford%d" % variant
+	else:
+		# Female character - always use stanford3
+		print("CHARACTER DEBUG: Female character %s using stanford3 sprite" % first_name)
+		animated_sprite.animation = "stanford3"
 
 # Override _input to handle clicks - this is a backup in case the input_event signal isn't working
 func _input(event):
@@ -138,6 +176,12 @@ func _handle_click():
 	is_walking = false
 	if animated_sprite:
 		animated_sprite.pause()
+	
+	# Mark as interacted and hide exclamation mark
+	has_been_interacted = true
+	if exclamation_mark:
+		exclamation_mark.visible = false
+	
 	emit_signal("character_clicked", self)
 	print("CHARACTER DEBUG: character_clicked signal emitted")
 	
@@ -242,3 +286,84 @@ func _on_inspection_exit(character):
 	if character == self:
 		print("CHARACTER DEBUG: Handling inspection exit for: " + variant_name)
 		# No need for additional logic here since resume_walking is called directly
+
+# Helper function to find the InspectionPanel
+func find_inspection_panel():
+	# Try different possible paths, starting with the most likely
+	var paths = [
+		"../../../UI/InspectionPanel",  # Relative to character in LocationTemplate
+		"/root/LocationTemplate/UI/InspectionPanel",  # Absolute path
+		"../../UI/InspectionPanel",  # Legacy path
+		"/root/MainMap/UI/InspectionPanel",  # Alternative path
+		"/root/Main/UI/InspectionPanel"  # Alternative path
+	]
+	
+	for path in paths:
+		var panel = get_node_or_null(path)
+		if panel:
+			print("CHARACTER DEBUG: Found InspectionPanel at path: ", path)
+			return panel
+	
+	# If not found in predefined paths, search the scene tree
+	print("CHARACTER DEBUG: InspectionPanel not found in predefined paths, searching scene tree...")
+	var root = get_tree().root
+	return find_inspection_panel_recursive(root)
+
+# Recursive helper to find InspectionPanel anywhere in the scene tree
+func find_inspection_panel_recursive(node: Node) -> Node:
+	if node.name == "InspectionPanel":
+		return node
+	
+	for child in node.get_children():
+		var result = find_inspection_panel_recursive(child)
+		if result:
+			return result
+	
+	return null
+
+func _on_character_rejected(character):
+	if character == self:
+		has_been_rejected = true
+		was_rejected = true
+		# If it's a Stanford student and they were rejected, decrease morale
+		if character_type == 0:  # Stanford student
+			MoraleManager.decrease_morale()
+		disappear()
+
+func _on_disappear_timer_timeout():
+	print("CHARACTER DEBUG: Character timed out:", variant_name)
+	
+	# If it's a Berkeley student and they weren't rejected, decrease morale
+	if character_type == 1 and not was_rejected:  # Berkeley student
+		MoraleManager.decrease_morale()
+	
+	# Make the character disappear
+	disappear()
+
+# Handle timeout for character interaction
+func _on_interaction_timeout():
+	print("CHARACTER DEBUG: Interaction timeout for", variant_name)
+	
+	# Get reference to game manager
+	var game_manager = get_node_or_null("/root/MainMap/GameManager")
+	
+	# If it's a Berkeley student and they were rejected within 30 seconds, don't decrease morale
+	if character_type == 1 and was_rejected:
+		print("CHARACTER DEBUG: Berkeley student was already rejected, skipping timeout penalty")
+		queue_free()
+		return
+	
+	print("CHARACTER DEBUG: Character timed out without interaction")
+	
+	# Handle the character timing out without interaction
+	if game_manager:
+		print("CHARACTER DEBUG: Found game manager, handling timeout")
+		if character_type == 1:  # Berkeley
+			print("CHARACTER DEBUG: Berkeley student timed out")
+		else:  # Stanford
+			print("CHARACTER DEBUG: Stanford student timed out")
+	else:
+		push_error("CHARACTER DEBUG: Could not find GameManager for timeout handling")
+	
+	# Remove the character
+	queue_free()

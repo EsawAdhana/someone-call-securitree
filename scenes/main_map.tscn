@@ -1,16 +1,15 @@
-[gd_scene load_steps=18 format=3 uid="uid://c601osuc2aat"]
+[gd_scene load_steps=17 format=3 uid="uid://c601osuc2aat"]
 
 [ext_resource type="Script" uid="uid://dlnb8jsdsw2go" path="res://scripts/main_map.gd" id="1_1xo34"]
 [ext_resource type="Texture2D" uid="uid://b7a5pslagpjde" path="res://assets/map.png" id="2_kdyc3"]
 [ext_resource type="Script" uid="uid://bkh4tbmwy4iyp" path="res://scripts/game_manager.gd" id="3_hd37j"]
-[ext_resource type="PackedScene" uid="uid://cuwhd0tobccni" path="res://scenes/top_morale_bar.tscn" id="4_aqgc6"]
 [ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="6_s3jbg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dyl4d"]
 size = Vector2(891.25, 601)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_km2bi"]
-size = Vector2(377, 648)
+size = Vector2(369.75, 660)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kdyc3"]
 size = Vector2(1054.5, 615)
@@ -60,7 +59,7 @@ shape = SubResource("RectangleShape2D_dyl4d")
 [node name="HooverTowerArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HooverTowerArea"]
-position = Vector2(1185.5, 301)
+position = Vector2(1150, 309)
 shape = SubResource("RectangleShape2D_km2bi")
 
 [node name="MainQuadArea" type="Area2D" parent="."]
@@ -84,7 +83,7 @@ shape = SubResource("RectangleShape2D_cyf2o")
 [node name="MeyerGreenArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MeyerGreenArea"]
-position = Vector2(1498, 1054)
+position = Vector2(1486, 1066)
 shape = SubResource("RectangleShape2D_64gt2")
 
 [node name="TresidderArea" type="Area2D" parent="."]
@@ -127,8 +126,7 @@ shape = SubResource("RectangleShape2D_sa572")
 script = ExtResource("3_hd37j")
 
 [node name="UI" type="CanvasLayer" parent="."]
-
-[node name="TopMoraleBar" parent="UI" instance=ExtResource("4_aqgc6")]
+layer = 10
 
 [node name="GameOver" parent="UI" instance=ExtResource("6_s3jbg")]
 visible = false

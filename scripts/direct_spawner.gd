@@ -2,120 +2,148 @@ extends Node2D
 
 # Character spawning configuration
 @export var character_scene: PackedScene
-@export var spawn_interval_min: float = 8.0
-@export var spawn_interval_max: float = 15.0
-@export var max_characters: int = 5
-@export var stanford_chance: float = 0.6  # 60% chance for Stanford students
+@export var spawn_interval_min: float = 3.0
+@export var spawn_interval_max: float = 6.0
+@export var max_characters: int = 10  # Changed to 10 for our predefined characters
 
 # Track current characters
 var current_characters = []
 var spawn_timer: Timer
 
-# Sprite frame resources
-var stanford_sprites = []
-var berkeley_sprites = []
-var sprite_resources_loaded = false
+# Character data manager
+var character_data_manager
 
 # Signal for character interaction
 signal character_clicked(character)
 
 func _ready():
-	print("DIRECT_SPAWNER: Initializing...")
+	print("[SPAWN DEBUG] DirectSpawner _ready() called")
+	print("[SPAWN DEBUG] Max characters set to:", max_characters)
+	
+	# Initialize character data manager
+	character_data_manager = preload("res://scripts/character_data.gd").new()
+	character_data_manager.reset_characters()
+	print("[SPAWN DEBUG] Character data manager initialized and reset")
 	
 	# Initialize the timer
 	spawn_timer = Timer.new()
 	spawn_timer.one_shot = true
 	spawn_timer.timeout.connect(_on_spawn_timer_timeout)
 	add_child(spawn_timer)
+	print("[SPAWN DEBUG] Spawn timer initialized")
 	
 	# Load the character scene if not already set
 	if not character_scene:
-		print("DIRECT_SPAWNER: Loading character scene from path")
+		print("[SPAWN DEBUG] Loading character scene from path")
 		character_scene = load("res://scenes/character.tscn")
 		if not character_scene:
-			push_error("DIRECT_SPAWNER: Failed to load character scene!")
-	
-	# Load all sprite resources
-	load_sprite_resources()
+			push_error("[SPAWN DEBUG] Failed to load character scene!")
+		else:
+			print("[SPAWN DEBUG] Character scene loaded successfully")
 	
 	# Start spawning
+	print("[SPAWN DEBUG] Starting initial spawn delay")
 	await get_tree().create_timer(0.5).timeout
 	start_spawning()
 
-# Load all sprite resources
-func load_sprite_resources():
-	print("DIRECT_SPAWNER: Loading sprite resources...")
-	
-	# Load Stanford sprites (1-3)
-	for i in range(1, 4):  # Stanford 1 to 3
-		var path = "res://assets/characters/stanford" + str(i) + ".tres"
-		var res = load(path)
-		if res:
-			stanford_sprites.append(res)
-			print("DIRECT_SPAWNER: Loaded Stanford sprite " + str(i))
-		else:
-			push_warning("DIRECT_SPAWNER: Failed to load " + path)
-	
-	# Load Berkeley sprites (1-4)
-	for i in range(1, 5):  # Cal 1 to 4
-		var path = "res://assets/characters/cal" + str(i) + ".tres"
-		var res = load(path)
-		if res:
-			berkeley_sprites.append(res)
-			print("DIRECT_SPAWNER: Loaded Berkeley sprite " + str(i))
-		else:
-			push_warning("DIRECT_SPAWNER: Failed to load " + path)
-	
-	# Check if we have at least one of each type
-	if stanford_sprites.size() > 0 and berkeley_sprites.size() > 0:
-		sprite_resources_loaded = true
-		print("DIRECT_SPAWNER: Successfully loaded sprite resources")
-	else:
-		push_warning("DIRECT_SPAWNER: Couldn't load enough sprite resources")
-
 func start_spawning():
-	print("DIRECT_SPAWNER: Starting to spawn characters")
-	
-	if not character_scene:
-		push_error("DirectSpawner: No character scene assigned!")
-		return
-	
-	# Set the first spawn time
+	print("[SPAWN DEBUG] start_spawning() called")
+	print("[SPAWN DEBUG] Current character count:", current_characters.size())
 	set_random_spawn_time()
-	
-	# Force a first character spawn immediately
-	spawn_character()
 
 func set_random_spawn_time():
 	var wait_time = randf_range(spawn_interval_min, spawn_interval_max)
+	print("[SPAWN DEBUG] Setting spawn timer for", wait_time, "seconds")
 	spawn_timer.start(wait_time)
 
 func _on_spawn_timer_timeout():
-	if current_characters.size() < max_characters:
-		spawn_character()
+	print("[SPAWN DEBUG] Spawn timer timeout triggered")
+	print("[SPAWN DEBUG] Current character count:", current_characters.size())
+	print("[SPAWN DEBUG] Max characters:", max_characters)
 	
-	# Set the timer for the next spawn
-	set_random_spawn_time()
+	spawn_character()
+	
+	# Only set next spawn time if we haven't reached max characters
+	if current_characters.size() < max_characters:
+		print("[SPAWN DEBUG] Setting next spawn timer")
+		set_random_spawn_time()
+	else:
+		print("[SPAWN DEBUG] Maximum characters reached, not setting next spawn timer")
 
 func spawn_character():
+	print("[SPAWN DEBUG] spawn_character() called")
+	print("[SPAWN DEBUG] Current character count:", current_characters.size())
+	
 	# Don't spawn if we already have the maximum number of characters
 	if current_characters.size() >= max_characters:
-		print("DIRECT_SPAWNER: Maximum characters reached, not spawning")
+		print("[SPAWN DEBUG] Maximum characters reached, not spawning")
 		return
 	
-	print("DIRECT_SPAWNER: Spawning a new character")
+	print("[SPAWN DEBUG] Getting next character data")
+	
+	# Get next character data
+	var char_data = character_data_manager.get_random_character()
+	print("[SPAWN DEBUG] Character data received:", char_data)
+	
+	if char_data.is_empty():
+		print("[SPAWN DEBUG] No more characters available")
+		return
+	
+	print("[SPAWN DEBUG] Got character data for:", char_data["name"])
 	
 	# Create a new character instance
 	var character = character_scene.instantiate()
 	if not character:
-		push_error("DirectSpawner: Failed to instantiate character scene")
+		push_error("[SPAWN DEBUG] Failed to instantiate character scene")
 		return
 	
-	# FIX: Ensure input_pickable is set
+	print("[SPAWN DEBUG] Character instance created")
+	
+	# Set up character properties
 	character.input_pickable = true
+	character.character_type = char_data["type"]
+	character.variant_name = char_data["name"]
+	character.has_id = true  # All our predefined characters have IDs
+	character.valid_major = true  # All our predefined characters have valid majors
+	character.l1_id = char_data["id"]  # Set the ID for the character
+	
+	# Store additional data in the character for the inspection panel
+	character.set_meta("character_data", char_data)
+	
+	# Connect character's clicked signal to forward it through the spawner
+	if not character.character_clicked.is_connected(_on_character_clicked):
+		character.character_clicked.connect(_on_character_clicked)
+		print("[SPAWN DEBUG] Connected character click signal")
+	
+	print("[SPAWN DEBUG] Character properties set for:", char_data["name"])
+	
+	# Assign Stanford sprite based on character's name (to determine gender)
+	if character.has_node("AnimatedSprite2D"):
+		var sprite = character.get_node("AnimatedSprite2D")
+		var first_name = char_data["name"].split(" ")[0]
+		
+		# Female names in our character data
+		var female_names = ["Jessica", "Maya", "Hannah", "Sibana"]
+		
+		# Choose sprite based on gender
+		var sprite_frames
+		if female_names.has(first_name):
+			sprite_frames = load("res://assets/characters/stanford3.tres")  # Female sprite
+		else:
+			# Randomly choose between stanford1 and stanford2 for male characters
+			var male_sprites = [
+				"res://assets/characters/stanford1.tres",
+				"res://assets/characters/stanford2.tres"
+			]
+			sprite_frames = load(male_sprites[randi() % 2])
+		
+		if sprite_frames:
+			sprite.sprite_frames = sprite_frames
+			sprite.play("walk")
 	
 	# Get viewport size for positioning
 	var viewport_size = get_viewport_rect().size
+	print("[SPAWN DEBUG] Viewport size:", viewport_size)
 	
 	# Position character DIRECTLY INSIDE the screen with safe margins
 	var margin = 100
@@ -124,13 +152,7 @@ func spawn_character():
 	var spawn_position = Vector2(pos_x, pos_y)
 	
 	character.global_position = spawn_position
-	print("DIRECT_SPAWNER: Character positioned at " + str(spawn_position))
-	
-	# Configure character type (Stanford or Berkeley)
-	character.character_type = 0 if randf() < stanford_chance else 1
-	
-	# Generate random character details
-	setup_character_variants(character)
+	print("[SPAWN DEBUG] Character positioned at:", spawn_position)
 	
 	# Choose a different random position for the character to walk to
 	var target_position = Vector2.ZERO
@@ -150,115 +172,25 @@ func spawn_character():
 		attempts += 1
 	
 	character.target_position = target_position
-	print("DIRECT_SPAWNER: Character target set to " + str(target_position))
+	print("[SPAWN DEBUG] Character target set to:", target_position)
 	
-	# Connect signals
-	if character.character_clicked.is_connected(_on_character_clicked):
-		character.character_clicked.disconnect(_on_character_clicked)
-	
-	character.character_clicked.connect(_on_character_clicked)
-	print("DIRECT_SPAWNER: Connected character_clicked signal")
-	
-	# We don't need the character_exited signal anymore since characters don't exit
-	
-	# Add the character as a direct child of this node
+	# Add to scene and start walking
 	add_child(character)
 	current_characters.append(character)
-	print("DIRECT_SPAWNER: Character added to scene, total characters: " + str(current_characters.size()))
 	
-	# Configure sprite based on character type
-	if character.has_node("AnimatedSprite2D"):
-		var sprite = character.get_node("AnimatedSprite2D")
-		
-		# Assign a random sprite based on character type
-		if sprite and sprite_resources_loaded:
-			if character.character_type == 0:  # Stanford
-				# Choose a random Stanford sprite
-				if stanford_sprites.size() > 0:
-					var sprite_index = randi() % stanford_sprites.size()
-					sprite.sprite_frames = stanford_sprites[sprite_index]
-					print("DIRECT_SPAWNER: Assigned Stanford sprite variant " + str(sprite_index + 1))
-			else:  # Berkeley
-				# Choose a random Berkeley sprite
-				if berkeley_sprites.size() > 0:
-					var sprite_index = randi() % berkeley_sprites.size()
-					sprite.sprite_frames = berkeley_sprites[sprite_index]
-					print("DIRECT_SPAWNER: Assigned Berkeley sprite variant " + str(sprite_index + 1))
-		
-		# Start animation
-		sprite.play("walk")
+	# Force visibility
+	character.visible = true
+	character.modulate.a = 1.0  # Ensure full opacity
 	
-	# Force the character to start walking
-	character.is_walking = true
-	character.walk_direction = (target_position - spawn_position).normalized()
-	character.just_spawned = false  # Not needed since we're spawning directly on-screen
+	print("[SPAWN DEBUG] Character added to scene tree")
+	print("[SPAWN DEBUG] Character parent:", character.get_parent())
+	print("[SPAWN DEBUG] Character visible:", character.visible)
+	print("[SPAWN DEBUG] Character global position:", character.global_position)
+	
+	print("[SPAWN DEBUG] Successfully spawned character", char_data["name"], "of type", char_data["type"])
+	print("[SPAWN DEBUG] New character count:", current_characters.size())
 
-# Set up random character properties
-func setup_character_variants(character):
-	# List of available L1IDs with gender information
-	var l1_ids = {
-		"AlexKim_ID_1": "M",
-		"JessicaLi_ID_2": "F",
-		"RyanField_ID_3": "M",
-		"MayaPatel_ID_4": "F",
-		"DanielChen_ID_5": "M",
-		"SibanaAdhana_ID_6": "F",
-		"KelvinNguyen_ID_7": "M",
-		"HannahScott_ID_8": "F",
-		"SamGreen_ID_9": "M",
-		"TenzinSherpa_ID_10": "F"  # Corrected: Tenzin is female
-	}
-	
-	# Get the character's sprite gender based on sprite variant
-	var sprite_gender = "M"  # Default to male
-	if character.has_node("AnimatedSprite2D"):
-		var sprite = character.get_node("AnimatedSprite2D")
-		if sprite and sprite.sprite_frames:
-			var sprite_path = sprite.sprite_frames.resource_path
-			# Determine gender based on sprite variant
-			if "cal4" in sprite_path or "stanford3" in sprite_path:
-				sprite_gender = "F"  # Only cal4 and stanford3 are female
-			else:
-				sprite_gender = "M"  # All other sprites are male
-	
-	# Filter L1IDs by gender
-	var matching_l1_ids = []
-	for id in l1_ids:
-		if l1_ids[id] == sprite_gender:
-			matching_l1_ids.append(id)
-	
-	# If no matching IDs found, use any available ID (fallback)
-	if matching_l1_ids.is_empty():
-		matching_l1_ids = l1_ids.keys()
-	
-	# Select a random matching L1ID
-	var l1_id = matching_l1_ids[randi() % matching_l1_ids.size()]
-	
-	# Extract first and last name from L1ID
-	var name_parts = l1_id.split("_")[0]  # Get the part before _ID_
-	var first_name = ""
-	var last_name = ""
-	
-	# Find the position where the second capital letter appears (start of last name)
-	var last_name_start = 1
-	while last_name_start < name_parts.length():
-		if name_parts[last_name_start].to_upper() == name_parts[last_name_start]:
-			break
-		last_name_start += 1
-	
-	first_name = name_parts.substr(0, last_name_start)
-	last_name = name_parts.substr(last_name_start)
-	
-	character.variant_name = first_name + " " + last_name
-	character.l1_id = l1_id  # Store the L1ID for later use
-	
-	# Random gameplay variations
-	character.has_id = randf() < 0.9  # 90% chance to have ID
-	character.valid_major = randf() < 0.8  # 80% chance to have valid major
-
-# Handle character being clicked - THIS IS CRITICAL
+# Forward the character clicked signal
 func _on_character_clicked(character):
-	print("DIRECT_SPAWNER: Character " + character.variant_name + " was clicked!")
-	
-	# Forward the signal to whoever is listening (should be LocationTemplate)
+	print("[SPAWN DEBUG] Character clicked, forwarding signal:", character.variant_name)
 	character_clicked.emit(character)

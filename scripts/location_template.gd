@@ -279,47 +279,21 @@ func update_book_content():
 func setup_direct_spawner():
 	print("LOCATION: Setting up direct spawner...")
 	
-	# Create the spawner directly in the scene, not in CanvasLayer
-	# First, remove any existing DirectSpawner
-	var existing_spawner = get_node_or_null("DirectSpawner")
-	if existing_spawner:
-		existing_spawner.queue_free()
+	# Try to find existing direct spawner
+	direct_spawner = get_node_or_null("DirectSpawner")
 	
-	# Create a new direct spawner
-	direct_spawner = Node2D.new()
-	direct_spawner.name = "DirectSpawner"
+	if not direct_spawner:
+		# Create a new direct spawner
+		direct_spawner = Node2D.new()
+		direct_spawner.set_script(load("res://scripts/direct_spawner.gd"))
+		direct_spawner.name = "DirectSpawner"
+		add_child(direct_spawner)
+		print("LOCATION: Created new direct spawner")
 	
-	# Try to load the script
-	var script = load("res://scripts/direct_spawner.gd")
-	if not script:
-		push_error("Cannot load direct_spawner.gd script")
-		return
-	
-	direct_spawner.set_script(script)
-	
-	# Important: Add it DIRECTLY to the scene root, not inside CanvasLayer
-	add_child(direct_spawner)
-	print("LOCATION: Created new DirectSpawner node directly in scene")
-	
-	# Connect to the character_clicked signal
-	if direct_spawner.character_clicked.is_connected(_on_character_clicked):
-		direct_spawner.character_clicked.disconnect(_on_character_clicked)
-	
-	direct_spawner.character_clicked.connect(_on_character_clicked)
-	print("LOCATION: Connected to DirectSpawner's character_clicked signal")
-	
-	# Load character scene if not already set
-	if not direct_spawner.character_scene:
-		var character_scene = load("res://scenes/character.tscn")
-		if character_scene:
-			direct_spawner.character_scene = character_scene
-			print("LOCATION: Character scene loaded for DirectSpawner")
-		else:
-			push_error("Failed to load character scene!")
-	
-	# Start spawning
-	direct_spawner.start_spawning()
-	print("LOCATION: DirectSpawner started spawning characters")
+	# Connect character clicked signal
+	if not direct_spawner.character_clicked.is_connected(_on_character_clicked):
+		direct_spawner.character_clicked.connect(_on_character_clicked)
+		print("LOCATION: Connected character clicked signal")
 
 # Move the camera to center on a character
 func center_camera_on_character(character):
@@ -411,13 +385,16 @@ func _on_character_rejected(character):
 		game_manager._on_character_rejected(character)
 
 # Handle exit button pressed
-func _on_exit_pressed():
-	print("LOCATION: Exit button pressed")
-	# Clear the current selected character
-	current_selected_character = null
-	# Reset camera position
-	reset_camera_position()
-	save_characters_to_global_manager()
+func _on_exit_pressed(character):
+	print("LOCATION: Exit pressed for character:", character.variant_name if character else "None")
+	
+	if current_selected_character:
+		current_selected_character.resume_walking()
+		current_selected_character = null
+	
+	# Use the inspection_panel reference we already have
+	if inspection_panel:
+		inspection_panel.visible = false
 
 # Handle remove NPC button pressed
 func _on_remove_npc_pressed(character):
