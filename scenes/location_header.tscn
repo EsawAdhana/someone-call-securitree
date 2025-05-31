@@ -77,7 +77,7 @@ layout_mode = 2
 size_flags_vertical = 4
 
 [node name="MinimapButton" type="TextureButton" parent="MarginContainer/HBoxContainer/MinimapContainer"]
-custom_minimum_size = Vector2(228, 228)
+custom_minimum_size = Vector2(130, 130)
 layout_mode = 2
 texture_normal = ExtResource("2_4okyh")
 ignore_texture_size = true

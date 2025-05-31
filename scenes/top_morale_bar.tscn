@@ -57,7 +57,6 @@ text = "MORALE"
 horizontal_alignment = 1
 
 [node name="MoraleProgressBar" type="ProgressBar" parent="PanelContainer/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 theme_override_styles/fill = SubResource("StyleBoxFlat_xn1mg")
 max_value = 100.0

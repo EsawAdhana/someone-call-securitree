@@ -1,13 +1,13 @@
 [gd_scene load_steps=18 format=3 uid="uid://c601osuc2aat"]
 
 [ext_resource type="Script" uid="uid://dlnb8jsdsw2go" path="res://scripts/main_map.gd" id="1_1xo34"]
-[ext_resource type="Texture2D" uid="uid://b5xvl6b2yk3ox" path="res://assets/Map/MapNewPixelArt.png" id="2_map_texture"]
+[ext_resource type="Texture2D" uid="uid://b7a5pslagpjde" path="res://assets/map.png" id="2_kdyc3"]
 [ext_resource type="Script" uid="uid://bkh4tbmwy4iyp" path="res://scripts/game_manager.gd" id="3_hd37j"]
-[ext_resource type="PackedScene" path="res://scenes/top_morale_bar.tscn" id="4_aqgc6"]
-[ext_resource type="PackedScene" path="res://scenes/game_over.tscn" id="6_s3jbg"]
+[ext_resource type="PackedScene" uid="uid://cuwhd0tobccni" path="res://scenes/top_morale_bar.tscn" id="4_aqgc6"]
+[ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="6_s3jbg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dyl4d"]
-size = Vector2(1182.5, 540)
+size = Vector2(891.25, 601)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_km2bi"]
 size = Vector2(377, 648)
@@ -46,29 +46,82 @@ size = Vector2(818, 424.5)
 script = ExtResource("1_1xo34")
 
 [node name="MapBackground" type="Sprite2D" parent="."]
-texture = ExtResource("2_map_texture")
+texture = ExtResource("2_kdyc3")
 
 [node name="Camera2D" type="Camera2D" parent="MapBackground"]
+zoom = Vector2(0.45, 0.45)
 
 [node name="StadiumArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StadiumArea"]
-position = Vector2(1828.8486328125, -1163.98950195312)
+position = Vector2(1902.62, -1149.5)
 shape = SubResource("RectangleShape2D_dyl4d")
 
 [node name="HooverTowerArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HooverTowerArea"]
-position = Vector2(1430.78125, 1469.75378417969)
-rotation = 3.14159
-scale = Vector2(1.08083, 0.525496)
+position = Vector2(1185.5, 301)
 shape = SubResource("RectangleShape2D_km2bi")
 
 [node name="MainQuadArea" type="Area2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="OvalArea"]
-position = Vector2(143.40576171875, 235.07421875)
-shape = SubResource("RectangleShape2D_5hk42")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MainQuadArea"]
+position = Vector2(186.75, 220.5)
+shape = SubResource("RectangleShape2D_kdyc3")
+
+[node name="GSBArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GSBArea"]
+position = Vector2(1673.75, -80.5)
+shape = SubResource("RectangleShape2D_4synu")
+
+[node name="GreenLibraryArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GreenLibraryArea"]
+position = Vector2(713.5, 922.5)
+shape = SubResource("RectangleShape2D_cyf2o")
+
+[node name="MeyerGreenArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MeyerGreenArea"]
+position = Vector2(1498, 1054)
+shape = SubResource("RectangleShape2D_64gt2")
+
+[node name="TresidderArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TresidderArea"]
+position = Vector2(-304, 981)
+shape = SubResource("RectangleShape2D_2xk3c")
+
+[node name="FarrillagaArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FarrillagaArea"]
+position = Vector2(-1499.5, 879)
+shape = SubResource("RectangleShape2D_ulx81")
+
+[node name="Y2E2Area" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Y2E2Area"]
+position = Vector2(-1560.5, 44.75)
+shape = SubResource("RectangleShape2D_6adrn")
+
+[node name="CoDaArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CoDaArea"]
+position = Vector2(-1053.5, -631)
+shape = SubResource("RectangleShape2D_cyt25")
+
+[node name="CantorArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CantorArea"]
+position = Vector2(-841.5, -1403.25)
+shape = SubResource("RectangleShape2D_ubaj7")
+
+[node name="FloMoArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FloMoArea"]
+position = Vector2(-769, 1773)
+shape = SubResource("RectangleShape2D_sa572")
 
 [node name="GameManager" type="Node" parent="."]
 script = ExtResource("3_hd37j")

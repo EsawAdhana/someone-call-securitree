@@ -13,10 +13,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -800.0
-offset_top = -600.0
-offset_right = 800.0
-offset_bottom = 600.0
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_1xkvd")
@@ -52,14 +52,10 @@ text = "← Back"
 [node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HeaderContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 32
-text = "Dialogue View"
-vertical_alignment = 1
 
 [node name="ExitButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HeaderContainer"]
 layout_mode = 2
 tooltip_text = "Exit"
-theme_override_font_sizes/font_size = 24
 text = "X"
 
 [node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer"]
@@ -79,12 +75,11 @@ alignment = 1
 
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
 text = "STUDENT"
 horizontal_alignment = 1
 
-[node name="IDPlaceholder" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer/StudentIDSection"]
-custom_minimum_size = Vector2(640, 400)
+[node name="IDPlaceholder" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard/VBoxContainer"]
+custom_minimum_size = Vector2(320, 200)
 layout_mode = 2
 size_flags_horizontal = 4
 texture = ExtResource("2_h8uis")
@@ -116,8 +111,8 @@ flat = true
 icon_alignment = 1
 expand_icon = true
 
-[node name="CharacterIcon" type="ColorRect" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/LeftSection/NPCIcon"]
-custom_minimum_size = Vector2(200, 200)
+[node name="TranscriptButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/ActionButtons"]
+custom_minimum_size = Vector2(72, 72)
 layout_mode = 2
 tooltip_text = "View student's transcript"
 focus_mode = 0
@@ -126,19 +121,7 @@ flat = true
 icon_alignment = 1
 expand_icon = true
 
-[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/LeftSection/NPCIcon"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "NPC headshot image (for now, just use a black box"
-horizontal_alignment = 1
-autowrap_mode = 3
-
-[node name="MiddleSection" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.7
-
-[node name="DialogueSection" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/MiddleSection"]
+[node name="ContentPanels" type="PanelContainer" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent"]
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -153,8 +136,9 @@ theme_override_constants/margin_bottom = 10
 
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels/DialoguePanel"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
-text = "dialogue (for now just put some empty dialogue/speech boxes)"
+text = "I have nothing to say..."
+horizontal_alignment = 1
+vertical_alignment = 1
 autowrap_mode = 3
 
 [node name="InventoryPanel" type="MarginContainer" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels"]
@@ -196,15 +180,13 @@ theme_override_constants/separation = 30
 alignment = 1
 
 [node name="ApproveButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/ButtonsSection"]
-custom_minimum_size = Vector2(180, 60)
+custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
 focus_mode = 0
-theme_override_font_sizes/font_size = 24
 text = "ACCEPT"
 
 [node name="RejectButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/ButtonsSection"]
-custom_minimum_size = Vector2(180, 60)
+custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
 focus_mode = 0
-theme_override_font_sizes/font_size = 24
 text = "REJECT"
