@@ -7,15 +7,15 @@ extends Node2D
 # Book variables
 var book_open = false
 var current_page = 0
-var total_pages = 3  # Total number of placeholder pages
+var total_pages = 3 # Total number of placeholder pages
 
 # Variable to keep track of the inspection panel instance
 var inspection_panel = null
 var direct_spawner = null
 var game_camera = null
-var current_selected_character = null  # Track the currently selected character
-var game_manager = null  # Reference to the game manager
-var global_character_manager = null  # Reference to the global character manager
+var current_selected_character = null # Track the currently selected character
+var game_manager = null # Reference to the game manager
+var global_character_manager = null # Reference to the global character manager
 
 # References to scroll textures
 var closed_scroll_texture
@@ -232,28 +232,28 @@ func _on_scroll_button_pressed():
 	$CanvasLayer/Control/BookInterface.visible = true
 	current_page = 0
 	update_book_content()
-	AudioManager.play_ui_click()  # Play UI click when opening book
+	AudioManager.play_ui_click() # Play UI click when opening book
 	print("LOCATION: Book interface opened")
 
 func _on_book_close_button_pressed():
 	# Hide the book interface
 	book_open = false
 	$CanvasLayer/Control/BookInterface.visible = false
-	AudioManager.play_ui_click()  # Play UI click when closing book
+	AudioManager.play_ui_click() # Play UI click when closing book
 	print("LOCATION: Book interface closed")
 
 func _on_book_next_button_pressed():
 	if current_page < total_pages - 1:
 		current_page += 1
 		update_book_content()
-		AudioManager.play_npc_click()  # Play funny swish sound when changing pages
+		AudioManager.play_npc_click() # Play funny swish sound when changing pages
 		print("LOCATION: Book page turned to next page")
 
 func _on_book_prev_button_pressed():
 	if current_page > 0:
 		current_page -= 1
 		update_book_content()
-		AudioManager.play_npc_click()  # Play funny swish sound when changing pages
+		AudioManager.play_npc_click() # Play funny swish sound when changing pages
 		print("LOCATION: Book page turned to previous page")
 
 func update_book_content():
@@ -348,7 +348,8 @@ func _on_exit_pressed(character):
 	print("LOCATION: Exit pressed for character:", character.variant_name if character else "None")
 	
 	if current_selected_character:
-		current_selected_character.resume_walking()
+		# Just re-enable input and clear reference, animation is already handled by inspection panel
+		current_selected_character.input_pickable = true
 		current_selected_character = null
 	
 	# Use the inspection_panel reference we already have
@@ -399,8 +400,8 @@ func _input(event):
 			var mouse_pos = get_global_mouse_position()
 			# Check if we clicked on the current character
 			var character_rect = Rect2(
-				current_selected_character.global_position - Vector2(42.5, 70),  # Half of collision shape size
-				Vector2(85, 140)  # Full collision shape size
+				current_selected_character.global_position - Vector2(42.5, 70), # Half of collision shape size
+				Vector2(85, 140) # Full collision shape size
 			)
 			clicked_on_character = character_rect.has_point(mouse_pos)
 		
@@ -476,7 +477,7 @@ func setup_minimap_button():
 # Handle minimap button pressed
 func _on_minimap_button_pressed():
 	print("LOCATION: Minimap button pressed, going to main map")
-	AudioManager.play_ui_click()  # Play UI click when going to minimap
+	AudioManager.play_ui_click() # Play UI click when going to minimap
 	save_characters_to_global_manager()
 	get_tree().change_scene_to_file("res://scenes/main_map.tscn")
 
@@ -484,140 +485,18 @@ func _on_minimap_button_pressed():
 func restore_location_characters():
 	if not global_character_manager:
 		return
-
-	var now = Time.get_unix_time_from_system()
-	var characters_data = global_character_manager.get_characters_data(location_name)
 	
-	# Create a dictionary to track restored characters
-	var restored_characters = {}
+	# Show and restore all existing characters
+	global_character_manager.show_location_characters(location_name, self)
 	
-	for data in characters_data:
-		print("Restoring character: ", data)
-		var character_scene = load("res://scenes/character.tscn")
-		var character = character_scene.instantiate()
-		
-		# Store the character reference
-		var character_id = character.get_instance_id()
-		restored_characters[character_id] = character
-		
-		# Simulate movement while away
-		var pos = data["position"]
-		var next_pos = data.get("next_position", pos)
-		var dir = data.get("walk_direction", Vector2.ZERO)
-		var speed = data.get("walking_speed", 50.0)
-		var last_time = data.get("last_update_time", now)
-		var dt = max(0, now - last_time)
-		
-		if data.get("is_walking", true):
-			# Use interpolation between last position and next position for smoother movement
-			var interpolation = min(1.0, dt * speed / max(pos.distance_to(next_pos), 0.001))
-			pos = pos.lerp(next_pos, interpolation)
-			
-			# Calculate future position based on direction and time
-			pos += dir * speed * dt
-		
-		# Set basic properties
-		character.global_position = pos
-		character.character_type = data["character_type"]
-		character.variant_name = data["variant_name"]
-		character.has_id = data["has_id"]
-		character.valid_major = data["valid_major"]
-		character.target_position = data.get("target_position", character.global_position)
-		character.is_walking = data.get("is_walking", true)
-		character.walk_direction = dir
-		character.walking_speed = speed
-		character.velocity = data.get("velocity", Vector2.ZERO)
-		character.just_spawned = data.get("just_spawned", false)
-		character.initial_position = data.get("initial_position", pos)
-		
-		# Set visual properties
-		character.modulate = data.get("modulate", Color(1, 1, 1, 1))
-		character.scale = data.get("scale", Vector2(1, 1))
-		
-		# Add to scene
-		add_child(character)
-		character.show()
-		character.visible = true
-		
-		# Set up sprite properties
-		if character.has_node("AnimatedSprite2D"):
-			var sprite = character.animated_sprite
-			if data.has("sprite_path") and data["sprite_path"] != "":
-				var frames = load(data["sprite_path"])
-				if frames:
-					sprite.sprite_frames = frames
-			
-			# Restore sprite state
-			if data.has("current_animation"):
-				sprite.play(data["current_animation"])
-				if data.has("sprite_frame"):
-					sprite.frame = data["sprite_frame"]
-			
-			# Restore sprite orientation
-			sprite.flip_h = data.get("sprite_flip_h", false)
-		
-		print("Added character to scene: ", character, " parent: ", character.get_parent())
-	
-	# Add a delay before resuming walking for all characters
-	await get_tree().create_timer(0.5).timeout
-	
-	# Now resume walking for all valid characters
-	for character_id in restored_characters:
-		var character = restored_characters[character_id]
-		if is_instance_valid(character) and character.has_method("resume_walking") and character.is_walking:
-			# Double check that the character is still valid and in the scene tree
-			if is_instance_valid(character) and character.is_inside_tree():
-				character.resume_walking()
-	
-	for c in get_children():
-		print("Child of location after restore: ", c)
+	print("LOCATION: Restored characters for", location_name)
 
 func save_characters_to_global_manager():
 	if global_character_manager:
-		global_character_manager.clear_location(location_name)
-		var now = Time.get_unix_time_from_system()
-		for character in get_tree().get_nodes_in_group("characters"):
-			print("Saving character: ", character)
-			var anim_name = ""
-			var sprite_path = ""
-			var sprite_flip_h = false
-			var sprite_frame = 0
-			
-			if character.has_node("AnimatedSprite2D"):
-				var sprite = character.animated_sprite
-				anim_name = sprite.animation
-				sprite_flip_h = sprite.flip_h
-				sprite_frame = sprite.frame
-				if sprite.sprite_frames:
-					sprite_path = sprite.sprite_frames.resource_path
-			
-			# Calculate next position based on current movement
-			var next_pos = character.global_position
-			if character.is_walking:
-				# Simulate a small time step to get the next position
-				next_pos += character.walk_direction * character.walking_speed * 0.016  # One frame at 60fps
-			
-			var data = {
-				"position": character.global_position,
-				"next_position": next_pos,  # Store next position for smoother transitions
-				"character_type": character.character_type,
-				"variant_name": character.variant_name,
-				"has_id": character.has_id,
-				"valid_major": character.valid_major,
-				"target_position": character.target_position,
-				"is_walking": character.is_walking,
-				"walk_direction": character.walk_direction,
-				"walking_speed": character.walking_speed,
-				"velocity": character.velocity,
-				"just_spawned": character.just_spawned,
-				"current_animation": anim_name,
-				"sprite_path": sprite_path,
-				"sprite_flip_h": sprite_flip_h,
-				"sprite_frame": sprite_frame,
-				"last_update_time": now,
-				"modulate": character.modulate,
-				"scale": character.scale,
-				"initial_position": character.initial_position
-			}
-			global_character_manager.add_character_data(location_name, data)
-			character.queue_free()
+		# Hide all characters but keep them in the global manager
+		global_character_manager.hide_location_characters(location_name)
+		print("LOCATION: Saved characters for", location_name)
+
+# Getter for location name
+func get_location_name() -> String:
+	return location_name

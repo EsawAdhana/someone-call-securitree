@@ -7,8 +7,8 @@ signal remove_npc_pressed
 signal camera_reset_requested
 
 var current_character = null
-var current_view = "main"  # main, dialogue, inventory, or transcript
-var has_spoken_to = {}  # Dictionary to track characters we've spoken to
+var current_view = "main" # main, dialogue, inventory, or transcript
+var has_spoken_to = {} # Dictionary to track characters we've spoken to
 
 # UI components
 @onready var exit_button = $PanelContainer/MarginContainer/VBoxContainer/HeaderContainer/ExitButton
@@ -80,7 +80,7 @@ func _ready():
 		dialogue_margin.add_child(dialogue_scroll)
 		
 		var dialogue_vbox = VBoxContainer.new()
-		dialogue_vbox.add_theme_constant_override("separation", 20)  # Space between Q&A pairs
+		dialogue_vbox.add_theme_constant_override("separation", 20) # Space between Q&A pairs
 		dialogue_scroll.add_child(dialogue_vbox)
 		
 		# Store the VBoxContainer reference for adding dialogue entries
@@ -110,13 +110,13 @@ func _ready():
 		# Add inventory grid
 		var inventory_grid = GridContainer.new()
 		inventory_grid.name = "InventoryGrid"
-		inventory_grid.columns = 9  # Minecraft-style inventory width
-		inventory_grid.add_theme_constant_override("h_separation", 4)  # Add some spacing between slots
+		inventory_grid.columns = 9 # Minecraft-style inventory width
+		inventory_grid.add_theme_constant_override("h_separation", 4) # Add some spacing between slots
 		inventory_grid.add_theme_constant_override("v_separation", 4)
 		inventory_margin.add_child(inventory_grid)
 		
 		# Create inventory slots
-		for i in range(27):  # 3 rows of 9 slots
+		for i in range(27): # 3 rows of 9 slots
 			var slot = PanelContainer.new()
 			slot.custom_minimum_size = Vector2(64, 64)
 			
@@ -161,7 +161,7 @@ func _ready():
 		transcript_image.name = "TranscriptImage"
 		transcript_image.expand_mode = TextureRect.EXPAND_FIT_WIDTH
 		transcript_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		transcript_image.custom_minimum_size = Vector2(660, 360)  # Adjusted for margins
+		transcript_image.custom_minimum_size = Vector2(660, 360) # Adjusted for margins
 		transcript_vbox.add_child(transcript_image)
 		
 		# Update the references
@@ -228,11 +228,11 @@ func _show_content_view():
 	action_buttons.visible = false
 
 func _on_back_button_pressed():
-	AudioManager.play_ui_click()  # Play UI click when going back
+	AudioManager.play_ui_click() # Play UI click when going back
 	_switch_panel("main")
 
 func _switch_panel(panel_name: String):
-	AudioManager.play_ui_click()  # Play UI click when switching panels
+	AudioManager.play_ui_click() # Play UI click when switching panels
 	current_view = panel_name
 	
 	# Hide all panels first
@@ -256,12 +256,12 @@ func _switch_panel(panel_name: String):
 
 func create_dialogue_entry(question: String, answer: String) -> VBoxContainer:
 	var entry = VBoxContainer.new()
-	entry.add_theme_constant_override("separation", 10)  # Reduced space between Q&A pairs
+	entry.add_theme_constant_override("separation", 10) # Reduced space between Q&A pairs
 	
 	# Question container with left alignment
 	var question_margin = MarginContainer.new()
 	question_margin.add_theme_constant_override("margin_left", 20)
-	question_margin.add_theme_constant_override("margin_right", 200)  # Space on right for alignment
+	question_margin.add_theme_constant_override("margin_right", 200) # Space on right for alignment
 	
 	var question_container = PanelContainer.new()
 	var question_style = StyleBoxFlat.new()
@@ -269,7 +269,7 @@ func create_dialogue_entry(question: String, answer: String) -> VBoxContainer:
 	question_style.corner_radius_top_left = 15
 	question_style.corner_radius_top_right = 15
 	question_style.corner_radius_bottom_right = 15
-	question_style.corner_radius_bottom_left = 0  # Sharp corner for chat bubble effect
+	question_style.corner_radius_bottom_left = 0 # Sharp corner for chat bubble effect
 	question_container.add_theme_stylebox_override("panel", question_style)
 	
 	var question_padding = MarginContainer.new()
@@ -280,7 +280,7 @@ func create_dialogue_entry(question: String, answer: String) -> VBoxContainer:
 	
 	var question_label = Label.new()
 	question_label.text = question
-	question_label.custom_minimum_size = Vector2(200, 0)  # Minimum width for question
+	question_label.custom_minimum_size = Vector2(200, 0) # Minimum width for question
 	question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	question_label.add_theme_font_size_override("font_size", 16)
 	
@@ -291,12 +291,12 @@ func create_dialogue_entry(question: String, answer: String) -> VBoxContainer:
 	
 	# Add minimal space between question and answer
 	var spacer = Control.new()
-	spacer.custom_minimum_size = Vector2(0, 5)  # Reduced spacing
+	spacer.custom_minimum_size = Vector2(0, 5) # Reduced spacing
 	entry.add_child(spacer)
 	
 	# Answer container with right alignment
 	var answer_margin = MarginContainer.new()
-	answer_margin.add_theme_constant_override("margin_left", 200)  # Space on left for alignment
+	answer_margin.add_theme_constant_override("margin_left", 200) # Space on left for alignment
 	answer_margin.add_theme_constant_override("margin_right", 20)
 	
 	var answer_container = PanelContainer.new()
@@ -305,7 +305,7 @@ func create_dialogue_entry(question: String, answer: String) -> VBoxContainer:
 	answer_style.corner_radius_top_left = 15
 	answer_style.corner_radius_top_right = 15
 	answer_style.corner_radius_bottom_left = 15
-	answer_style.corner_radius_bottom_right = 0  # Sharp corner for chat bubble effect
+	answer_style.corner_radius_bottom_right = 0 # Sharp corner for chat bubble effect
 	answer_container.add_theme_stylebox_override("panel", answer_style)
 	
 	var answer_padding = MarginContainer.new()
@@ -316,7 +316,7 @@ func create_dialogue_entry(question: String, answer: String) -> VBoxContainer:
 	
 	var answer_label = Label.new()
 	answer_label.text = answer
-	answer_label.custom_minimum_size = Vector2(200, 0)  # Minimum width for answer
+	answer_label.custom_minimum_size = Vector2(200, 0) # Minimum width for answer
 	answer_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	answer_label.add_theme_font_size_override("font_size", 16)
 	
@@ -350,31 +350,31 @@ func _show_dialogue_view():
 			
 			# Handle specific Berkeley students with revealing dialogue
 			match char_data["name"]:
-				"Hannah Scott":  # Berkeley student pretending
+				"Hannah Scott": # Berkeley student pretending
 					questions = [
 						["Which dorm do you live in?", "Uh... Meier Hall? *nervously*"],
 						["What's your favorite study spot?", "The... uh... Main Quad Library?"],
-						["How often do you eat at Stern?", "Oh, I love Stern! Great... pizza."]  # Stern doesn't serve pizza
+						["How often do you eat at Stern?", "Oh, I love Stern! Great... pizza."] # Stern doesn't serve pizza
 					]
-				"Sam Green":  # Berkeley student pretending
+				"Sam Green": # Berkeley student pretending
 					questions = [
 						["What clubs are you involved in?", "The Stanford Entrepreneurship Club! We meet in... uh... Building 9."],
-						["Which dining hall do you prefer?", "Definitely Manz dining!"],  # Incorrect name for Manz Hall
-						["Where's your next class?", "Over in the Engineering Center."]  # Using generic name
+						["Which dining hall do you prefer?", "Definitely Manz dining!"], # Incorrect name for Manz Hall
+						["Where's your next class?", "Over in the Engineering Center."] # Using generic name
 					]
-				"Tenzin Sherpa":  # Berkeley student pretending
+				"Tenzin Sherpa": # Berkeley student pretending
 					questions = [
-						["Can you direct me to Hoover Tower?", "Oh yeah, it's right next to the student union!"],  # Wrong location
-						["What's your favorite campus tradition?", "I love when we all run through the fountain before finals!"],  # Mixed up traditions
-						["Which year are you?", "Junior, started here right after COVID."]  # Timeline might not match
+						["Can you direct me to Hoover Tower?", "Oh yeah, it's right next to the student union!"], # Wrong location
+						["What's your favorite campus tradition?", "I love when we all run through the fountain before finals!"], # Mixed up traditions
+						["Which year are you?", "Junior, started here right after COVID."] # Timeline might not match
 					]
-				"Kelvin Nguyen":  # Actual Stanford student
+				"Kelvin Nguyen": # Actual Stanford student
 					questions = [
 						["Which dorm do you live in?", char_data["dorm"]],
 						["What clubs are you involved in?", "I'm the SVSA President and also involved in the Stanford Sustainable Investing Group."],
 						["What's your major?", "Computational Biology - just finished BIOE 214 last quarter."]
 					]
-				_:  # Default Stanford student questions
+				_: # Default Stanford student questions
 					var clubs_response = ", ".join(char_data["clubs"]) if char_data.get("clubs", []).size() > 0 else "Just focusing on classes this quarter."
 					questions = [
 						["Which dorm do you live in?", char_data["dorm"]],
@@ -422,7 +422,7 @@ func _show_transcript_view():
 			
 			if image:
 				var transcript_number = get_transcript_number(char_data["name"])
-				var transcript_name = char_data["name"].replace(" ", "")  # Remove spaces
+				var transcript_name = char_data["name"].replace(" ", "") # Remove spaces
 				var transcript_path = "res://assets/L1_transcripts/" + transcript_name + "_Transcript_" + str(transcript_number) + ".png"
 				print("DEBUG: Attempting to load transcript from: ", transcript_path)
 				var transcript_texture = load(transcript_path)
@@ -517,23 +517,34 @@ func hide_panel():
 	if current_character:
 		# Re-enable input on the character before clearing reference
 		current_character.input_pickable = true
+		# Resume walking and ensure animation is playing
+		if current_character.has_node("AnimatedSprite2D"):
+			var sprite = current_character.get_node("AnimatedSprite2D")
+			sprite.play("walk")
+		current_character.resume_walking()
 	current_character = null
-	print("Inspection Panel: Hidden")
+	print("Inspection Panel: Hidden and character state restored")
 
 func _on_exit_button_pressed():
-	AudioManager.play_ui_click()  # Play UI click when exiting
+	AudioManager.play_ui_click() # Play UI click when exiting
+	if current_character:
+		# Resume walking and ensure animation is playing
+		if current_character.has_node("AnimatedSprite2D"):
+			var sprite = current_character.get_node("AnimatedSprite2D")
+			sprite.play("walk")
+		current_character.resume_walking()
 	exit_pressed.emit(current_character)
 	visible = false
 
 func _on_approve_button_pressed():
 	if current_character:
-		AudioManager.play_ui_click()  # Play UI click when approving
+		AudioManager.play_ui_click() # Play UI click when approving
 		character_approved.emit(current_character)
 		visible = false
 
 func _on_reject_button_pressed():
 	if current_character:
-		AudioManager.play_ui_click()  # Play UI click when rejecting
+		AudioManager.play_ui_click() # Play UI click when rejecting
 		# Play pop sound after a short delay to match the disappear animation
 		await get_tree().create_timer(0.3).timeout
 		AudioManager.play_pop()
@@ -561,4 +572,4 @@ func get_transcript_number(character_name: String) -> int:
 		"Hannah Scott": return 8
 		"Sam Green": return 9
 		"Tenzin Sherpa": return 10
-		_: return 1  # Default to first transcript if name not found
+		_: return 1 # Default to first transcript if name not found

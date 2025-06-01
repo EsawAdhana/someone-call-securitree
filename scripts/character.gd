@@ -1,7 +1,7 @@
 extends CharacterBody2D
 
 # Character types and properties
-@export var character_type: int = 0  # 0 = Stanford, 1 = Berkeley
+@export var character_type: int = 0 # 0 = Stanford, 1 = Berkeley
 @export var walking_speed: float = 200.0
 
 # List of male names for sprite selection
@@ -11,7 +11,7 @@ const MALE_NAMES = ["Alex", "Daniel", "Kelvin", "Ryan", "Sam"]
 var variant_name: String = "Unknown"
 var has_id: bool = true
 var valid_major: bool = true
-var l1_id: String = ""  # Store the L1ID for the character
+var l1_id: String = "" # Store the L1ID for the character
 var has_been_interacted: bool = false
 var has_been_rejected: bool = false
 var was_rejected: bool = false
@@ -56,7 +56,7 @@ func _ready():
 	input_event.connect(_on_input_event)
 	
 	# Connect to inspection panel signals - using more robust method
-	await get_tree().create_timer(0.1).timeout  # Small delay to ensure scene is ready
+	await get_tree().create_timer(0.1).timeout # Small delay to ensure scene is ready
 	var inspection_panel = find_inspection_panel()
 	if inspection_panel:
 		inspection_panel.exit_pressed.connect(_on_inspection_exit.bind())
@@ -92,7 +92,7 @@ func set_sprite_variant():
 	# Check if it's a male name
 	if first_name in MALE_NAMES:
 		# Randomly choose between stanford1 and stanford2
-		var variant = randi() % 2 + 1  # This gives us 1 or 2
+		var variant = randi() % 2 + 1 # This gives us 1 or 2
 		print("CHARACTER DEBUG: Male character %s using stanford%d sprite" % [first_name, variant])
 		animated_sprite.animation = "stanford%d" % variant
 	else:
@@ -112,10 +112,10 @@ func _input(event):
 			var shape_pos = global_position + shape.position
 			
 			# Simple bounding box check
-			if global_mouse_pos.x >= shape_pos.x - shape_size.x/2 and \
-			   global_mouse_pos.x <= shape_pos.x + shape_size.x/2 and \
-			   global_mouse_pos.y >= shape_pos.y - shape_size.y/2 and \
-			   global_mouse_pos.y <= shape_pos.y + shape_size.y/2:
+			if global_mouse_pos.x >= shape_pos.x - shape_size.x / 2 and \
+			   global_mouse_pos.x <= shape_pos.x + shape_size.x / 2 and \
+			   global_mouse_pos.y >= shape_pos.y - shape_size.y / 2 and \
+			   global_mouse_pos.y <= shape_pos.y + shape_size.y / 2:
 				print("CHARACTER DEBUG: Direct click detected!")
 				_handle_click()
 				get_viewport().set_input_as_handled()
@@ -131,20 +131,20 @@ func _physics_process(delta):
 		# Get viewport boundaries
 		var viewport_rect = get_viewport_rect()
 		var viewport_size = viewport_rect.size
-		var margin = 50  # Keep characters away from the edges
+		var margin = 50 # Keep characters away from the edges
 		
 		# Check if character hits viewport boundaries and bounce or choose new target
 		var should_change_target = false
 		if global_position.x <= margin or global_position.x >= viewport_size.x - margin:
-			if randf() < 0.5:  # 50% chance to bounce, 50% to choose new target
-				walk_direction.x *= -1  # Bounce
+			if randf() < 0.5: # 50% chance to bounce, 50% to choose new target
+				walk_direction.x *= -1 # Bounce
 				face_walk_direction()
 			else:
 				should_change_target = true
 		
 		if global_position.y <= margin or global_position.y >= viewport_size.y - margin:
-			if randf() < 0.5:  # 50% chance to bounce, 50% to choose new target
-				walk_direction.y *= -1  # Bounce
+			if randf() < 0.5: # 50% chance to bounce, 50% to choose new target
+				walk_direction.y *= -1 # Bounce
 				face_walk_direction()
 			else:
 				should_change_target = true
@@ -178,7 +178,9 @@ func _handle_click():
 	# Stop character and emit signal
 	is_walking = false
 	if animated_sprite:
-		animated_sprite.pause()
+		animated_sprite.stop()
+		animated_sprite.frame = 0 # Reset to first frame
+		print("CHARACTER DEBUG: Animation stopped")
 	
 	# Mark as interacted and hide exclamation mark
 	has_been_interacted = true
@@ -189,7 +191,7 @@ func _handle_click():
 	print("CHARACTER DEBUG: character_clicked signal emitted")
 	
 	# Visual feedback
-	modulate = Color(1.5, 1.5, 1.5)  # Bright highlight when clicked
+	modulate = Color(1.5, 1.5, 1.5) # Bright highlight when clicked
 	# Reset modulate after a short time
 	var tween = create_tween()
 	tween.tween_property(self, "modulate", Color(1, 1, 1), 0.3)
@@ -197,11 +199,11 @@ func _handle_click():
 # Visual feedback for mouse hover
 func _on_mouse_entered():
 	print("CHARACTER DEBUG: Mouse entered")
-	modulate = Color(1.2, 1.2, 1.2)  # Slight highlight
+	modulate = Color(1.2, 1.2, 1.2) # Slight highlight
 
 func _on_mouse_exited():
 	print("CHARACTER DEBUG: Mouse exited")
-	modulate = Color(1, 1, 1)  # Normal color
+	modulate = Color(1, 1, 1) # Normal color
 
 # Movement functions
 func start_walking():
@@ -264,9 +266,9 @@ func resume_walking():
 	is_walking = true
 	
 	# Ensure animation is playing
-	if animated_sprite:
-		animated_sprite.play()
-		print("CHARACTER DEBUG: Animation restarted")
+	if animated_sprite and animated_sprite.sprite_frames:
+		animated_sprite.play("walk")
+		print("CHARACTER DEBUG: Animation restarted with walk animation")
 	
 	# Choose a new target and direction
 	choose_new_target()
@@ -294,11 +296,11 @@ func _on_inspection_exit(character):
 func find_inspection_panel():
 	# Try different possible paths, starting with the most likely
 	var paths = [
-		"../../../UI/InspectionPanel",  # Relative to character in LocationTemplate
-		"/root/LocationTemplate/UI/InspectionPanel",  # Absolute path
-		"../../UI/InspectionPanel",  # Legacy path
-		"/root/MainMap/UI/InspectionPanel",  # Alternative path
-		"/root/Main/UI/InspectionPanel"  # Alternative path
+		"../../../UI/InspectionPanel", # Relative to character in LocationTemplate
+		"/root/LocationTemplate/UI/InspectionPanel", # Absolute path
+		"../../UI/InspectionPanel", # Legacy path
+		"/root/MainMap/UI/InspectionPanel", # Alternative path
+		"/root/Main/UI/InspectionPanel" # Alternative path
 	]
 	
 	for path in paths:
@@ -329,7 +331,7 @@ func _on_character_rejected(character):
 		has_been_rejected = true
 		was_rejected = true
 		# If it's a Stanford student and they were rejected, decrease morale
-		if character_type == 0:  # Stanford student
+		if character_type == 0: # Stanford student
 			MoraleManager.decrease_morale()
 		disappear()
 
@@ -337,7 +339,7 @@ func _on_disappear_timer_timeout():
 	print("CHARACTER DEBUG: Character timed out:", variant_name)
 	
 	# If it's a Berkeley student and they weren't rejected, decrease morale
-	if character_type == 1 and not was_rejected:  # Berkeley student
+	if character_type == 1 and not was_rejected: # Berkeley student
 		MoraleManager.decrease_morale()
 	
 	# Make the character disappear
@@ -361,9 +363,9 @@ func _on_interaction_timeout():
 	# Handle the character timing out without interaction
 	if game_manager:
 		print("CHARACTER DEBUG: Found game manager, handling timeout")
-		if character_type == 1:  # Berkeley
+		if character_type == 1: # Berkeley
 			print("CHARACTER DEBUG: Berkeley student timed out")
-		else:  # Stanford
+		else: # Stanford
 			print("CHARACTER DEBUG: Stanford student timed out")
 	else:
 		push_error("CHARACTER DEBUG: Could not find GameManager for timeout handling")
