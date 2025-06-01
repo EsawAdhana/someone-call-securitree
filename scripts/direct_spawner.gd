@@ -4,7 +4,7 @@ extends Node2D
 @export var character_scene: PackedScene
 @export var spawn_interval_min: float = 3.0
 @export var spawn_interval_max: float = 6.0
-@export var max_characters: int = 10  # Changed to 10 for our predefined characters
+@export var max_characters: int = 10 # Changed to 10 for our predefined characters
 
 # Track current characters
 var current_characters = []
@@ -103,9 +103,9 @@ func spawn_character():
 	character.input_pickable = true
 	character.character_type = char_data["type"]
 	character.variant_name = char_data["name"]
-	character.has_id = true  # All our predefined characters have IDs
-	character.valid_major = true  # All our predefined characters have valid majors
-	character.l1_id = char_data["id"]  # Set the ID for the character
+	character.has_id = true # All our predefined characters have IDs
+	character.valid_major = true # All our predefined characters have valid majors
+	character.l1_id = char_data["id"] # Set the ID for the character
 	
 	# Store additional data in the character for the inspection panel
 	character.set_meta("character_data", char_data)
@@ -114,8 +114,6 @@ func spawn_character():
 	if not character.character_clicked.is_connected(_on_character_clicked):
 		character.character_clicked.connect(_on_character_clicked)
 		print("[SPAWN DEBUG] Connected character click signal")
-	
-	print("[SPAWN DEBUG] Character properties set for:", char_data["name"])
 	
 	# Assign Stanford sprite based on character's name (to determine gender)
 	if character.has_node("AnimatedSprite2D"):
@@ -128,7 +126,7 @@ func spawn_character():
 		# Choose sprite based on gender
 		var sprite_frames
 		if female_names.has(first_name):
-			sprite_frames = load("res://assets/characters/stanford3.tres")  # Female sprite
+			sprite_frames = load("res://assets/characters/stanford3.tres") # Female sprite
 		else:
 			# Randomly choose between stanford1 and stanford2 for male characters
 			var male_sprites = [
@@ -174,18 +172,26 @@ func spawn_character():
 	character.target_position = target_position
 	print("[SPAWN DEBUG] Character target set to:", target_position)
 	
-	# Add to scene and start walking
-	add_child(character)
+	# Add to our tracking array
 	current_characters.append(character)
 	
-	# Force visibility
-	character.visible = true
-	character.modulate.a = 1.0  # Ensure full opacity
-	
-	print("[SPAWN DEBUG] Character added to scene tree")
-	print("[SPAWN DEBUG] Character parent:", character.get_parent())
-	print("[SPAWN DEBUG] Character visible:", character.visible)
-	print("[SPAWN DEBUG] Character global position:", character.global_position)
+	# Add to the global manager instead of adding directly to the scene
+	var location = get_parent()
+	if location and location.has_method("get_location_name"):
+		var location_name = location.get_location_name()
+		var global_manager = get_node("/root/GlobalCharacterManager")
+		if global_manager:
+			# Add to the global manager
+			global_manager.add_character(location_name, character)
+			# Add to the scene immediately since this is a new character
+			location.add_child(character)
+			character.visible = true
+			character.modulate.a = 1.0 # Ensure full opacity
+			print("[SPAWN DEBUG] Character added to scene and global manager")
+		else:
+			push_error("[SPAWN DEBUG] Could not find GlobalCharacterManager")
+	else:
+		push_error("[SPAWN DEBUG] Could not determine location name")
 	
 	print("[SPAWN DEBUG] Successfully spawned character", char_data["name"], "of type", char_data["type"])
 	print("[SPAWN DEBUG] New character count:", current_characters.size())
