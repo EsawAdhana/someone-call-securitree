@@ -28,6 +28,9 @@ var has_spoken_to = {} # Dictionary to track characters we've spoken to
 @onready var id_card = $PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard
 @onready var action_buttons = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ActionButtons
 
+# Store character items
+var character_items = {}
+
 # A list of possible dialogues
 var stanford_dialogues = [
 	"Hi there! I'm just passing through to the library.",
@@ -46,8 +49,10 @@ var berkeley_dialogues = [
 ]
 
 func _ready():
+	print("DEBUG: Starting _ready")
 	# Create the content panels if they don't exist
 	if not has_node("PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels"):
+		print("DEBUG: Creating content panels")
 		var content_panels = Control.new()
 		content_panels.name = "ContentPanels"
 		content_panels.size_flags_horizontal = Control.SIZE_FILL
@@ -176,13 +181,6 @@ func _ready():
 	# Hide the panel initially
 	visible = false
 	
-	# Disconnect existing connections if any
-	if reject_button.pressed.is_connected(_on_reject_button_pressed):
-		reject_button.pressed.disconnect(_on_reject_button_pressed)
-	
-	if exit_button.pressed.is_connected(_on_exit_button_pressed):
-		exit_button.pressed.disconnect(_on_exit_button_pressed)
-	
 	# Connect button signals
 	approve_button.pressed.connect(func():
 		print("DEBUG: Direct approve button press triggered")
@@ -195,15 +193,24 @@ func _ready():
 	exit_button.pressed.connect(_on_exit_button_pressed)
 	back_button.pressed.connect(_on_back_button_pressed)
 	
-	# Connect action button signals
-	interrogate_button.pressed.connect(func(): _switch_panel("dialogue"))
-	inventory_button.pressed.connect(func(): _switch_panel("inventory"))
-	transcript_button.pressed.connect(func(): _switch_panel("transcript"))
+	# Connect action button signals with debug logging
+	interrogate_button.pressed.connect(func():
+		print("DEBUG: Interrogate button pressed")
+		_switch_panel("dialogue")
+	)
+	inventory_button.pressed.connect(func():
+		print("DEBUG: Inventory button pressed")
+		_switch_panel("inventory")
+	)
+	transcript_button.pressed.connect(func():
+		print("DEBUG: Transcript button pressed")
+		_switch_panel("transcript")
+	)
 	
 	# Hide all panels initially
 	_hide_all_panels()
 	
-	print("Inspection Panel: All button signals connected in _ready")
+	print("DEBUG: Finished _ready")
 
 func _hide_all_panels():
 	if dialogue_panel:
@@ -232,6 +239,7 @@ func _on_back_button_pressed():
 	_switch_panel("main")
 
 func _switch_panel(panel_name: String):
+	print("DEBUG: Switching to panel:", panel_name)
 	AudioManager.play_ui_click() # Play UI click when switching panels
 	current_view = panel_name
 	
@@ -245,14 +253,23 @@ func _switch_panel(panel_name: String):
 	# Show the selected panel
 	match panel_name:
 		"main":
+			print("DEBUG: Showing main panel")
 			id_card.visible = true
 			action_buttons.visible = true
 		"dialogue":
+			print("DEBUG: Showing dialogue panel")
 			dialogue_panel.visible = true
+			_show_dialogue_view()
 		"inventory":
+			print("DEBUG: Showing inventory panel")
 			inventory_panel.visible = true
+			_show_inventory_view()
 		"transcript":
+			print("DEBUG: Showing transcript panel")
 			transcript_panel.visible = true
+			_show_transcript_view()
+	
+	print("DEBUG: Panel switch complete")
 
 func create_dialogue_entry(question: String, answer: String) -> VBoxContainer:
 	var entry = VBoxContainer.new()
@@ -390,7 +407,10 @@ func _show_dialogue_view():
 	dialogue_panel.visible = true
 
 func _show_inventory_view():
+	print("DEBUG: Showing inventory view")
+	
 	if not current_character:
+		print("DEBUG: No current character")
 		return
 		
 	current_view = "inventory"
@@ -398,7 +418,62 @@ func _show_inventory_view():
 	id_card.visible = false
 	action_buttons.visible = false
 	
-	# Show the inventory panel with the grid
+	# Get the character's data
+	var char_data = current_character.get_meta("character_data")
+	if not char_data:
+		print("DEBUG: No character data found")
+		return
+		
+	print("DEBUG: Character data found for:", char_data["name"])
+	
+	# Get or generate items for this character
+	var items = _get_character_items(char_data)
+	print("DEBUG: Got items for character:", items)
+	
+	# Get the inventory grid
+	var inventory_grid = inventory_panel.find_child("InventoryGrid", true, false)
+	if not inventory_grid:
+		print("DEBUG: Could not find InventoryGrid")
+		return
+	
+	print("DEBUG: Found inventory grid with", inventory_grid.get_child_count(), "slots")
+	
+	# Clear existing items
+	for slot in inventory_grid.get_children():
+		# Clear any existing textures
+		var existing_texture = slot.get_child(0) if slot.get_child_count() > 0 else null
+		if existing_texture:
+			slot.remove_child(existing_texture)
+			existing_texture.queue_free()
+	
+	# Add items to the grid
+	for i in range(items.size()):
+		var slot = inventory_grid.get_child(i)
+		if slot:
+			var item_texture = TextureRect.new()
+			var item_name = items[i]
+			
+			# Determine the path based on whether it's a Berkeley item
+			var texture_path = "res://assets/backpack-items/"
+			if item_name.begins_with("cal-"):
+				texture_path += "berkeley/"
+			texture_path += item_name + ".png"
+			
+			print("DEBUG: Loading texture from:", texture_path)
+			
+			# Load and set the texture
+			var texture = load(texture_path)
+			if texture:
+				print("DEBUG: Successfully loaded texture for item:", item_name)
+				item_texture.texture = texture
+				item_texture.expand_mode = TextureRect.EXPAND_FIT_WIDTH
+				item_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				item_texture.custom_minimum_size = Vector2(60, 60)
+				slot.add_child(item_texture)
+			else:
+				print("DEBUG: Failed to load texture from:", texture_path)
+	
+	# Show the inventory panel
 	inventory_panel.visible = true
 
 func _show_transcript_view():
@@ -573,3 +648,17 @@ func get_transcript_number(character_name: String) -> int:
 		"Sam Green": return 9
 		"Tenzin Sherpa": return 10
 		_: return 1 # Default to first transcript if name not found
+
+func _get_character_items(char_data: Dictionary) -> Array:
+	# Check if we already have items for this character
+	if character_items.has(char_data["name"]):
+		return character_items[char_data["name"]]
+	
+	# Generate new items based on character type
+	var is_berkeley = char_data["type"] == 1
+	var items = get_node("/root/BackpackItemsManager").get_random_items_for_character(is_berkeley)
+	
+	# Store the items for this character
+	character_items[char_data["name"]] = items
+	
+	return items
