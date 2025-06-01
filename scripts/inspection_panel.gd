@@ -438,6 +438,28 @@ func _show_inventory_view():
 	
 	print("DEBUG: Found inventory grid with", inventory_grid.get_child_count(), "slots")
 	
+	# Create tooltip label if it doesn't exist
+	var tooltip_label = inventory_panel.find_child("TooltipLabel", true, false)
+	if not tooltip_label:
+		tooltip_label = Label.new()
+		tooltip_label.name = "TooltipLabel"
+		tooltip_label.visible = false
+		tooltip_label.add_theme_color_override("font_color", Color.WHITE)
+		tooltip_label.add_theme_font_size_override("font_size", 16)
+		var style = StyleBoxFlat.new()
+		style.bg_color = Color(0.2, 0.2, 0.2, 0.9)
+		style.border_width_left = 2
+		style.border_width_top = 2
+		style.border_width_right = 2
+		style.border_width_bottom = 2
+		style.border_color = Color(0.4, 0.4, 0.4, 1)
+		style.corner_radius_top_left = 4
+		style.corner_radius_top_right = 4
+		style.corner_radius_bottom_left = 4
+		style.corner_radius_bottom_right = 4
+		tooltip_label.add_theme_stylebox_override("normal", style)
+		inventory_panel.add_child(tooltip_label)
+	
 	# Clear existing items
 	for slot in inventory_grid.get_children():
 		# Clear any existing textures
@@ -469,6 +491,25 @@ func _show_inventory_view():
 				item_texture.expand_mode = TextureRect.EXPAND_FIT_WIDTH
 				item_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 				item_texture.custom_minimum_size = Vector2(60, 60)
+				
+				# Add mouse enter/exit signals for tooltip
+				item_texture.mouse_entered.connect(func():
+					# Format the item name for display (remove hyphens and capitalize)
+					var display_name = item_name.replace("-", " ").capitalize()
+					tooltip_label.text = display_name
+					tooltip_label.visible = true
+					
+					# Position tooltip above the item
+					var item_pos = item_texture.global_position
+					tooltip_label.position = Vector2(
+						item_pos.x + (item_texture.size.x - tooltip_label.size.x) / 2,
+						item_pos.y - tooltip_label.size.y - 5
+					)
+				)
+				item_texture.mouse_exited.connect(func():
+					tooltip_label.visible = false
+				)
+				
 				slot.add_child(item_texture)
 			else:
 				print("DEBUG: Failed to load texture from:", texture_path)
