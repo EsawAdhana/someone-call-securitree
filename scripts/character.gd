@@ -56,6 +56,18 @@ func _ready():
 			game_manager.register_berkeley_person()
 			print("CHARACTER DEBUG: Registered Berkeley person with game manager")
 	
+	# Register this character with the game manager for total count tracking
+	var game_manager = get_node_or_null("/root/GameManager")
+	if not game_manager:
+		# Try to find game manager in the current scene
+		var current_scene = get_tree().current_scene
+		if current_scene:
+			game_manager = current_scene.get_node_or_null("GameManager")
+	
+	if game_manager and game_manager.has_method("register_character"):
+		game_manager.register_character()
+		print("CHARACTER DEBUG: Registered character with game manager for total count")
+	
 	# Store initial position for debugging
 	initial_position = global_position
 	
@@ -232,9 +244,22 @@ func _handle_click():
 		print("CHARACTER DEBUG: Animation stopped")
 	
 	# Mark as interacted and hide exclamation mark
-	has_been_interacted = true
-	if exclamation_mark:
-		exclamation_mark.visible = false
+	if not has_been_interacted:
+		has_been_interacted = true
+		if exclamation_mark:
+			exclamation_mark.visible = false
+		
+		# Notify game manager that this character has been interacted with
+		var game_manager = get_node_or_null("/root/GameManager")
+		if not game_manager:
+			# Try to find game manager in the current scene
+			var current_scene = get_tree().current_scene
+			if current_scene:
+				game_manager = current_scene.get_node_or_null("GameManager")
+		
+		if game_manager and game_manager.has_method("increment_interacted_characters"):
+			game_manager.increment_interacted_characters()
+			print("CHARACTER DEBUG: Notified game manager of character interaction")
 	
 	emit_signal("character_clicked", self)
 	print("CHARACTER DEBUG: character_clicked signal emitted")

@@ -20,6 +20,10 @@ var is_in_location = false # Track if player is in a location
 var berkeley_people_in_location: int = 0
 var berkeley_people_cleared: int = 0
 
+# Auto-skip tracking
+var total_characters_in_location: int = 0
+var characters_interacted_with: int = 0
+
 signal time_updated(time_data)
 signal workday_ended
 
@@ -73,6 +77,10 @@ func _on_level_started(level_number: int):
 	# Reset berkeley people counters
 	berkeley_people_in_location = 0
 	berkeley_people_cleared = 0
+	
+	# Reset character interaction tracking
+	total_characters_in_location = 0
+	characters_interacted_with = 0
 	
 	# Set the time based on level progression
 	# Level 1: Start at 9:00, ends at 9:15
@@ -245,6 +253,43 @@ func get_current_day():
 func register_berkeley_person():
 	berkeley_people_in_location += 1
 	print("Game Manager: Berkeley person registered. Total:", berkeley_people_in_location)
+
+# Functions to track total characters in location
+func register_character():
+	total_characters_in_location += 1
+	print("Game Manager: Character registered. Total:", total_characters_in_location)
+
+func increment_interacted_characters():
+	characters_interacted_with += 1
+	print("Game Manager: Character interaction count:", characters_interacted_with, "/", total_characters_in_location)
+	
+	# Check if we should auto-skip
+	check_auto_skip_conditions()
+
+func check_auto_skip_conditions():
+	# Check if all characters have been interacted with
+	var all_characters_checked = (characters_interacted_with >= total_characters_in_location)
+	
+	# Check if no Berkeley students remain (all have been cleared)
+	var no_berkeley_remaining = (berkeley_people_in_location - berkeley_people_cleared) <= 0
+	
+	print("Game Manager: Auto-skip check - All checked:", all_characters_checked, ", No Berkeley remaining:", no_berkeley_remaining)
+	
+	# Only auto-skip if BOTH conditions are met AND we have characters in the location
+	if all_characters_checked and no_berkeley_remaining and total_characters_in_location > 0:
+		print("Game Manager: Auto-skip conditions met! Advancing time and returning to main map.")
+		
+		# Advance time to the end of the level (15 minutes total)
+		var minutes_to_advance = 15 - (current_minute % 15)
+		if minutes_to_advance == 0:
+			minutes_to_advance = 15
+		
+		advance_time(minutes_to_advance)
+		
+		# Complete the level after a short delay
+		await get_tree().create_timer(0.5).timeout
+		var current_level = LevelManager.get_current_level()
+		LevelManager.complete_level(current_level)
 
 func get_berkeley_stats():
 	return {

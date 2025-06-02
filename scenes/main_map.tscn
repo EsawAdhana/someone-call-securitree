@@ -183,7 +183,7 @@ shape = SubResource("RectangleShape2D_sa572")
 
 [node name="Sprite2D" type="Sprite2D" parent="FloMoArea"]
 position = Vector2(-771, 1728)
-3texture = ExtResource("19_flomo")
+texture = ExtResource("19_flomo")
 
 [node name="GameManager" type="Node" parent="."]
 script = ExtResource("3_hd37j")
@@ -198,3 +198,13 @@ visible = false
 layer = 5
 
 [node name="TimeDisplay" parent="TimeUI" instance=ExtResource("7_time")]
+
+[node name="DarknessOverlay" type="CanvasLayer" parent="."]
+layer = 1
+
+[node name="DarknessRect" type="ColorRect" parent="DarknessOverlay"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.1)
+mouse_filter = 2

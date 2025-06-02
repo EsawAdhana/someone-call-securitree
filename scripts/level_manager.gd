@@ -7,7 +7,7 @@ signal location_unlocked(location_name)
 signal time_limit_reached(level_number)
 
 # Level configuration
-const LEVEL_DURATION_SECONDS = 15 # 15 seconds per level/round
+const LEVEL_DURATION_SECONDS = 1 # 1 second per level/round for testing
 const TIME_INCREMENT_PER_LEVEL = 15 # Each level adds 15 minutes (15 seconds of real time = 15 minutes game time)
 
 # Level progression order - first location to last

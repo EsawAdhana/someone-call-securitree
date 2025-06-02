@@ -35,7 +35,15 @@ var location_display_names = {
 # Tooltip label
 var tooltip_label: Label
 
+# Darkening overlay reference
+var darkness_rect: ColorRect
+
 func _ready():
+	# Set up darkness overlay reference first to prevent flashing
+	darkness_rect = $DarknessOverlay/DarknessRect
+	# Update darkness immediately before anything else
+	update_darkness_overlay()
+	
 	# Start playing background music
 	AudioManager.play_background_music()
 	
@@ -82,6 +90,9 @@ func _update_location_states():
 func _on_location_unlocked(location_name: String):
 	print("MAP: Location unlocked:", location_name)
 	_update_location_states()
+	
+	# Update darkness overlay when a new location is unlocked
+	update_darkness_overlay()
 	
 	# Add flash/glow animation for the newly unlocked location
 	_play_unlock_animation(location_name)
@@ -133,6 +144,9 @@ func _play_unlock_animation(location_name: String):
 func _on_level_completed(level_number: int):
 	print("MAP: Level", level_number, "completed, updating location states")
 	_update_location_states()
+	
+	# Update darkness overlay when level is completed
+	update_darkness_overlay()
 
 func _process(_delta):
 	if tooltip_label.visible:
@@ -264,3 +278,27 @@ func setup_location_areas():
 	
 	# Show animation for first location if this is the initial game start
 	call_deferred("_check_for_first_location_animation")
+
+func update_darkness_overlay():
+	if not darkness_rect:
+		return
+	
+	var current_level = LevelManager.get_current_level()
+	var unlocked_count = LevelManager.get_unlocked_locations().size()
+	
+	# Start darkening from the 7th location (MainQuadArea)
+	# Since locations are unlocked sequentially, we can use unlocked count
+	var darkness_level = 0
+	if unlocked_count >= 7:  # Starting from 7th location
+		darkness_level = unlocked_count - 6  # 7th location = 1/12, 8th = 2/12, etc.
+	
+	# Cap at 6/12 darkness (since we have 12 locations total, and start at 7th)
+	darkness_level = min(darkness_level, 6)
+	
+	# Calculate alpha value (1/12 increments)
+	var alpha = darkness_level / 12.0
+	
+	# Apply darkness
+	darkness_rect.color = Color(0, 0, 0, alpha)
+	
+	print("MAP: Updated darkness overlay - Level:", current_level, "Unlocked:", unlocked_count, "Darkness:", alpha)

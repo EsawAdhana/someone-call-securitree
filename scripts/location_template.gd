@@ -22,9 +22,17 @@ var closed_scroll_texture
 var open_scroll_texture
 var scroll_sprite
 
+# Darkening overlay reference
+var darkness_rect: ColorRect
+
 func _ready():
 	print("LOCATION: Ready called for ", self)
 	print("LOCATION: Location template initializing...")
+	
+	# Set up darkness overlay reference first to prevent flashing
+	darkness_rect = $DarknessOverlay/DarknessRect
+	# Update darkness immediately before anything else
+	update_darkness_overlay()
 	
 	# Set up the camera if it doesn't exist
 	setup_camera()
@@ -505,3 +513,28 @@ func _on_level_started(level_number: int):
 	# Update direct spawner max character count
 	if direct_spawner:
 		direct_spawner.update_max_character_count()
+
+# Update darkness overlay when location loads
+func update_darkness_overlay():
+	if not darkness_rect:
+		return
+	
+	var current_level = LevelManager.get_current_level()
+	var unlocked_count = LevelManager.get_unlocked_locations().size()
+	
+	# Start darkening from the 7th location (MainQuadArea)
+	# Since locations are unlocked sequentially, we can use unlocked count
+	var darkness_level = 0
+	if unlocked_count >= 7:  # Starting from 7th location
+		darkness_level = unlocked_count - 6  # 7th location = 1/12, 8th = 2/12, etc.
+	
+	# Cap at 6/12 darkness (since we have 12 locations total, and start at 7th)
+	darkness_level = min(darkness_level, 6)
+	
+	# Calculate alpha value (1/12 increments)
+	var alpha = darkness_level / 12.0
+	
+	# Apply darkness
+	darkness_rect.color = Color(0, 0, 0, alpha)
+	
+	print("LOCATION: Updated darkness overlay - Level:", current_level, "Unlocked:", unlocked_count, "Darkness:", alpha)
