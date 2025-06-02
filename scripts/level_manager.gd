@@ -9,7 +9,7 @@ signal victory_achieved(final_morale)
 
 # Level configuration
 const LEVEL_DURATION_SECONDS = 30 # 30 seconds per level/round per user request
-const TIME_INCREMENT_PER_LEVEL = 30 # Each level adds 30 minutes (30 seconds of real time = 30 minutes game time)
+const TIME_INCREMENT_PER_LEVEL = 60 # Each level adds 60 minutes (1 hour) of game time
 
 # Level progression order - first location to last
 const LOCATION_ORDER = [
@@ -28,8 +28,8 @@ const LOCATION_ORDER = [
 ]
 
 # Game state
-var current_level: int = 12  # Start at Stadium for testing
-var max_level: int = 12      # Start with max level at Stadium
+var current_level: int = 1  # Start at level 1 (Florence Moore Hall)
+var max_level: int = 1      # Start with max level at 1
 var unlocked_locations: Array = []
 var is_timer_running: bool = false
 var level_timer: Timer
@@ -48,11 +48,9 @@ func _ready():
 	level_timer.timeout.connect(_on_level_timer_timeout)
 	add_child(level_timer)
 	
-	# Initialize all locations as unlocked for testing (up to Stadium)
-	for i in range(LOCATION_ORDER.size()):
-		unlocked_locations.append(LOCATION_ORDER[i])
-		print("LEVEL: Unlocked location for testing:", LOCATION_ORDER[i])
-	print("LEVEL: All locations unlocked for Stadium testing")
+	# Initialize with only the first location unlocked
+	unlocked_locations.append(LOCATION_ORDER[0])  # Only Florence Moore Hall (FloMoArea)
+	print("LEVEL: Starting with only", LOCATION_ORDER[0], "unlocked")
 
 func start_level(level_number: int):
 	# Only update current_level if it's different to avoid confusion
@@ -155,8 +153,8 @@ func get_unlocked_locations() -> Array:
 	return unlocked_locations.duplicate()
 
 func get_level_target_time() -> int:
-	# Calculate target time: 9:00 AM + (level * 30 minutes)
-	# Level 1: 9:30, Level 2: 10:00, etc.
+	# Calculate target time: 9:00 AM + (level * 60 minutes)
+	# Level 1: 10:00 AM, Level 2: 11:00 AM, etc.
 	return 9 * 60 + (current_level * TIME_INCREMENT_PER_LEVEL) # Return minutes since midnight
 
 func set_game_manager_reference(gm: Node):
@@ -164,14 +162,13 @@ func set_game_manager_reference(gm: Node):
 	print("LEVEL: Set game manager reference")
 
 func reset_levels():
-	current_level = 12
-	max_level = 12
+	current_level = 1
+	max_level = 1
 	unlocked_locations.clear()
-	# Unlock all locations for testing
-	for i in range(LOCATION_ORDER.size()):
-		unlocked_locations.append(LOCATION_ORDER[i])
+	# Start with only the first location unlocked
+	unlocked_locations.append(LOCATION_ORDER[0])
 	stop_level_timer()
-	print("LEVEL: Reset to Stadium testing state")
+	print("LEVEL: Reset to level 1 with only", LOCATION_ORDER[0], "unlocked")
 
 func get_location_for_level(level_number: int) -> String:
 	if level_number > 0 and level_number <= LOCATION_ORDER.size():

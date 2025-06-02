@@ -5,7 +5,7 @@ extends Node2D
 @export var spawn_interval_min: float = 3.0
 @export var spawn_interval_max: float = 6.0
 @export var base_characters: int = 2 # Start with 2 characters in round 1
-@export var characters_per_round_increase: int = 2 # Increase by 2 each round
+@export var characters_per_round_increase: int = 1 # Increase by 1 each round (changed from 2)
 
 # Round timing configuration
 var round_duration: float = 30.0  # Total round duration in seconds (updated to 30s)
@@ -72,14 +72,9 @@ func update_max_characters_for_level():
 	# Get current level from LevelManager
 	var current_level = LevelManager.get_current_level()
 	
-	# Special case for Stadium (level 12) - only spawn 4 characters
-	if current_level == 12:
-		max_characters = 4
-		print("[SPAWN DEBUG] Stadium (Level 12) - Max characters set to:", max_characters)
-	else:
-		# Calculate max characters: Round 1 = 2, Round 2 = 4, Round 3 = 6, etc.
-		max_characters = base_characters + (current_level - 1) * characters_per_round_increase
-		print("[SPAWN DEBUG] Level", current_level, "- Max characters updated to:", max_characters)
+	# Calculate max characters: Round 1 = 2, Round 2 = 3, Round 3 = 4, etc.
+	max_characters = base_characters + (current_level - 1) * characters_per_round_increase
+	print("[SPAWN DEBUG] Level", current_level, "- Max characters updated to:", max_characters, "(", base_characters, " + ", (current_level - 1), " * ", characters_per_round_increase, ")")
 	
 	print("[SPAWN DEBUG] Final max characters for level", current_level, ":", max_characters)
 
@@ -244,6 +239,13 @@ func spawn_character():
 	character.has_id = true # All our predefined characters have IDs
 	character.valid_major = true # All our predefined characters have valid majors
 	character.l1_id = char_data["id"] # Set the ID for the character
+	
+	# Set the displayed name (use displayed_name if available, otherwise use name)
+	var displayed_name = char_data.get("displayed_name", char_data["name"])
+	if character.has_node("NameLabel"):
+		var name_label = character.get_node("NameLabel")
+		name_label.text = displayed_name
+		print("[SPAWN DEBUG] Set character display name to:", displayed_name)
 	
 	# Store additional data in the character for the inspection panel
 	character.set_meta("character_data", char_data)

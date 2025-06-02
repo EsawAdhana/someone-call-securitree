@@ -327,7 +327,12 @@ func _on_character_clicked(character):
 
 # Handle character approved
 func _on_character_approved(character):
+	print("========= LOCATION: CHARACTER APPROVED =========")
 	print("LOCATION: Character approved:", character.variant_name)
+	print("LOCATION: Character type:", "Stanford" if character.character_type == 0 else "Berkeley")
+	print("LOCATION: game_manager reference:", game_manager)
+	print("LOCATION: game_manager has _on_character_approved method:", game_manager.has_method("_on_character_approved") if game_manager else "game_manager is null")
+	
 	# Clear the current selected character
 	current_selected_character = null
 	# Reset camera position (character is still walking)
@@ -335,7 +340,13 @@ func _on_character_approved(character):
 	
 	# If the game manager exists, notify it of the character approval
 	if game_manager and game_manager.has_method("_on_character_approved"):
+		print("LOCATION: ✅ Calling game manager's _on_character_approved")
 		game_manager._on_character_approved(character)
+		print("LOCATION: ✅ Successfully called game manager's _on_character_approved")
+	else:
+		print("LOCATION: ❌ ERROR - Game manager not found or doesn't have _on_character_approved method!")
+		print("LOCATION: game_manager is:", game_manager)
+	print("===============================================")
 
 # Handle character rejected
 func _on_character_rejected(character):

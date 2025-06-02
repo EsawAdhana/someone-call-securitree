@@ -25,6 +25,7 @@ var just_spawned: bool = true
 # Animation references
 @onready var animated_sprite = $AnimatedSprite2D
 @onready var exclamation_mark = $ExclamationMark
+@onready var name_label = $NameLabel
 
 # Signals
 signal character_clicked(character)
@@ -42,6 +43,10 @@ func _ready():
 	print("CHARACTER DEBUG: Character spawned at:", global_position)
 	print("CHARACTER DEBUG: Character name:", variant_name)
 	print("CHARACTER DEBUG: Character type:", "Stanford" if character_type == 0 else "Berkeley")
+	
+	# Initialize name label if available (will be set by spawner)
+	if name_label:
+		name_label.text = variant_name  # Default to variant_name, will be overridden by spawner
 	
 	# Always use the singleton game manager
 	var game_manager = get_node("/root/GameManager")
@@ -113,8 +118,12 @@ func _ready():
 	start_walking()
 
 func set_sprite_variant():
-	# Get the first name from the variant_name
-	var first_name = variant_name.split(" ")[0]
+	# Get character data to determine name for sprite selection
+	var char_data = get_meta("character_data", {})
+	var name_for_sprite = char_data.get("name", variant_name)  # Use the actual name (from ID) for sprite selection
+	
+	# Get the first name from the name
+	var first_name = name_for_sprite.split(" ")[0]
 	
 	# Check if it's a male name
 	if first_name in MALE_NAMES:

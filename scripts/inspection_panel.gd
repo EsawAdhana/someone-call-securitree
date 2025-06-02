@@ -652,27 +652,25 @@ func show_character_info(character):
 	# Make the font bigger for the character name and keep it pixelated
 	id_label.add_theme_font_size_override("font_size", 24)
 	
-	# Load the L1ID image based on character name
+	# Load the ID image based on the character's id_asset from character data
 	var id_image = $PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard/VBoxContainer/IDPlaceholder
-	var id_mapping = {
-		"Alex Kim": "AlexKim_ID_1",
-		"Jessica Li": "JessicaLi_ID_2",
-		"Ryan Field": "RyanField_ID_3",
-		"Maya Patel": "MayaPatel_ID_4",
-		"Daniel Chen": "DanielChen_ID_5",
-		"Sibana Adhana": "SibanaAdhana_ID_6",
-		"Kelvin Nguyen": "KelvinNguyen_ID_7",
-		"Hannah Scott": "HannahScott_ID_8",
-		"Sam Green": "SamGreen_ID_9",
-		"Tenzin Sherpa": "TenzinSherpa_ID_10"
-	}
+	var id_asset_filename = char_data.get("id_asset", "")
 	
-	var id_filename = id_mapping.get(char_data["name"], "id_card_placeholder")
-	var id_texture = load("res://assets/L1_id/" + id_filename + ".PNG")
-	if id_texture:
-		id_image.texture = id_texture
+	if id_asset_filename != "":
+		var id_texture_path = "res://assets/ids/" + id_asset_filename
+		print("INSPECTION: Loading ID texture from:", id_texture_path)
+		var id_texture = load(id_texture_path)
+		if id_texture:
+			id_image.texture = id_texture
+			print("INSPECTION: Successfully loaded ID texture for:", char_data["name"])
+		else:
+			print("INSPECTION: Failed to load ID texture from:", id_texture_path)
+			# Fallback to placeholder
+			id_image.texture = load("res://assets/id_card_placeholder.png")
 	else:
-		print("INSPECTION: Failed to load ID texture for:", id_filename)
+		print("INSPECTION: No id_asset found in character data, using placeholder")
+		# Fallback to placeholder
+		id_image.texture = load("res://assets/id_card_placeholder.png")
 	
 	print("INSPECTION: Panel updated and shown")
 
@@ -714,6 +712,9 @@ func _on_approve_button_pressed():
 	if current_character:
 		AudioManager.play_ui_click() # Play UI click when approving
 		
+		print("INSPECTION PANEL DEBUG: ✅ Approve button pressed for:", current_character.variant_name)
+		print("INSPECTION PANEL DEBUG: Character type:", "Stanford" if current_character.character_type == 0 else "Berkeley")
+		
 		# Resume walking and ensure animation is playing (same as exit button)
 		if current_character.has_node("AnimatedSprite2D"):
 			var sprite = current_character.get_node("AnimatedSprite2D")
@@ -724,7 +725,9 @@ func _on_approve_button_pressed():
 		if modal_background:
 			modal_background.visible = false
 		
+		print("INSPECTION PANEL DEBUG: ⚠️ About to emit character_approved signal")
 		character_approved.emit(current_character)
+		print("INSPECTION PANEL DEBUG: ✅ character_approved signal emitted")
 		visible = false
 
 func _on_reject_button_pressed():
@@ -779,12 +782,12 @@ func get_transcript_for_character(char_data: Dictionary) -> String:
 			return "res://assets/transcripts/" + random_berkeley + ".png"
 		else:
 			# 30% chance to get a Stanford transcript (they prepared well)
-			var stanford_transcripts = ["stanford1", "stanford3", "stanford4", "stanford5", "stanford6", "stanford7"]
+			var stanford_transcripts = ["stanford1", "stanford3", "stanford4", "stanford5", "stanford6"]
 			var random_stanford = stanford_transcripts[randi() % stanford_transcripts.size()]
 			return "res://assets/transcripts/" + random_stanford + ".png"
 	else:
 		# Real Stanford students always get legitimate Stanford transcripts
-		var stanford_transcripts = ["stanford1", "stanford3", "stanford4", "stanford5", "stanford6", "stanford7"]
+		var stanford_transcripts = ["stanford1", "stanford3", "stanford4", "stanford5", "stanford6"]
 		var random_stanford = stanford_transcripts[randi() % stanford_transcripts.size()]
 		return "res://assets/transcripts/" + random_stanford + ".png"
 

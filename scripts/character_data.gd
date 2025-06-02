@@ -1,15 +1,21 @@
 extends Node
 
-# Stanford student data pools (all legitimate)
-const STANFORD_NAMES = [
-	"Alex Kim", "Jessica Li", "Ryan Field", "Maya Patel", "Daniel Chen", 
-	"Sibana Adhana", "Kelvin Nguyen"
+# Stanford student data pools (all legitimate) - based on actual ID assets
+const STANFORD_NAME_ID_PAIRS = [
+	{"name": "Alex Kim", "id": "06649274", "id_asset": "AlexKim_ID_1.PNG"},
+	{"name": "Jessica Li", "id": "06889672", "id_asset": "JessicaLi_ID_2.PNG"},
+	{"name": "Ryan Field", "id": "06824178", "id_asset": "RyanField_ID_3.PNG"},
+	{"name": "Maya Patel", "id": "06626458", "id_asset": "MayaPatel_ID_4.PNG"},
+	{"name": "Daniel Chen", "id": "06813788", "id_asset": "DanielChen_ID_5.PNG"},
+	{"name": "Sibana Adhana", "id": "06858458", "id_asset": "SibanaAdhana_ID_6.PNG"},
+	{"name": "Kelvin Nguyen", "id": "05626489", "id_asset": "KelvinNguyen_ID_7.PNG"}
 ]
 
-const STANFORD_IDS = [
-	"06649274", "06889672", "06824178", "06626458", "06813788",
-	"06858458", "05626489", "06547321", "06782456", "06923847",
-	"06345678", "06781234", "06456789", "06987654"
+# Berkeley students using stolen/fake IDs - these are the suspicious ones
+const BERKELEY_NAME_ID_PAIRS = [
+	{"name": "Hannah Scott", "id": "06547321", "id_asset": "HannahScott_ID_8.PNG"},
+	{"name": "Sam Green", "id": "06782456", "id_asset": "SamGreen_ID_9.png"},
+	{"name": "Tenzin Sherpa", "id": "06923847", "id_asset": "TenzinSherpa_ID_10.PNG"}
 ]
 
 const STANFORD_DORMS = [
@@ -102,11 +108,14 @@ const BERKELEY_TRANSCRIPTS = [
 	}
 ]
 
-# Name-ID mismatches for Berkeley students
-const BERKELEY_NAME_ID_MISMATCHES = [
-	{"name": "Hannah Scott", "id": "78945672"}, # Uses Hannah Scott ID but with suspicious ID number
-	{"name": "Sam Green", "id": "06000000"}, # Uses Sam Green ID but with obviously fake ID
-	{"name": "Tenzin Sherpa", "id": "99999999"} # Uses Tenzin Sherpa ID but with clearly fake ID
+# Name-ID mismatches for Berkeley students (when they use wrong names)
+const BERKELEY_NAME_MISMATCHES = [
+	# Berkeley student using Hannah Scott's ID but wrong name displayed
+	{"actual_name": "Marcus Williams", "fake_name": "Hannah Scott", "stolen_id": "06547321", "id_asset": "HannahScott_ID_8.PNG"},
+	# Berkeley student using Sam Green's ID but wrong name displayed
+	{"actual_name": "Lisa Chen", "fake_name": "Sam Green", "stolen_id": "06782456", "id_asset": "SamGreen_ID_9.png"},
+	# Berkeley student using Tenzin Sherpa's ID but wrong name displayed
+	{"actual_name": "Jake Rodriguez", "fake_name": "Tenzin Sherpa", "stolen_id": "06923847", "id_asset": "TenzinSherpa_ID_10.PNG"}
 ]
 
 # Track used characters to avoid duplicates
@@ -135,21 +144,27 @@ func get_random_character() -> Dictionary:
 		return generate_berkeley_student()
 
 func generate_stanford_student() -> Dictionary:
-	# For Stanford students, everything must be legitimate and consistent
-	var name = STANFORD_NAMES[randi() % STANFORD_NAMES.size()]
-	var student_id = STANFORD_IDS[randi() % STANFORD_IDS.size()]
+	# For Stanford students, pick a random name-ID pair (everything matches perfectly)
+	var name_id_pair = STANFORD_NAME_ID_PAIRS[randi() % STANFORD_NAME_ID_PAIRS.size()]
+	var name = name_id_pair["name"]
+	var student_id = name_id_pair["id"]
+	var id_asset = name_id_pair["id_asset"]
 	
 	# Ensure no duplicates
 	while used_characters.has(name + student_id):
-		name = STANFORD_NAMES[randi() % STANFORD_NAMES.size()]
-		student_id = STANFORD_IDS[randi() % STANFORD_IDS.size()]
+		name_id_pair = STANFORD_NAME_ID_PAIRS[randi() % STANFORD_NAME_ID_PAIRS.size()]
+		name = name_id_pair["name"]
+		student_id = name_id_pair["id"]
+		id_asset = name_id_pair["id_asset"]
 	
 	used_characters.append(name + student_id)
 	
 	return {
 		"name": name,
+		"displayed_name": name,  # For Stanford students, displayed name matches ID name
 		"type": 0,
 		"id": student_id,
+		"id_asset": id_asset,
 		"dorm": STANFORD_DORMS[randi() % STANFORD_DORMS.size()],
 		"year": STANFORD_YEARS[randi() % STANFORD_YEARS.size()],
 		"major": STANFORD_MAJORS[randi() % STANFORD_MAJORS.size()],
@@ -182,30 +197,42 @@ func generate_berkeley_student() -> Dictionary:
 	
 	var name: String
 	var student_id: String
+	var id_asset: String
+	var displayed_name: String  # The name that shows above the character
 	
 	# Handle name/ID mismatch
 	if flaws.has("name_mismatch"):
-		var mismatch = BERKELEY_NAME_ID_MISMATCHES[randi() % BERKELEY_NAME_ID_MISMATCHES.size()]
-		name = mismatch["name"]
-		student_id = mismatch["id"]
+		# Berkeley student using a fake name that doesn't match their stolen ID
+		var mismatch = BERKELEY_NAME_MISMATCHES[randi() % BERKELEY_NAME_MISMATCHES.size()]
+		displayed_name = mismatch["actual_name"]  # Wrong name displayed above character
+		name = mismatch["fake_name"]  # Correct name on the stolen ID card
+		student_id = mismatch["stolen_id"]
+		id_asset = mismatch["id_asset"]
+		print("[CHARACTER DEBUG] Name mismatch - Display name:", displayed_name, "ID name:", name)
 	else:
-		# Use Berkeley student names that have corresponding ID cards
-		var berkeley_names = ["Hannah Scott", "Sam Green", "Tenzin Sherpa"]
-		name = berkeley_names[randi() % berkeley_names.size()]
-		student_id = STANFORD_IDS[randi() % STANFORD_IDS.size()]
+		# Use Berkeley student with matching name and ID (but they're still Berkeley students)
+		var berkeley_pair = BERKELEY_NAME_ID_PAIRS[randi() % BERKELEY_NAME_ID_PAIRS.size()]
+		name = berkeley_pair["name"]
+		displayed_name = name  # Name matches ID
+		student_id = berkeley_pair["id"]
+		id_asset = berkeley_pair["id_asset"]
 	
 	# Ensure no duplicates
-	while used_characters.has(name + student_id):
+	while used_characters.has(displayed_name + student_id):
 		if flaws.has("name_mismatch"):
-			var mismatch = BERKELEY_NAME_ID_MISMATCHES[randi() % BERKELEY_NAME_ID_MISMATCHES.size()]
-			name = mismatch["name"]
-			student_id = mismatch["id"]
+			var mismatch = BERKELEY_NAME_MISMATCHES[randi() % BERKELEY_NAME_MISMATCHES.size()]
+			displayed_name = mismatch["actual_name"]
+			name = mismatch["fake_name"]
+			student_id = mismatch["stolen_id"]
+			id_asset = mismatch["id_asset"]
 		else:
-			var berkeley_names = ["Hannah Scott", "Sam Green", "Tenzin Sherpa"]
-			name = berkeley_names[randi() % berkeley_names.size()]
-			student_id = STANFORD_IDS[randi() % STANFORD_IDS.size()]
+			var berkeley_pair = BERKELEY_NAME_ID_PAIRS[randi() % BERKELEY_NAME_ID_PAIRS.size()]
+			name = berkeley_pair["name"]
+			displayed_name = name
+			student_id = berkeley_pair["id"]
+			id_asset = berkeley_pair["id_asset"]
 	
-	used_characters.append(name + student_id)
+	used_characters.append(displayed_name + student_id)
 	
 	# Generate dialogue
 	var dialogue: Array
@@ -232,9 +259,11 @@ func generate_berkeley_student() -> Dictionary:
 		transcript = STANFORD_TRANSCRIPTS[randi() % STANFORD_TRANSCRIPTS.size()]
 	
 	return {
-		"name": name,
+		"name": name,  # Name on the ID card
+		"displayed_name": displayed_name,  # Name shown above character (can be different)
 		"type": 1,
 		"id": student_id,
+		"id_asset": id_asset,
 		"dorm": STANFORD_DORMS[randi() % STANFORD_DORMS.size()],
 		"year": STANFORD_YEARS[randi() % STANFORD_YEARS.size()],
 		"major": STANFORD_MAJORS[randi() % STANFORD_MAJORS.size()],

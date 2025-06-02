@@ -96,7 +96,8 @@ func _on_restart_button_pressed():
 		
 		# Reset character tracking
 		game_manager.berkeley_people_in_location = 0
-		game_manager.berkeley_people_cleared = 0
+		game_manager.berkeley_people_rejected = 0
+		game_manager.berkeley_people_processed = 0
 		game_manager.total_characters_in_location = 0
 		game_manager.characters_interacted_with = 0
 		game_manager.planned_characters_for_round = 0

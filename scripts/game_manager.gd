@@ -2,7 +2,11 @@ extends Node
 
 # Time constants
 const WORKDAY_START_HOUR = 9 # 9:00 AM
-const WORKDAY_END_HOUR = 17 # 5:00 PM in 24-hour format
+const WORKDAY_END_HOUR = 21 # 9:00 PM (12 hours from start)
+
+# Time scaling: 1 minute every 0.5 real seconds = 2 game minutes per real second
+# So 30 real seconds = 60 game minutes (1 hour)
+const TIME_SCALE_MINUTES_PER_TICK = 1
 
 # UI node references
 @onready var inspection_panel = null
@@ -30,14 +34,14 @@ signal time_updated(time_data)
 signal workday_ended
 
 func _ready():
-	# Set up the time timer (30 real seconds = 30 game minutes, so 1 real second = 1 game minute)
-	time_timer.wait_time = 1.0
+	# Set up the time timer (0.5 real seconds = 1 game minute)
+	time_timer.wait_time = 0.5
 	time_timer.timeout.connect(_on_time_timer_timeout)
 	time_timer.name = "time_timer"
 	add_child(time_timer)
 	
 	# Don't start timer immediately - only runs in locations
-	print("Game Manager: Timer created (only runs in locations)")
+	print("Game Manager: Timer created (1 game minute every 0.5 real seconds)")
 	
 	# Find the UI nodes
 	call_deferred("setup_ui_references")
@@ -87,7 +91,8 @@ func _on_level_started(level_number: int):
 	all_planned_characters_spawned = false
 	
 	# Set the time based on level progression
-	# Level 1: 9:00-9:30 AM, Level 2: 9:30-10:00 AM, Level 3: 10:00-10:30 AM, etc.
+	# Level 1: 9:00-10:00 AM, Level 2: 10:00-11:00 AM, Level 3: 11:00-12:00 PM, etc.
+	# Each level represents 60 game minutes (1 hour)
 	set_time_for_level(level_number)
 	
 	# Mark that we're in a location and start the timer
@@ -122,24 +127,21 @@ func set_time_for_level(level_number: int):
 		return
 	
 	# For subsequent levels, calculate target time and handle early exits
-	# Level 2: 9:30 AM, Level 3: 10:00 AM, Level 4: 10:30 AM, etc.
-	var target_total_minutes = level_number * 30  # Each level represents 30 game minutes
-	var target_hour = WORKDAY_START_HOUR
-	var target_minute = target_total_minutes % 60
-	
-	# Handle hour overflow
-	if target_total_minutes >= 60:
-		target_hour += target_total_minutes / 60
+	# Level 1: 9:00-10:00 AM, Level 2: 10:00-11:00 AM, Level 3: 11:00-12:00 PM, etc.
+	# Each level represents 60 game minutes (1 hour)
+	var target_hour = WORKDAY_START_HOUR + (level_number - 1)
+	var target_minute = 0
 	
 	# If we're ahead of the target time (early exit), jump to the target time
 	# If we're at or past the target time (natural progression), keep current time
-	var current_total_minutes = (current_hour - WORKDAY_START_HOUR) * 60 + current_minute
+	var current_time_in_minutes = (current_hour - WORKDAY_START_HOUR) * 60 + current_minute
+	var target_time_in_minutes = (level_number - 1) * 60  # Each level is 1 hour = 60 minutes
 	
-	if current_total_minutes < target_total_minutes:
-		# Early exit - jump to next 30-minute mark
+	if current_time_in_minutes < target_time_in_minutes:
+		# Early exit - jump to next hour mark
 		current_hour = target_hour
 		current_minute = target_minute
-		print("Game Manager: Jumped time to next 30-minute mark:", get_time_string())
+		print("Game Manager: Jumped time to next hour mark:", get_time_string())
 	else:
 		# Natural progression or already past target - keep current time
 		print("Game Manager: Keeping current time (natural progression):", get_time_string())
@@ -236,7 +238,7 @@ func _on_remove_npc_pressed(character):
 func _on_time_timer_timeout():
 	# Only advance time if we're in a location
 	if is_in_location:
-		advance_time(1) # Advance one minute every real second
+		advance_time(TIME_SCALE_MINUTES_PER_TICK) # Advance 1 minute every half second
 
 func advance_time(minutes):
 	current_minute += minutes
@@ -256,7 +258,7 @@ func advance_time(minutes):
 				current_hour = 12
 			am_pm = "PM"
 	
-	# Check for workday end (5:00 PM)
+	# Check for workday end (9:00 PM)
 	var time_in_24hr = current_hour
 	if am_pm == "PM" and current_hour != 12:
 		time_in_24hr += 12
