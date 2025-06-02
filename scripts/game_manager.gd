@@ -24,7 +24,7 @@ signal time_updated(time_data)
 signal workday_ended
 
 func _ready():
-	# Set up the time timer (1 real second = 1 game minute)
+	# Set up the time timer (15 real seconds = 15 game minutes, so 1 real second = 1 game minute)
 	time_timer.wait_time = 1.0
 	time_timer.timeout.connect(_on_time_timer_timeout)
 	time_timer.name = "time_timer"
@@ -75,8 +75,8 @@ func _on_level_started(level_number: int):
 	berkeley_people_cleared = 0
 	
 	# Set the time based on level progression
-	# Level 1: Start at 9:00, ends at 9:10
-	# Level 2: Start at 9:10, ends at 9:20, etc.
+	# Level 1: Start at 9:00, ends at 9:15
+	# Level 2: Start at 9:15, ends at 9:30, etc.
 	set_time_for_level(level_number)
 	
 	# Mark that we're in a location and start the timer
@@ -104,9 +104,9 @@ func _on_level_completed(level_number: int):
 func set_time_for_level(level_number: int):
 	# Calculate starting time for this level
 	# Level 1: 9:00 AM
-	# Level 2: 9:10 AM  
-	# Level 3: 9:20 AM, etc.
-	var total_minutes = (level_number - 1) * 10
+	# Level 2: 9:15 AM  
+	# Level 3: 9:30 AM, etc.
+	var total_minutes = (level_number - 1) * 15
 	current_hour = WORKDAY_START_HOUR
 	current_minute = total_minutes % 60
 	
@@ -145,9 +145,8 @@ func _on_character_approved(character):
 	if character.character_type == 0:
 		print("Game Manager: Correctly approved Stanford student")
 	else:
-		# If it's a Berkeley student being approved, that's wrong - decrease morale
-		print("Game Manager: Incorrectly approved Berkeley student - decreasing morale")
-		MoraleManager.decrease_morale()
+		# Berkeley student being approved - incorrect but no morale penalty
+		print("Game Manager: Incorrectly approved Berkeley student - no morale penalty")
 	
 	# Don't advance time automatically - time is managed by level system
 	# advance_time(1)

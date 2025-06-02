@@ -4,11 +4,25 @@ extends Node2D
 @export var character_scene: PackedScene
 @export var spawn_interval_min: float = 3.0
 @export var spawn_interval_max: float = 6.0
-@export var max_characters: int = 10 # Changed to 10 for our predefined characters
+@export var base_characters: int = 2 # Start with 2 characters in round 1
+@export var characters_per_round_increase: int = 2 # Increase by 2 each round
+
+# Round timing configuration
+var round_duration: float = 15.0  # Total round duration in seconds
+var spawn_window_fraction: float = 0.5  # Spawn within first 50% of round
+
+# Calculated max characters based on current level
+var max_characters: int = 2
 
 # Track current characters
 var current_characters = []
 var spawn_timer: Timer
+
+# Spawn timing variables
+var spawn_window_duration: float
+var level_start_time: float
+var spawn_times: Array = []  # Pre-calculated spawn times
+var next_spawn_index: int = 0
 
 # Character data manager
 var character_data_manager
@@ -18,6 +32,14 @@ signal character_clicked(character)
 
 func _ready():
 	print("[SPAWN DEBUG] DirectSpawner _ready() called")
+	
+	# Calculate spawn window duration
+	spawn_window_duration = round_duration * spawn_window_fraction
+	print("[SPAWN DEBUG] Spawn window duration:", spawn_window_duration, "seconds")
+	
+	# Get current level from LevelManager and calculate max characters
+	update_max_characters_for_level()
+	
 	print("[SPAWN DEBUG] Max characters set to:", max_characters)
 	
 	# Initialize character data manager
@@ -46,29 +68,110 @@ func _ready():
 	await get_tree().create_timer(0.5).timeout
 	start_spawning()
 
+func update_max_characters_for_level():
+	# Get current level from LevelManager
+	var current_level = LevelManager.get_current_level()
+	# Calculate max characters: Round 1 = 2, Round 2 = 4, Round 3 = 6, etc.
+	max_characters = base_characters + (current_level - 1) * characters_per_round_increase
+	print("[SPAWN DEBUG] Level", current_level, "- Max characters updated to:", max_characters)
+
+func calculate_spawn_times():
+	"""Calculate all spawn times within the spawn window"""
+	spawn_times.clear()
+	next_spawn_index = 0
+	
+	if max_characters <= 0:
+		return
+	
+	if max_characters == 1:
+		# If only one character, spawn it early in the window
+		spawn_times.append(randf_range(0.5, spawn_window_duration * 0.3))
+	else:
+		# Distribute spawns across the spawn window
+		# Calculate intervals to fit all characters within the spawn window
+		var available_time = spawn_window_duration - 1.0  # Leave 1 second buffer at the end
+		var base_interval = available_time / max_characters
+		
+		# Ensure minimum spacing between spawns
+		var min_spacing = 1.0
+		if base_interval < min_spacing:
+			base_interval = min_spacing
+		
+		var current_time = 0.5  # Start with small initial delay
+		
+		for i in range(max_characters):
+			# Add some randomization while staying within bounds
+			var variation = randf_range(-0.5, 0.5)
+			var spawn_time = current_time + variation
+			
+			# Ensure spawn time is within the spawn window
+			spawn_time = max(0.5, min(spawn_time, spawn_window_duration - 0.5))
+			
+			spawn_times.append(spawn_time)
+			current_time += base_interval
+			
+			# Stop if we've exceeded the spawn window
+			if current_time >= spawn_window_duration:
+				break
+	
+	# Sort spawn times to ensure proper order
+	spawn_times.sort()
+	
+	print("[SPAWN DEBUG] Calculated spawn times:", spawn_times)
+	print("[SPAWN DEBUG] All spawns will complete within", spawn_window_duration, "seconds")
+
 func start_spawning():
 	print("[SPAWN DEBUG] start_spawning() called")
 	print("[SPAWN DEBUG] Current character count:", current_characters.size())
-	set_random_spawn_time()
+	
+	# Record the level start time
+	level_start_time = Time.get_ticks_msec() / 1000.0
+	
+	# Calculate spawn times for this round
+	calculate_spawn_times()
+	
+	# Start the first spawn timer if we have any spawns scheduled
+	if spawn_times.size() > 0:
+		set_next_spawn_time()
+
+func set_next_spawn_time():
+	"""Set timer for the next scheduled spawn"""
+	if next_spawn_index >= spawn_times.size():
+		print("[SPAWN DEBUG] All spawns scheduled, no more spawn times")
+		return
+	
+	var target_spawn_time = spawn_times[next_spawn_index]
+	var current_time = (Time.get_ticks_msec() / 1000.0) - level_start_time
+	var wait_time = max(0.1, target_spawn_time - current_time)
+	
+	print("[SPAWN DEBUG] Setting spawn timer for", wait_time, "seconds (target:", target_spawn_time, "s)")
+	spawn_timer.start(wait_time)
 
 func set_random_spawn_time():
-	var wait_time = randf_range(spawn_interval_min, spawn_interval_max)
-	print("[SPAWN DEBUG] Setting spawn timer for", wait_time, "seconds")
-	spawn_timer.start(wait_time)
+	# This function is kept for compatibility but now uses the new system
+	set_next_spawn_time()
 
 func _on_spawn_timer_timeout():
 	print("[SPAWN DEBUG] Spawn timer timeout triggered")
 	print("[SPAWN DEBUG] Current character count:", current_characters.size())
 	print("[SPAWN DEBUG] Max characters:", max_characters)
 	
-	spawn_character()
+	var current_time = (Time.get_ticks_msec() / 1000.0) - level_start_time
+	print("[SPAWN DEBUG] Current time since level start:", current_time, "seconds")
 	
-	# Only set next spawn time if we haven't reached max characters
-	if current_characters.size() < max_characters:
-		print("[SPAWN DEBUG] Setting next spawn timer")
-		set_random_spawn_time()
+	# Check if we're still within the spawn window
+	if current_time <= spawn_window_duration:
+		spawn_character()
+		next_spawn_index += 1
+		
+		# Set next spawn time if more characters are scheduled
+		if next_spawn_index < spawn_times.size() and current_characters.size() < max_characters:
+			print("[SPAWN DEBUG] Setting next spawn timer")
+			set_next_spawn_time()
+		else:
+			print("[SPAWN DEBUG] All characters spawned or spawn window closed")
 	else:
-		print("[SPAWN DEBUG] Maximum characters reached, not setting next spawn timer")
+		print("[SPAWN DEBUG] Spawn window closed, no more spawning")
 
 func spawn_character():
 	print("[SPAWN DEBUG] spawn_character() called")
@@ -200,3 +303,20 @@ func spawn_character():
 func _on_character_clicked(character):
 	print("[SPAWN DEBUG] Character clicked, forwarding signal:", character.variant_name)
 	character_clicked.emit(character)
+
+# Function to update max character count based on current level (called externally)
+func update_max_character_count():
+	var old_max = max_characters
+	update_max_characters_for_level()
+	print("[SPAWN DEBUG] Updated max characters from", old_max, "to", max_characters)
+	
+	# Recalculate spawn times if the count changed
+	if old_max != max_characters:
+		calculate_spawn_times()
+	
+	# If we now have room for more characters and spawning stopped, restart it
+	if current_characters.size() < max_characters and spawn_timer.is_stopped() and next_spawn_index < spawn_times.size():
+		var current_time = (Time.get_ticks_msec() / 1000.0) - level_start_time
+		if current_time <= spawn_window_duration:
+			print("[SPAWN DEBUG] Restarting spawning due to increased max characters")
+			set_next_spawn_time()

@@ -183,7 +183,7 @@ shape = SubResource("RectangleShape2D_sa572")
 
 [node name="Sprite2D" type="Sprite2D" parent="FloMoArea"]
 position = Vector2(-771, 1728)
-texture = ExtResource("19_flomo")
+3texture = ExtResource("19_flomo")
 
 [node name="GameManager" type="Node" parent="."]
 script = ExtResource("3_hd37j")

@@ -24,7 +24,3 @@ shape = SubResource("RectangleShape2D_agfs1")
 
 [node name="ExclamationMark" parent="." instance=ExtResource("3_uxk2d")]
 position = Vector2(0, -100)
-
-[node name="DisappearTimer" type="Timer" parent="."]
-wait_time = 30.0
-one_shot = true

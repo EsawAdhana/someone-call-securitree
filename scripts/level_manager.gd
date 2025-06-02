@@ -7,8 +7,8 @@ signal location_unlocked(location_name)
 signal time_limit_reached(level_number)
 
 # Level configuration
-const LEVEL_DURATION_SECONDS = 1 # 1 second per level for fast testing
-const TIME_INCREMENT_PER_LEVEL = 10 # Each level adds 10 minutes
+const LEVEL_DURATION_SECONDS = 15 # 15 seconds per level/round
+const TIME_INCREMENT_PER_LEVEL = 15 # Each level adds 15 minutes (15 seconds of real time = 15 minutes game time)
 
 # Level progression order - first location to last
 const LOCATION_ORDER = [
@@ -135,8 +135,8 @@ func get_unlocked_locations() -> Array:
 	return unlocked_locations.duplicate()
 
 func get_level_target_time() -> int:
-	# Calculate target time: 9:00 AM + (level * 10 minutes)
-	# Level 1: 9:10, Level 2: 9:20, etc.
+	# Calculate target time: 9:00 AM + (level * 15 minutes)
+	# Level 1: 9:15, Level 2: 9:30, etc.
 	return 9 * 60 + (current_level * TIME_INCREMENT_PER_LEVEL) # Return minutes since midnight
 
 func set_game_manager_reference(gm: Node):

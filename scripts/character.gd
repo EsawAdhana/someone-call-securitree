@@ -25,7 +25,6 @@ var just_spawned: bool = true
 # Animation references
 @onready var animated_sprite = $AnimatedSprite2D
 @onready var exclamation_mark = $ExclamationMark
-@onready var disappear_timer = $DisappearTimer
 
 # Signals
 signal character_clicked(character)
@@ -103,10 +102,6 @@ func _ready():
 		if character_type == 1:  # Berkeley student
 			set_blue_exclamation_mark()
 			print("CHARACTER DEBUG: Set blue exclamation mark for Berkeley student")
-	
-	# Start disappear timer for all characters
-	disappear_timer.timeout.connect(_on_disappear_timer_timeout)
-	disappear_timer.start()
 	
 	# Start walking after a small delay
 	start_walking()
@@ -394,45 +389,5 @@ func _on_character_rejected(character):
 	if character == self:
 		has_been_rejected = true
 		was_rejected = true
-		# If it's a Stanford student and they were rejected, decrease morale
-		if character_type == 0: # Stanford student
-			MoraleManager.decrease_morale()
+		# No morale decrease here - handled by game_manager
 		disappear()
-
-func _on_disappear_timer_timeout():
-	print("CHARACTER DEBUG: Character timed out:", variant_name)
-	
-	# If it's a Berkeley student and they weren't rejected, decrease morale
-	if character_type == 1 and not was_rejected: # Berkeley student
-		MoraleManager.decrease_morale()
-	
-	# Make the character disappear
-	disappear()
-
-# Handle timeout for character interaction
-func _on_interaction_timeout():
-	print("CHARACTER DEBUG: Interaction timeout for", variant_name)
-	
-	# Get reference to game manager
-	var game_manager = get_node_or_null("/root/MainMap/GameManager")
-	
-	# If it's a Berkeley student and they were rejected within 30 seconds, don't decrease morale
-	if character_type == 1 and was_rejected:
-		print("CHARACTER DEBUG: Berkeley student was already rejected, skipping timeout penalty")
-		queue_free()
-		return
-	
-	print("CHARACTER DEBUG: Character timed out without interaction")
-	
-	# Handle the character timing out without interaction
-	if game_manager:
-		print("CHARACTER DEBUG: Found game manager, handling timeout")
-		if character_type == 1: # Berkeley
-			print("CHARACTER DEBUG: Berkeley student timed out")
-		else: # Stanford
-			print("CHARACTER DEBUG: Stanford student timed out")
-	else:
-		push_error("CHARACTER DEBUG: Could not find GameManager for timeout handling")
-	
-	# Remove the character
-	queue_free()

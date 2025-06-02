@@ -64,6 +64,7 @@ func _ready():
 	
 	# Connect to level manager signals
 	LevelManager.time_limit_reached.connect(_on_level_time_limit_reached)
+	LevelManager.level_started.connect(_on_level_started)
 
 func setup_camera():
 	# Check if we already have a camera
@@ -498,3 +499,9 @@ func _on_level_time_limit_reached(level_number: int):
 	print("LOCATION: Level time limit reached for level", level_number)
 	# Save characters and return to main map
 	save_characters_to_global_manager()
+
+func _on_level_started(level_number: int):
+	print("LOCATION: Level started for level", level_number)
+	# Update direct spawner max character count
+	if direct_spawner:
+		direct_spawner.update_max_character_count()
