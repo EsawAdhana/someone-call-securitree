@@ -71,9 +71,17 @@ func _ready():
 func update_max_characters_for_level():
 	# Get current level from LevelManager
 	var current_level = LevelManager.get_current_level()
-	# Calculate max characters: Round 1 = 2, Round 2 = 4, Round 3 = 6, etc.
-	max_characters = base_characters + (current_level - 1) * characters_per_round_increase
-	print("[SPAWN DEBUG] Level", current_level, "- Max characters updated to:", max_characters)
+	
+	# Special case for Stadium (level 12) - only spawn 4 characters
+	if current_level == 12:
+		max_characters = 4
+		print("[SPAWN DEBUG] Stadium (Level 12) - Max characters set to:", max_characters)
+	else:
+		# Calculate max characters: Round 1 = 2, Round 2 = 4, Round 3 = 6, etc.
+		max_characters = base_characters + (current_level - 1) * characters_per_round_increase
+		print("[SPAWN DEBUG] Level", current_level, "- Max characters updated to:", max_characters)
+	
+	print("[SPAWN DEBUG] Final max characters for level", current_level, ":", max_characters)
 
 func calculate_spawn_times():
 	"""Calculate all spawn times within the spawn window"""

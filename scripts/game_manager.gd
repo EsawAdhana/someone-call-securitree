@@ -182,6 +182,9 @@ func _on_character_approved(character):
 	else:
 		# Berkeley student being approved - incorrect but no morale penalty
 		print("Game Manager: Incorrectly approved Berkeley student - no morale penalty")
+		# Even though this is incorrect, mark them as "cleared" so round can end
+		berkeley_people_cleared += 1
+		print("Game Manager: Berkeley cleared count incremented to:", berkeley_people_cleared)
 	
 	# Character handles increment_interacted_characters() call
 	# Don't advance time automatically - time is managed by level system
@@ -189,20 +192,31 @@ func _on_character_approved(character):
 
 func _on_character_rejected(character):
 	# Handle character rejection logic
+	print("========= GAME MANAGER: CHARACTER REJECTED =========")
 	print("Game Manager: Character rejected:", character.variant_name)
 	print("Game Manager: Character type:", "Stanford" if character.character_type == 0 else "Berkeley")
+	print("Game Manager: Berkeley stats BEFORE rejection:")
+	print("  - berkeley_people_in_location:", berkeley_people_in_location)
+	print("  - berkeley_people_cleared:", berkeley_people_cleared)
+	print("  - Remaining:", berkeley_people_in_location - berkeley_people_cleared)
 	
 	# If it's a Berkeley student being rejected, that's correct
 	if character.character_type == 1:
-		print("Game Manager: Correctly rejected Berkeley student")
+		print("Game Manager: ✅ Correctly rejected Berkeley student")
 		berkeley_people_cleared += 1
-		print("Game Manager: Berkeley cleared count is now:", berkeley_people_cleared, "/", berkeley_people_in_location)
+		print("Game Manager: ✅ Berkeley cleared count incremented to:", berkeley_people_cleared)
+		print("Game Manager: Berkeley stats AFTER rejection:")
+		print("  - berkeley_people_in_location:", berkeley_people_in_location)
+		print("  - berkeley_people_cleared:", berkeley_people_cleared)
+		print("  - Remaining:", berkeley_people_in_location - berkeley_people_cleared)
 	else:
 		# If it's a Stanford student being rejected, that's wrong - decrease morale
-		print("Game Manager: Incorrectly rejected Stanford student - decreasing morale")
+		print("Game Manager: ❌ Incorrectly rejected Stanford student - decreasing morale")
 		print("Game Manager: Current morale before decrease:", MoraleManager.get_morale())
 		MoraleManager.decrease_morale()
 		print("Game Manager: Current morale after decrease:", MoraleManager.get_morale())
+	
+	print("=====================================================")
 	
 	# Character handles increment_interacted_characters() call
 	# Don't advance time automatically - time is managed by level system
@@ -260,6 +274,12 @@ func advance_time(minutes):
 	})
 
 func _on_workday_ended():
+	# Hide inspection panel if it exists and is visible
+	var inspection_panel = find_inspection_panel()
+	if inspection_panel and inspection_panel.visible:
+		inspection_panel.visible = false
+		print("GAME MANAGER: Closed inspection panel due to workday end")
+	
 	# Play game over sound and stop background audio
 	AudioManager.play_game_over()
 	AudioManager.stop_background_audio()
@@ -284,6 +304,12 @@ func _on_workday_ended():
 
 func _on_morale_depleted():
 	print("GAME MANAGER DEBUG: ⚠️ RECEIVED morale_depleted signal - starting game over process")
+	
+	# Hide inspection panel if it exists and is visible
+	var inspection_panel = find_inspection_panel()
+	if inspection_panel and inspection_panel.visible:
+		inspection_panel.visible = false
+		print("GAME MANAGER DEBUG: Closed inspection panel due to morale depletion")
 	
 	# Stop background music immediately
 	AudioManager.stop_background_audio()
@@ -349,7 +375,13 @@ func get_current_day():
 # Functions to track Berkeley people in location
 func register_berkeley_person():
 	berkeley_people_in_location += 1
+	print("========= BERKELEY PERSON REGISTERED =========")
 	print("Game Manager: Berkeley person registered. Total:", berkeley_people_in_location)
+	print("Game Manager: Current Berkeley stats:")
+	print("  - berkeley_people_in_location:", berkeley_people_in_location)
+	print("  - berkeley_people_cleared:", berkeley_people_cleared)
+	print("  - Remaining:", berkeley_people_in_location - berkeley_people_cleared)
+	print("===============================================")
 
 # Functions to track total characters in location
 func register_character():
@@ -384,10 +416,10 @@ func check_auto_skip_conditions():
 	
 	# End round early ONLY if ALL three conditions are met:
 	# 1. All characters have been processed (approved/rejected)
-	# 2. All Berkeley students have been rejected 
+	# 2. All Berkeley students have been handled (rejected OR approved - both count as "cleared")
 	# 3. All planned characters for the round have actually spawned
 	if all_characters_processed and all_berkeley_rejected and all_planned_characters_spawned and total_characters_in_location > 0:
-		print("Game Manager: ✅ Early round completion conditions met! All Berkeley students rejected, all characters processed, and all planned characters spawned.")
+		print("Game Manager: ✅ Early round completion conditions met! All Berkeley students handled, all characters processed, and all planned characters spawned.")
 		
 		# Complete the level immediately - don't advance time since we're ending early
 		await get_tree().create_timer(0.5).timeout
@@ -434,3 +466,38 @@ func mark_all_planned_characters_spawned():
 	print("Game Manager: All planned characters have spawned")
 	# Check auto-skip conditions when all characters are spawned
 	check_auto_skip_conditions()
+
+func find_inspection_panel():
+	# Try to find the inspection panel in the current scene
+	var root = get_tree().get_root()
+	var current_scene = root.get_child(root.get_child_count() - 1)
+	
+	# First try the UI layer
+	var ui_layer = current_scene.get_node_or_null("UI")
+	if ui_layer:
+		var panel = ui_layer.get_node_or_null("InspectionPanel")
+		if panel:
+			return panel
+	
+	# Try the CanvasLayer/Control structure (location template style)
+	var canvas_layer = current_scene.get_node_or_null("CanvasLayer")
+	if canvas_layer:
+		var control = canvas_layer.get_node_or_null("Control")
+		if control:
+			var panel = control.get_node_or_null("InspectionPanel")
+			if panel:
+				return panel
+	
+	# Last resort: search recursively
+	return find_inspection_panel_recursive(current_scene)
+
+func find_inspection_panel_recursive(node: Node) -> Node:
+	if node.name == "InspectionPanel":
+		return node
+	
+	for child in node.get_children():
+		var result = find_inspection_panel_recursive(child)
+		if result:
+			return result
+	
+	return null

@@ -43,30 +43,23 @@ func _ready():
 	print("CHARACTER DEBUG: Character name:", variant_name)
 	print("CHARACTER DEBUG: Character type:", "Stanford" if character_type == 0 else "Berkeley")
 	
+	# Always use the singleton game manager
+	var game_manager = get_node("/root/GameManager")
+	
 	# Register Berkeley character with game manager
 	if character_type == 1: # Berkeley student
-		var game_manager = get_node_or_null("/root/GameManager")
-		if not game_manager:
-			# Try to find game manager in the current scene
-			var current_scene = get_tree().current_scene
-			if current_scene:
-				game_manager = current_scene.get_node_or_null("GameManager")
-		
 		if game_manager and game_manager.has_method("register_berkeley_person"):
 			game_manager.register_berkeley_person()
-			print("CHARACTER DEBUG: Registered Berkeley person with game manager")
+			print("CHARACTER DEBUG: Registered Berkeley person with singleton game manager")
+		else:
+			push_error("CHARACTER DEBUG: Could not find singleton game manager for Berkeley registration")
 	
 	# Register this character with the game manager for total count tracking
-	var game_manager = get_node_or_null("/root/GameManager")
-	if not game_manager:
-		# Try to find game manager in the current scene
-		var current_scene = get_tree().current_scene
-		if current_scene:
-			game_manager = current_scene.get_node_or_null("GameManager")
-	
 	if game_manager and game_manager.has_method("register_character"):
 		game_manager.register_character()
-		print("CHARACTER DEBUG: Registered character with game manager for total count")
+		print("CHARACTER DEBUG: Registered character with singleton game manager for total count")
+	else:
+		push_error("CHARACTER DEBUG: Could not find singleton game manager for character registration")
 	
 	# Store initial position for debugging
 	initial_position = global_position
@@ -408,19 +401,12 @@ func _on_character_rejected(character):
 				exclamation_mark.visible = false
 			
 			# Notify game manager that this character has been processed
-			var game_manager = get_node_or_null("/root/GameManager")
-			if not game_manager:
-				# Try to find game manager in the current scene
-				var current_scene = get_tree().current_scene
-				if current_scene:
-					game_manager = current_scene.get_node_or_null("GameManager")
+			var game_manager = get_node("/root/GameManager")
+			if game_manager and game_manager.has_method("increment_interacted_characters"):
+				game_manager.increment_interacted_characters()
+				print("CHARACTER DEBUG: Notified game manager of character processing (rejected)")
 			
-			if game_manager:
-				if game_manager.has_method("increment_interacted_characters"):
-					game_manager.increment_interacted_characters()
-					print("CHARACTER DEBUG: Notified game manager of character processing (rejected)")
-				
-				# Removed duplicate call - location template handles this through signals
+			# Removed duplicate call - location template handles this through signals
 		
 		has_been_rejected = true
 		was_rejected = true
@@ -444,19 +430,12 @@ func _on_character_approved(character):
 				exclamation_mark.visible = false
 			
 			# Notify game manager that this character has been processed
-			var game_manager = get_node_or_null("/root/GameManager")
-			if not game_manager:
-				# Try to find game manager in the current scene
-				var current_scene = get_tree().current_scene
-				if current_scene:
-					game_manager = current_scene.get_node_or_null("GameManager")
+			var game_manager = get_node("/root/GameManager")
+			if game_manager and game_manager.has_method("increment_interacted_characters"):
+				game_manager.increment_interacted_characters()
+				print("CHARACTER DEBUG: Notified game manager of character processing (approved)")
 			
-			if game_manager:
-				if game_manager.has_method("increment_interacted_characters"):
-					game_manager.increment_interacted_characters()
-					print("CHARACTER DEBUG: Notified game manager of character processing (approved)")
-				
-				# Removed duplicate call - location template handles this through signals
+			# Removed duplicate call - location template handles this through signals
 		
 		print("CHARACTER DEBUG: Approved character will resume walking:", variant_name)
 		# Character approved - just resume walking, no disappearing

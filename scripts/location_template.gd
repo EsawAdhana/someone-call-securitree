@@ -73,6 +73,7 @@ func _ready():
 	# Connect to level manager signals
 	LevelManager.time_limit_reached.connect(_on_level_time_limit_reached)
 	LevelManager.level_started.connect(_on_level_started)
+	LevelManager.victory_achieved.connect(_on_victory_achieved)
 
 func setup_camera():
 	# Check if we already have a camera
@@ -96,30 +97,18 @@ func setup_camera():
 		print("LOCATION: Created new game camera")
 
 func setup_game_manager():
-	# Check if we have a game manager in this scene
-	game_manager = get_node_or_null("GameManager")
+	# Always use the singleton game manager at /root/GameManager
+	game_manager = get_node("/root/GameManager")
 	
-	if not game_manager:
-		# Check if the game manager already exists in the root
-		game_manager = get_node_or_null("/root/GameManager")
-		
-		if not game_manager:
-			# Try to find the game manager in this scene
-			game_manager = $GameManager
-			if not game_manager:
-				push_error("LOCATION: Game manager not found!")
-			else:
-				print("LOCATION: Using existing game manager in this scene")
-		else:
-			print("LOCATION: Using existing game manager from root")
+	if game_manager:
+		print("LOCATION: Using singleton game manager from /root/GameManager")
+		print("LOCATION: Game manager has _on_character_rejected method:", game_manager.has_method("_on_character_rejected"))
+		print("LOCATION: Game manager path:", game_manager.get_path())
 	else:
-		print("LOCATION: Found game manager in local scene")
+		push_error("LOCATION: Could not find singleton game manager at /root/GameManager!")
 	
 	# Debug: Print game manager info
 	print("LOCATION: Final game_manager reference:", game_manager)
-	if game_manager:
-		print("LOCATION: Game manager has _on_character_rejected method:", game_manager.has_method("_on_character_rejected"))
-		print("LOCATION: Game manager path:", game_manager.get_path())
 
 func setup_global_character_manager():
 	# Try to find the global character manager in the scene tree
@@ -479,6 +468,15 @@ func get_location_name() -> String:
 
 func _on_level_time_limit_reached(level_number: int):
 	print("LOCATION: Level time limit reached for level", level_number)
+	
+	# Hide the inspection panel if it's open
+	if inspection_panel and inspection_panel.visible:
+		inspection_panel.visible = false
+		print("LOCATION: Closed inspection panel due to time limit")
+	
+	# Clear current selected character
+	current_selected_character = null
+	
 	# Save characters and return to main map
 	save_characters_to_global_manager()
 
@@ -512,3 +510,31 @@ func update_darkness_overlay():
 	darkness_rect.color = Color(0, 0, 0, alpha)
 	
 	print("LOCATION: Updated darkness overlay - Level:", current_level, "Unlocked:", unlocked_count, "Darkness:", alpha)
+
+func _on_victory_achieved(final_morale: float):
+	print("LOCATION: Victory achieved with final morale:", final_morale)
+	
+	# Hide the inspection panel if it's open
+	if inspection_panel and inspection_panel.visible:
+		inspection_panel.visible = false
+		print("LOCATION: Closed inspection panel due to victory")
+	
+	# Clear current selected character
+	current_selected_character = null
+	
+	# Pause the game
+	get_tree().paused = true
+	
+	# Stop background audio
+	AudioManager.stop_background_audio()
+	
+	# Save characters to global manager
+	save_characters_to_global_manager()
+	
+	# Find and show the victory screen
+	var victory_screen = $UI/VictoryScreen
+	if victory_screen:
+		victory_screen.show_victory(final_morale)
+		print("LOCATION: Victory screen displayed")
+	else:
+		print("LOCATION: ERROR - Victory screen not found!")

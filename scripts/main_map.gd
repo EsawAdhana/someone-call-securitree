@@ -48,11 +48,12 @@ func _ready():
 	update_darkness_overlay()
 	
 	# Start playing background music
-	# AudioManager.play_background_music()  # MUTED: Music disabled for now
+	AudioManager.play_background_music()
 	
 	# Connect to level manager signals
 	LevelManager.location_unlocked.connect(_on_location_unlocked)
 	LevelManager.level_completed.connect(_on_level_completed)
+	LevelManager.victory_achieved.connect(_on_victory_achieved)
 	
 	# Set up game manager reference for level manager
 	LevelManager.set_game_manager_reference(get_node("GameManager"))
@@ -305,3 +306,20 @@ func update_darkness_overlay():
 	darkness_rect.color = Color(0, 0, 0, alpha)
 	
 	print("MAP: Updated darkness overlay - Level:", current_level, "Unlocked:", unlocked_count, "Darkness:", alpha)
+
+func _on_victory_achieved(final_morale: float):
+	print("MAP: Victory achieved with final morale:", final_morale)
+	
+	# Pause the game
+	get_tree().paused = true
+	
+	# Stop background audio
+	AudioManager.stop_background_audio()
+	
+	# Find and show the victory screen
+	var victory_screen = $UI/VictoryScreen
+	if victory_screen:
+		victory_screen.show_victory(final_morale)
+		print("MAP: Victory screen displayed")
+	else:
+		print("MAP: ERROR - Victory screen not found!")

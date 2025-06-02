@@ -5,6 +5,7 @@ signal level_completed(level_number)
 signal level_failed(level_number)
 signal location_unlocked(location_name)
 signal time_limit_reached(level_number)
+signal victory_achieved(final_morale)
 
 # Level configuration
 const LEVEL_DURATION_SECONDS = 30 # 30 seconds per level/round per user request
@@ -27,8 +28,8 @@ const LOCATION_ORDER = [
 ]
 
 # Game state
-var current_level: int = 1
-var max_level: int = 1
+var current_level: int = 12  # Start at Stadium for testing
+var max_level: int = 12      # Start with max level at Stadium
 var unlocked_locations: Array = []
 var is_timer_running: bool = false
 var level_timer: Timer
@@ -47,10 +48,11 @@ func _ready():
 	level_timer.timeout.connect(_on_level_timer_timeout)
 	add_child(level_timer)
 	
-	# Initialize first location as unlocked
-	if LOCATION_ORDER.size() > 0:
-		unlocked_locations.append(LOCATION_ORDER[0])
-		print("LEVEL: First location unlocked:", LOCATION_ORDER[0])
+	# Initialize all locations as unlocked for testing (up to Stadium)
+	for i in range(LOCATION_ORDER.size()):
+		unlocked_locations.append(LOCATION_ORDER[i])
+		print("LEVEL: Unlocked location for testing:", LOCATION_ORDER[i])
+	print("LEVEL: All locations unlocked for Stadium testing")
 
 func start_level(level_number: int):
 	# Only update current_level if it's different to avoid confusion
@@ -99,6 +101,14 @@ func complete_level(level_number: int):
 	
 	# Stop the timer
 	stop_level_timer()
+	
+	# Check if this was the final level (Stadium - level 12)
+	if level_number >= LOCATION_ORDER.size():
+		print("LEVEL: All levels completed! Victory achieved!")
+		# Get final morale and emit victory signal
+		var final_morale = MoraleManager.get_morale()
+		victory_achieved.emit(final_morale)
+		return
 	
 	# Store the next location to unlock (if available)
 	var next_location_to_unlock = ""
@@ -154,13 +164,14 @@ func set_game_manager_reference(gm: Node):
 	print("LEVEL: Set game manager reference")
 
 func reset_levels():
-	current_level = 1
-	max_level = 1
+	current_level = 12
+	max_level = 12
 	unlocked_locations.clear()
-	if LOCATION_ORDER.size() > 0:
-		unlocked_locations.append(LOCATION_ORDER[0])
+	# Unlock all locations for testing
+	for i in range(LOCATION_ORDER.size()):
+		unlocked_locations.append(LOCATION_ORDER[i])
 	stop_level_timer()
-	print("LEVEL: Reset to initial state")
+	print("LEVEL: Reset to Stadium testing state")
 
 func get_location_for_level(level_number: int) -> String:
 	if level_number > 0 and level_number <= LOCATION_ORDER.size():

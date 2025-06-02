@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://b7a5pslagpjde" path="res://assets/map.png" id="2_kdyc3"]
 [ext_resource type="Script" uid="uid://bkh4tbmwy4iyp" path="res://scripts/game_manager.gd" id="3_hd37j"]
 [ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="6_s3jbg"]
+[ext_resource type="PackedScene" uid="uid://wde3c8fgujl3" path="res://scenes/victory_screen.tscn" id="7_victory"]
 [ext_resource type="PackedScene" path="res://scenes/time_display.tscn" id="7_time"]
 [ext_resource type="Texture2D" uid="uid://vbakkyrkpe52" path="res://assets/grayscaled/grayscale stadium.png" id="8_stadium"]
 [ext_resource type="Texture2D" uid="uid://blgm1vbr6l5pm" path="res://assets/grayscaled/grayscale hoover.png" id="9_hoover"]
@@ -192,6 +193,9 @@ script = ExtResource("3_hd37j")
 layer = 10
 
 [node name="GameOver" parent="UI" instance=ExtResource("6_s3jbg")]
+visible = false
+
+[node name="VictoryScreen" parent="UI" instance=ExtResource("7_victory")]
 visible = false
 
 [node name="TimeUI" type="CanvasLayer" parent="."]

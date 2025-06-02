@@ -4,7 +4,7 @@ signal morale_changed(new_value)
 signal morale_depleted
 
 var current_morale: float = 100.0
-const MORALE_DECREASE_AMOUNT: float = 50.0
+const MORALE_DECREASE_AMOUNT: float = 25.0
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS  # Make sure it persists across scene changes

@@ -45,7 +45,7 @@ func set_locations_reached(location_number):
 	if locations_reached <= 1:
 		stats_text = "You didn't even make it past the first location (FloMo)!"
 	elif locations_reached >= location_names.size():
-		stats_text = "Incredible! You made it through all " + str(location_names.size()) + " locations!"
+		stats_text = "A tragedy! You lost on the final location"
 	else:
 		var location_name = location_names[locations_reached - 1] if locations_reached <= location_names.size() else "Location " + str(locations_reached)
 		stats_text = "You reached " + str(locations_reached) + " locations and made it to " + location_name + "."

@@ -3,11 +3,13 @@
 [ext_resource type="Script" uid="uid://0gajywupkcfc" path="res://scripts/location_template.gd" id="1_1xo34"]
 [ext_resource type="Texture2D" uid="uid://dty67hnup4k7c" path="res://assets/grass.png" id="1_r81h7"]
 [ext_resource type="Texture2D" uid="uid://b7a5pslagpjde" path="res://assets/map.png" id="2_kdyc3"]
-[ext_resource type="Script" uid="uid://bkh4tbmwy4iyp" path="res://scripts/game_manager.gd" id="3_hd37j"]
 [ext_resource type="PackedScene" uid="uid://0oxf0y6h5x7c" path="res://scenes/inspection_panel.tscn" id="3_u8j71"]
 [ext_resource type="Texture2D" uid="uid://b7lp47wee7mad" path="res://assets/closed_scroll.png" id="4_dx7wg"]
 [ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="6_s3jbg"]
+[ext_resource type="PackedScene" uid="uid://wde3c8fgujl3" path="res://scenes/victory_screen.tscn" id="7_victory"]
 [ext_resource type="PackedScene" path="res://scenes/time_display.tscn" id="8_time"]
+[ext_resource type="Script" uid="uid://0wwaor83r1da" path="res://scripts/location_template.gd" id="1_location"]
+[ext_resource type="Texture2D" uid="uid://clglovunkpcbs" path="res://assets/grass.png" id="2_grass"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6qk4c"]
 bg_color = Color(0.647059, 0.513726, 0.294118, 1)
@@ -168,13 +170,13 @@ grow_horizontal = 2
 grow_vertical = 0
 text = ">"
 
-[node name="GameManager" type="Node" parent="."]
-script = ExtResource("3_hd37j")
-
 [node name="UI" type="CanvasLayer" parent="."]
 layer = 10
 
 [node name="GameOver" parent="UI" instance=ExtResource("6_s3jbg")]
+visible = false
+
+[node name="VictoryScreen" parent="UI" instance=ExtResource("7_victory")]
 visible = false
 
 [node name="DarknessOverlay" type="CanvasLayer" parent="."]
