@@ -1,0 +1,188 @@
+extends Node
+
+signal level_started(level_number)
+signal level_completed(level_number)
+signal level_failed(level_number)
+signal location_unlocked(location_name)
+signal time_limit_reached(level_number)
+
+# Level configuration
+const LEVEL_DURATION_SECONDS = 1 # 1 second per level for fast testing
+const TIME_INCREMENT_PER_LEVEL = 10 # Each level adds 10 minutes
+
+# Level progression order - first location to last
+const LOCATION_ORDER = [
+	"FloMoArea",
+	"TresidderArea",
+	"FarrillagaArea",
+	"Y2E2Area",
+	"CoDaArea",
+	"CantorArea",
+	"MainQuadArea",
+	"GreenLibraryArea",
+	"MeyerGreenArea",
+	"HooverTowerArea",
+	"GSBArea",
+	"StadiumArea"
+]
+
+# Game state
+var current_level: int = 1
+var max_level: int = 1
+var unlocked_locations: Array = []
+var is_timer_running: bool = false
+var level_timer: Timer
+var level_start_time: int = 0
+
+# References
+var game_manager: Node = null
+
+func _ready():
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	# Set up level timer
+	level_timer = Timer.new()
+	level_timer.wait_time = LEVEL_DURATION_SECONDS
+	level_timer.one_shot = true
+	level_timer.timeout.connect(_on_level_timer_timeout)
+	add_child(level_timer)
+	
+	# Initialize first location as unlocked
+	if LOCATION_ORDER.size() > 0:
+		unlocked_locations.append(LOCATION_ORDER[0])
+		print("LEVEL: First location unlocked:", LOCATION_ORDER[0])
+
+func start_level(level_number: int):
+	# Only update current_level if it's different to avoid confusion
+	if current_level != level_number:
+		print("LEVEL: Updating current level from", current_level, "to", level_number)
+		current_level = level_number
+	else:
+		print("LEVEL: Current level already set to", level_number)
+	
+	print("LEVEL: Starting level", level_number)
+	
+	# Start level timer (10 seconds for location visit)
+	is_timer_running = true
+	level_start_time = Time.get_ticks_msec()
+	level_timer.start()
+	
+	level_started.emit(level_number)
+
+func stop_level_timer():
+	print("LEVEL: Stopping level timer")
+	is_timer_running = false
+	level_timer.stop()
+
+func _on_level_timer_timeout():
+	print("LEVEL: Level", current_level, "time limit reached")
+	is_timer_running = false
+	
+	# Emit signal that time limit was reached
+	time_limit_reached.emit(current_level)
+	
+	# Boot player back to main map and unlock next location
+	complete_level(current_level)
+
+func complete_level(level_number: int):
+	print("LEVEL: Completing level", level_number)
+	
+	# Stop the timer
+	stop_level_timer()
+	
+	# Store the next location to unlock (if available)
+	var next_location_to_unlock = ""
+	if level_number < LOCATION_ORDER.size():
+		next_location_to_unlock = LOCATION_ORDER[level_number] # level_number is 1-based, array is 0-based
+		unlocked_locations.append(next_location_to_unlock)
+		max_level = level_number + 1
+		# Update current_level to the next level to keep it in sync
+		current_level = level_number + 1
+		print("LEVEL: Advanced to next level:", current_level)
+		print("LEVEL: Will unlock next location after scene change:", next_location_to_unlock)
+	
+	level_completed.emit(level_number)
+	
+	# Return to main map
+	get_tree().change_scene_to_file("res://scenes/main_map.tscn")
+	
+	# Emit the unlock signal after a short delay to ensure the main map scene is ready
+	if next_location_to_unlock != "":
+		# Use call_deferred to ensure the signal is emitted after the scene is fully loaded
+		call_deferred("_emit_delayed_unlock", next_location_to_unlock)
+
+func _emit_delayed_unlock(location_name: String):
+	# Add a small delay to ensure the main map scene is fully ready
+	await get_tree().create_timer(0.1).timeout
+	print("LEVEL: Emitting delayed unlock signal for:", location_name)
+	location_unlocked.emit(location_name)
+
+func fail_level(level_number: int):
+	print("LEVEL: Failed level", level_number)
+	stop_level_timer()
+	level_failed.emit(level_number)
+
+func is_location_unlocked(location_name: String) -> bool:
+	return location_name in unlocked_locations
+
+func get_current_level() -> int:
+	return current_level
+
+func get_max_level() -> int:
+	return max_level
+
+func get_unlocked_locations() -> Array:
+	return unlocked_locations.duplicate()
+
+func get_level_target_time() -> int:
+	# Calculate target time: 9:00 AM + (level * 10 minutes)
+	# Level 1: 9:10, Level 2: 9:20, etc.
+	return 9 * 60 + (current_level * TIME_INCREMENT_PER_LEVEL) # Return minutes since midnight
+
+func set_game_manager_reference(gm: Node):
+	game_manager = gm
+	print("LEVEL: Set game manager reference")
+
+func reset_levels():
+	current_level = 1
+	max_level = 1
+	unlocked_locations.clear()
+	if LOCATION_ORDER.size() > 0:
+		unlocked_locations.append(LOCATION_ORDER[0])
+	stop_level_timer()
+	print("LEVEL: Reset to initial state")
+
+func get_location_for_level(level_number: int) -> String:
+	if level_number > 0 and level_number <= LOCATION_ORDER.size():
+		return LOCATION_ORDER[level_number - 1]
+	return ""
+
+# Debug function to get complete level state information
+func get_level_debug_info() -> Dictionary:
+	return {
+		"current_level": current_level,
+		"max_level": max_level,
+		"current_location": get_location_for_level(current_level),
+		"unlocked_locations": unlocked_locations.duplicate(),
+		"is_timer_running": is_timer_running
+	}
+
+# Function to verify level consistency
+func verify_level_consistency() -> bool:
+	var is_consistent = true
+	var debug_info = get_level_debug_info()
+	
+	print("LEVEL DEBUG: ", debug_info)
+	
+	# Check if current level location is unlocked
+	var current_location = get_location_for_level(current_level)
+	if current_location != "" and not is_location_unlocked(current_location):
+		print("LEVEL WARNING: Current level location is not unlocked!")
+		is_consistent = false
+	
+	# Check if max_level matches unlocked locations
+	if unlocked_locations.size() != max_level:
+		print("LEVEL WARNING: Max level doesn't match unlocked locations count!")
+		is_consistent = false
+	
+	return is_consistent 

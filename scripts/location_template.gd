@@ -61,6 +61,9 @@ func _ready():
 	
 	# Restore any existing characters for this location
 	restore_location_characters()
+	
+	# Connect to level manager signals
+	LevelManager.time_limit_reached.connect(_on_level_time_limit_reached)
 
 func setup_camera():
 	# Check if we already have a camera
@@ -321,9 +324,6 @@ func _on_character_approved(character):
 	# Reset camera position (character is still walking)
 	reset_camera_position()
 	
-	# Advance time by 15 minutes
-	advance_time(15)
-	
 	# If the game manager exists, notify it of the character approval
 	if game_manager and game_manager.has_method("_on_character_approved"):
 		game_manager._on_character_approved(character)
@@ -335,9 +335,6 @@ func _on_character_rejected(character):
 	current_selected_character = null
 	# Reset camera position (character is still walking)
 	reset_camera_position()
-	
-	# Advance time by 15 minutes
-	advance_time(15)
 	
 	# If the game manager exists, notify it of the character rejection
 	if game_manager and game_manager.has_method("_on_character_rejected"):
@@ -367,9 +364,6 @@ func _on_remove_npc_pressed(character):
 	# Remove the character from the global manager
 	if global_character_manager:
 		global_character_manager.remove_character(location_name, character)
-	
-	# Advance time by 15 minutes
-	advance_time(15)
 
 # Reset camera to the center of the viewport
 func reset_camera_position():
@@ -499,3 +493,8 @@ func save_characters_to_global_manager():
 # Getter for location name
 func get_location_name() -> String:
 	return location_name
+
+func _on_level_time_limit_reached(level_number: int):
+	print("LOCATION: Level time limit reached for level", level_number)
+	# Save characters and return to main map
+	save_characters_to_global_manager()

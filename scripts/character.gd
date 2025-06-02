@@ -36,6 +36,27 @@ var initial_position: Vector2
 var debug_frame_count: int = 0
 
 func _ready():
+	# Set up walking
+	initial_position = global_position
+	just_spawned = true
+	
+	print("CHARACTER DEBUG: Character spawned at:", global_position)
+	print("CHARACTER DEBUG: Character name:", variant_name)
+	print("CHARACTER DEBUG: Character type:", "Stanford" if character_type == 0 else "Berkeley")
+	
+	# Register Berkeley character with game manager
+	if character_type == 1: # Berkeley student
+		var game_manager = get_node_or_null("/root/GameManager")
+		if not game_manager:
+			# Try to find game manager in the current scene
+			var current_scene = get_tree().current_scene
+			if current_scene:
+				game_manager = current_scene.get_node_or_null("GameManager")
+		
+		if game_manager and game_manager.has_method("register_berkeley_person"):
+			game_manager.register_berkeley_person()
+			print("CHARACTER DEBUG: Registered Berkeley person with game manager")
+	
 	# Store initial position for debugging
 	initial_position = global_position
 	

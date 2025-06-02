@@ -14,6 +14,11 @@ var current_day = 1
 var current_hour = WORKDAY_START_HOUR
 var current_minute = 0
 var am_pm = "AM"
+var is_in_location = false # Track if player is in a location
+
+# Level integration
+var berkeley_people_in_location: int = 0
+var berkeley_people_cleared: int = 0
 
 signal time_updated(time_data)
 signal workday_ended
@@ -22,14 +27,25 @@ func _ready():
 	# Set up the time timer (1 real second = 1 game minute)
 	time_timer.wait_time = 1.0
 	time_timer.timeout.connect(_on_time_timer_timeout)
+	time_timer.name = "time_timer"
 	add_child(time_timer)
-	time_timer.start()
+	
+	# Don't start timer immediately - only runs in locations
+	print("Game Manager: Timer created (only runs in locations)")
 	
 	# Find the UI nodes
 	call_deferred("setup_ui_references")
 	
 	# Connect to morale manager signals
 	MoraleManager.morale_depleted.connect(_on_morale_depleted)
+	
+	# Connect to level manager signals
+	LevelManager.time_limit_reached.connect(_on_level_time_limit_reached)
+	LevelManager.level_started.connect(_on_level_started)
+	LevelManager.level_completed.connect(_on_level_completed)
+	
+	# Emit initial time to ensure UI displays 9:00 AM at start
+	call_deferred("emit_initial_time")
 
 func setup_ui_references():
 	# This is called deferred to ensure all nodes are ready
@@ -37,66 +53,121 @@ func setup_ui_references():
 	
 	# Try to find inspection panel in all locations
 	var root = get_tree().get_root()
-	for child in root.get_children():
-		# Check all UI layers in the scene
-		var ui_layer = child.get_node_or_null("UI")
-		if ui_layer:
-			# Try to find the inspection panel
-			inspection_panel = ui_layer.get_node_or_null("InspectionPanel")
-			if inspection_panel:
-				print("Game Manager: Found InspectionPanel at path:", inspection_panel.get_path())
-				break
+	var current_scene = root.get_child(root.get_child_count() - 1)
 	
-	# Try to find game over screen in all locations
-	for child in root.get_children():
-		# Check all UI layers in the scene
-		var ui_layer = child.get_node_or_null("UI")
-		if ui_layer:
-			# Try to find the game over screen
-			game_over_screen = ui_layer.get_node_or_null("GameOver")
-			if game_over_screen:
-				print("Game Manager: Found GameOver at path:", game_over_screen.get_path())
-				break
-	
-	# Connect signals
-	if inspection_panel:
-		inspection_panel.character_approved.connect(_on_character_approved)
-		inspection_panel.character_rejected.connect(_on_character_rejected)
-		inspection_panel.exit_pressed.connect(_on_exit_pressed)
-		inspection_panel.remove_npc_pressed.connect(_on_remove_npc_pressed)
-		print("Game Manager: Connected all inspection panel signals")
-	else:
-		push_error("Game Manager: Could not find InspectionPanel node")
+	# Look for inspection panel in UI layer
+	var ui_layer = current_scene.get_node_or_null("UI")
+	if ui_layer:
+		inspection_panel = ui_layer.get_node_or_null("InspectionPanel")
+		if inspection_panel:
+			print("Game Manager: Found inspection panel in UI layer")
+		
+		# Look for game over screen
+		game_over_screen = ui_layer.get_node_or_null("GameOver")
+		if game_over_screen:
+			print("Game Manager: Found game over screen in UI layer")
 
-# Helper function to print the scene tree for debugging
-func print_scene_tree(node = null, indent = 0):
-	if node == null:
-		node = get_tree().get_root()
+func _on_level_started(level_number: int):
+	print("Game Manager: Level", level_number, "started")
 	
-	var indent_str = ""
-	for i in range(indent):
-		indent_str += "  "
+	# Reset berkeley people counters
+	berkeley_people_in_location = 0
+	berkeley_people_cleared = 0
 	
-	print(indent_str + node.name + " (" + node.get_class() + ")")
+	# Set the time based on level progression
+	# Level 1: Start at 9:00, ends at 9:10
+	# Level 2: Start at 9:10, ends at 9:20, etc.
+	set_time_for_level(level_number)
 	
-	for child in node.get_children():
-		print_scene_tree(child, indent + 1)
+	# Mark that we're in a location and start the timer
+	is_in_location = true
+	time_timer.start()
+	print("Game Manager: Timer started for location visit")
+	
+	# Emit initial time
+	time_updated.emit({
+		"day": current_day,
+		"hour": current_hour,
+		"minute": current_minute,
+		"am_pm": am_pm
+	})
+
+func _on_level_completed(level_number: int):
+	print("Game Manager: Level", level_number, "completed")
+	
+	# Stop the timer and mark that we're no longer in a location
+	time_timer.stop()
+	is_in_location = false
+	
+	print("Game Manager: Timer paused on main map at", get_time_string())
+
+func set_time_for_level(level_number: int):
+	# Calculate starting time for this level
+	# Level 1: 9:00 AM
+	# Level 2: 9:10 AM  
+	# Level 3: 9:20 AM, etc.
+	var total_minutes = (level_number - 1) * 10
+	current_hour = WORKDAY_START_HOUR
+	current_minute = total_minutes % 60
+	
+	# Handle hour overflow
+	if total_minutes >= 60:
+		current_hour += total_minutes / 60
+	
+	# Handle AM/PM conversion
+	if current_hour >= 12:
+		if current_hour == 12:
+			am_pm = "PM"
+		else:
+			current_hour = current_hour % 12
+			if current_hour == 0:
+				current_hour = 12
+			am_pm = "PM"
+	else:
+		am_pm = "AM"
+
+func _on_level_time_limit_reached(level_number: int):
+	print("Game Manager: Time limit reached for level", level_number)
+	
+	# Check if there are uncleared Berkeley people
+	var uncleared_berkeley = berkeley_people_in_location - berkeley_people_cleared
+	if uncleared_berkeley > 0:
+		print("Game Manager:", uncleared_berkeley, "Berkeley people not cleared, decreasing morale")
+		for i in range(uncleared_berkeley):
+			MoraleManager.decrease_morale()
 
 func _on_character_approved(character):
 	# Handle character approval logic
 	print("Game Manager: Character approved:", character.variant_name)
 	print("Game Manager: Character type:", "Stanford" if character.character_type == 0 else "Berkeley")
 	
-	# Advance time
-	advance_time(1)
+	# If it's a Stanford student being approved, that's correct
+	if character.character_type == 0:
+		print("Game Manager: Correctly approved Stanford student")
+	else:
+		# If it's a Berkeley student being approved, that's wrong - decrease morale
+		print("Game Manager: Incorrectly approved Berkeley student - decreasing morale")
+		MoraleManager.decrease_morale()
+	
+	# Don't advance time automatically - time is managed by level system
+	# advance_time(1)
 
 func _on_character_rejected(character):
 	# Handle character rejection logic
 	print("Game Manager: Character rejected:", character.variant_name)
 	print("Game Manager: Character type:", "Stanford" if character.character_type == 0 else "Berkeley")
 	
-	# Advance time
-	advance_time(1)
+	# If it's a Berkeley student being rejected, that's correct
+	if character.character_type == 1:
+		print("Game Manager: Correctly rejected Berkeley student")
+		berkeley_people_cleared += 1
+	else:
+		# If it's a Stanford student being rejected, that's wrong - decrease morale
+		print("Game Manager: Incorrectly rejected Stanford student - decreasing morale")
+		MoraleManager.decrease_morale()
+	
+	# Don't advance time automatically - time is managed by level system
+	# advance_time(1)
 
 func _on_exit_pressed():
 	# Handle exit button press
@@ -106,11 +177,13 @@ func _on_remove_npc_pressed(character):
 	# Handle remove NPC button press
 	print("Game Manager: Remove NPC button pressed for", character.variant_name)
 	
-	# Advance time
-	advance_time(1)
+	# Don't advance time automatically - time is managed by level system
+	# advance_time(1)
 
 func _on_time_timer_timeout():
-	advance_time(1) # Advance one minute every real second
+	# Only advance time if we're in a location
+	if is_in_location:
+		advance_time(1) # Advance one minute every real second
 
 func advance_time(minutes):
 	current_minute += minutes
@@ -168,3 +241,28 @@ func get_current_time():
 
 func get_current_day():
 	return current_day
+
+# Functions to track Berkeley people in location
+func register_berkeley_person():
+	berkeley_people_in_location += 1
+	print("Game Manager: Berkeley person registered. Total:", berkeley_people_in_location)
+
+func get_berkeley_stats():
+	return {
+		"total": berkeley_people_in_location,
+		"cleared": berkeley_people_cleared,
+		"remaining": berkeley_people_in_location - berkeley_people_cleared
+	}
+
+func get_time_string() -> String:
+	var minutes_str = str(current_minute).pad_zeros(2)
+	return "%d:%s %s" % [current_hour, minutes_str, am_pm]
+
+func emit_initial_time():
+	# Emit the initial game time (9:00 AM) for the UI
+	time_updated.emit({
+		"day": current_day,
+		"hour": current_hour,
+		"minute": current_minute,
+		"am_pm": am_pm
+	})

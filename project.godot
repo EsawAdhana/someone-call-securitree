@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 LocationManager="*res://scripts/location_manager.gd"
 GameManager="*res://scripts/game_manager.gd"
+LevelManager="*res://scripts/level_manager.gd"
 GlobalCharacterManager="*res://scripts/global_character_manager.gd"
 MoraleManager="*res://scripts/morale_manager.gd"
 GlobalUI="*res://scenes/global_ui.tscn"
