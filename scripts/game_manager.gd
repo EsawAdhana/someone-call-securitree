@@ -1,19 +1,30 @@
 extends Node
 
 # Time constants
-const TIME_PER_CHARACTER_INTERACTION = 15  # minutes
+const WORKDAY_START_HOUR = 9 # 9:00 AM
+const WORKDAY_END_HOUR = 17 # 5:00 PM in 24-hour format
 
 # UI node references
 @onready var inspection_panel = null
 @onready var game_over_screen = null
+@onready var time_timer = Timer.new()
 
-# Game state (moved from bottom_info_bar)
+# Game state
 var current_day = 1
-var current_hour = 9
+var current_hour = WORKDAY_START_HOUR
 var current_minute = 0
 var am_pm = "AM"
 
+signal time_updated(time_data)
+signal workday_ended
+
 func _ready():
+	# Set up the time timer (1 real second = 1 game minute)
+	time_timer.wait_time = 1.0
+	time_timer.timeout.connect(_on_time_timer_timeout)
+	add_child(time_timer)
+	time_timer.start()
+	
 	# Find the UI nodes
 	call_deferred("setup_ui_references")
 	
@@ -77,7 +88,7 @@ func _on_character_approved(character):
 	print("Game Manager: Character type:", "Stanford" if character.character_type == 0 else "Berkeley")
 	
 	# Advance time
-	advance_time(TIME_PER_CHARACTER_INTERACTION)
+	advance_time(1)
 
 func _on_character_rejected(character):
 	# Handle character rejection logic
@@ -85,7 +96,7 @@ func _on_character_rejected(character):
 	print("Game Manager: Character type:", "Stanford" if character.character_type == 0 else "Berkeley")
 	
 	# Advance time
-	advance_time(TIME_PER_CHARACTER_INTERACTION)
+	advance_time(1)
 
 func _on_exit_pressed():
 	# Handle exit button press
@@ -96,14 +107,10 @@ func _on_remove_npc_pressed(character):
 	print("Game Manager: Remove NPC button pressed for", character.variant_name)
 	
 	# Advance time
-	advance_time(TIME_PER_CHARACTER_INTERACTION)
+	advance_time(1)
 
-func _on_morale_depleted():
-	# Show the game over screen
-	if game_over_screen:
-		game_over_screen.show_game_over(current_day)
-
-# Public functions that can be called from other scripts
+func _on_time_timer_timeout():
+	advance_time(1) # Advance one minute every real second
 
 func advance_time(minutes):
 	current_minute += minutes
@@ -123,12 +130,33 @@ func advance_time(minutes):
 				current_hour = 12
 			am_pm = "PM"
 	
-	# Check for day change (after 11:59 PM)
-	if current_hour == 11 and current_minute >= 59 and am_pm == "PM":
-		current_day += 1
-		current_hour = 9
-		current_minute = 0
-		am_pm = "AM"
+	# Check for workday end (5:00 PM)
+	var time_in_24hr = current_hour
+	if am_pm == "PM" and current_hour != 12:
+		time_in_24hr += 12
+	
+	if time_in_24hr >= WORKDAY_END_HOUR:
+		_on_workday_ended()
+		time_timer.stop() # Stop the timer when workday ends
+	
+	# Emit signal with updated time
+	time_updated.emit({
+		"day": current_day,
+		"hour": current_hour,
+		"minute": current_minute,
+		"am_pm": am_pm
+	})
+
+func _on_workday_ended():
+	if game_over_screen:
+		game_over_screen.show_game_over(current_day, false)
+	workday_ended.emit()
+
+func _on_morale_depleted():
+	# Show the game over screen with morale depleted reason
+	if game_over_screen:
+		game_over_screen.show_game_over(current_day, true)
+	time_timer.stop() # Stop the timer when game ends
 
 func get_current_time():
 	return {
@@ -139,4 +167,4 @@ func get_current_time():
 	}
 
 func get_current_day():
-	return current_day 
+	return current_day
