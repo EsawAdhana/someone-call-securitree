@@ -77,6 +77,11 @@ func _ready():
 	# Show exclamation mark for uninteracted characters
 	if exclamation_mark:
 		exclamation_mark.visible = true
+		
+		# Set blue exclamation mark for Berkeley students (testing purposes)
+		if character_type == 1:  # Berkeley student
+			set_blue_exclamation_mark()
+			print("CHARACTER DEBUG: Set blue exclamation mark for Berkeley student")
 	
 	# Start disappear timer for all characters
 	disappear_timer.timeout.connect(_on_disappear_timer_timeout)
@@ -100,9 +105,32 @@ func set_sprite_variant():
 		print("CHARACTER DEBUG: Female character %s using stanford3 sprite" % first_name)
 		animated_sprite.animation = "stanford3"
 
+func set_blue_exclamation_mark():
+	# Change exclamation mark color to blue for Berkeley students (testing)
+	if exclamation_mark and exclamation_mark.has_node("VBoxContainer"):
+		var vbox = exclamation_mark.get_node("VBoxContainer")
+		
+		# Change both top and bottom parts to blue
+		if vbox.has_node("ExclamationTop"):
+			var top_panel = vbox.get_node("ExclamationTop")
+			var top_style = top_panel.get_theme_stylebox("panel").duplicate()
+			top_style.bg_color = Color(0, 0.5, 1, 1)  # Blue color
+			top_panel.add_theme_stylebox_override("panel", top_style)
+		
+		if vbox.has_node("ExclamationBottom"):
+			var bottom_panel = vbox.get_node("ExclamationBottom")
+			var bottom_style = bottom_panel.get_theme_stylebox("panel").duplicate()
+			bottom_style.bg_color = Color(0, 0.5, 1, 1)  # Blue color
+			bottom_panel.add_theme_stylebox_override("panel", bottom_style)
+
 # Override _input to handle clicks - this is a backup in case the input_event signal isn't working
 func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		# Check if inspection panel is open - if so, ignore input
+		var inspection_panel = find_inspection_panel()
+		if inspection_panel and inspection_panel.visible:
+			return
+		
 		# Check if the click is within our collision shape
 		var global_mouse_pos = get_global_mouse_position()
 		var shape = $CollisionShape2D
@@ -165,6 +193,11 @@ func _physics_process(delta):
 # Input handling - CRITICAL for character interaction
 func _on_input_event(viewport, event, shape_idx):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		# Check if inspection panel is open - if so, ignore input
+		var inspection_panel = find_inspection_panel()
+		if inspection_panel and inspection_panel.visible:
+			return
+		
 		print("CHARACTER DEBUG: Input event - click detected!")
 		_handle_click()
 		get_viewport().set_input_as_handled()
@@ -198,10 +231,20 @@ func _handle_click():
 
 # Visual feedback for mouse hover
 func _on_mouse_entered():
+	# Check if inspection panel is open - if so, ignore hover
+	var inspection_panel = find_inspection_panel()
+	if inspection_panel and inspection_panel.visible:
+		return
+	
 	print("CHARACTER DEBUG: Mouse entered")
 	modulate = Color(1.2, 1.2, 1.2) # Slight highlight
 
 func _on_mouse_exited():
+	# Check if inspection panel is open - if so, ignore hover
+	var inspection_panel = find_inspection_panel()
+	if inspection_panel and inspection_panel.visible:
+		return
+	
 	print("CHARACTER DEBUG: Mouse exited")
 	modulate = Color(1, 1, 1) # Normal color
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2ulvdiuvjre1"
-path="res://.godot/imported/AlexKim_Transcript_1.png-dd13f75cf4f410100821871a0bb465e8.ctex"
+uid="uid://oki4pjddl5ko"
+path="res://.godot/imported/stanford6.png-5086485a749852d3ce7be1f543424fc1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/L1_transcripts/AlexKim_Transcript_1.png"
-dest_files=["res://.godot/imported/AlexKim_Transcript_1.png-dd13f75cf4f410100821871a0bb465e8.ctex"]
+source_file="res://assets/transcripts/stanford6.png"
+dest_files=["res://.godot/imported/stanford6.png-5086485a749852d3ce7be1f543424fc1.ctex"]
 
 [params]
 

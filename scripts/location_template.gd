@@ -386,11 +386,10 @@ func reset_camera_position():
 # Handle clicking away from a character
 func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		# Check if the inspection panel is visible - if so, don't process background clicks
+		# Check if the inspection panel is visible - if so, don't process any input here
 		if inspection_panel and inspection_panel.visible:
-			# Don't process background clicks when the panel is open
-			# This prevents the panel from closing immediately after opening
-			print("LOCATION: Click detected while inspection panel is open, ignoring for background")
+			# The inspection panel modal background will handle all input when the panel is open
+			print("LOCATION: Inspection panel is open, ignoring all input")
 			return
 			
 		# Check if we clicked on the background (not on a character)

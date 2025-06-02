@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dkaw7uqnepu8h"
-path="res://.godot/imported/DanielChen_Transcript_5.png-a4f48a5be925d5daa631d136020361dd.ctex"
+uid="uid://dp83oy6ouoba6"
+path="res://.godot/imported/stanford5.png-6804a18d0263881f20d4bb998287cedf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/L1_transcripts/DanielChen_Transcript_5.png"
-dest_files=["res://.godot/imported/DanielChen_Transcript_5.png-a4f48a5be925d5daa631d136020361dd.ctex"]
+source_file="res://assets/transcripts/stanford5.png"
+dest_files=["res://.godot/imported/stanford5.png-6804a18d0263881f20d4bb998287cedf.ctex"]
 
 [params]
 

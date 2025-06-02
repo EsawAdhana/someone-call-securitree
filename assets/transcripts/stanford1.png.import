@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ccin8j61gyecw"
-path="res://.godot/imported/TenzinSherpa_Transcript_10.png-9433a8e56ff6ea28a2b996ed9fb262ce.ctex"
+uid="uid://dkx4j6m4qgv7w"
+path="res://.godot/imported/stanford1.png-c08503abadf039f4fe303314d8495dc0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/L1_transcripts/TenzinSherpa_Transcript_10.png"
-dest_files=["res://.godot/imported/TenzinSherpa_Transcript_10.png-9433a8e56ff6ea28a2b996ed9fb262ce.ctex"]
+source_file="res://assets/transcripts/stanford1.png"
+dest_files=["res://.godot/imported/stanford1.png-c08503abadf039f4fe303314d8495dc0.ctex"]
 
 [params]
 

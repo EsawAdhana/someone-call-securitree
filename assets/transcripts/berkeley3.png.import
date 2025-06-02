@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://w63h0d4g350p"
-path="res://.godot/imported/MayaPatel_Transcript_4.png-fbd5ac4813fbf30d88b9f670d9959b15.ctex"
+uid="uid://dn7my21vh3exb"
+path="res://.godot/imported/berkeley3.png-e00d59abda43b0eb65e3ba2f6c757b0c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/L1_transcripts/MayaPatel_Transcript_4.png"
-dest_files=["res://.godot/imported/MayaPatel_Transcript_4.png-fbd5ac4813fbf30d88b9f670d9959b15.ctex"]
+source_file="res://assets/transcripts/berkeley3.png"
+dest_files=["res://.godot/imported/berkeley3.png-e00d59abda43b0eb65e3ba2f6c757b0c.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://buqh4d4aj84ws"
-path="res://.godot/imported/RyanField_Transcript_3.png-98e858e40b5e02797c2a84334769b420.ctex"
+uid="uid://5wnft20h67yn"
+path="res://.godot/imported/stanford3.png-1b7f24dcd7b8c214831fe29d5ef0d9dd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/L1_transcripts/RyanField_Transcript_3.png"
-dest_files=["res://.godot/imported/RyanField_Transcript_3.png-98e858e40b5e02797c2a84334769b420.ctex"]
+source_file="res://assets/transcripts/stanford3.png"
+dest_files=["res://.godot/imported/stanford3.png-1b7f24dcd7b8c214831fe29d5ef0d9dd.ctex"]
 
 [params]
 

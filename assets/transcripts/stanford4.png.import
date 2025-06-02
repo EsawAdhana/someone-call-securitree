@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://e740fm66albj"
-path="res://.godot/imported/KelvinNguyen_Transcript_7.png-b14a59ebdfdee806352664c32744ce7e.ctex"
+uid="uid://g2u2vaj3xik3"
+path="res://.godot/imported/stanford4.png-f79f78747e181dab722a7fbc0be4bfc0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/L1_transcripts/KelvinNguyen_Transcript_7.png"
-dest_files=["res://.godot/imported/KelvinNguyen_Transcript_7.png-b14a59ebdfdee806352664c32744ce7e.ctex"]
+source_file="res://assets/transcripts/stanford4.png"
+dest_files=["res://.godot/imported/stanford4.png-f79f78747e181dab722a7fbc0be4bfc0.ctex"]
 
 [params]
 

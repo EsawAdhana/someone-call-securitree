@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cvcov86p8lnmf"
-path="res://.godot/imported/SibanaAdhana_Transcript_6.png-076f35892ae2cc1b0f431e6029dd8b35.ctex"
+uid="uid://plecrtakfw10"
+path="res://.godot/imported/stanford2.png-6a50fec722dc546d2cf39bb6fc4a12f2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/L1_transcripts/SibanaAdhana_Transcript_6.png"
-dest_files=["res://.godot/imported/SibanaAdhana_Transcript_6.png-076f35892ae2cc1b0f431e6029dd8b35.ctex"]
+source_file="res://assets/transcripts/stanford2.png"
+dest_files=["res://.godot/imported/stanford2.png-6a50fec722dc546d2cf39bb6fc4a12f2.ctex"]
 
 [params]
 

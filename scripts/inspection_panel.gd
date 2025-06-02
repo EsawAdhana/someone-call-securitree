@@ -28,6 +28,9 @@ var has_spoken_to = {} # Dictionary to track characters we've spoken to
 @onready var id_card = $PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard
 @onready var action_buttons = $PanelContainer/MarginContainer/VBoxContainer/MainContent/ActionButtons
 
+# Modal background for capturing clicks outside the panel
+var modal_background: Control
+
 # Store character items
 var character_items = {}
 
@@ -50,6 +53,10 @@ var berkeley_dialogues = [
 
 func _ready():
 	print("DEBUG: Starting _ready")
+	
+	# Create modal background
+	_create_modal_background()
+	
 	# Create the content panels if they don't exist
 	if not has_node("PanelContainer/MarginContainer/VBoxContainer/MainContent/ContentPanels"):
 		print("DEBUG: Creating content panels")
@@ -211,6 +218,27 @@ func _ready():
 	_hide_all_panels()
 	
 	print("DEBUG: Finished _ready")
+
+func _create_modal_background():
+	# Create a transparent background that covers the entire viewport
+	modal_background = Control.new()
+	modal_background.name = "ModalBackground"
+	modal_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	modal_background.mouse_filter = Control.MOUSE_FILTER_STOP # Capture all mouse events
+	modal_background.visible = false
+	
+	# Add to the beginning of the children so it's behind the panel
+	add_child(modal_background)
+	move_child(modal_background, 0)
+	
+	# Connect the background click to accept behavior
+	modal_background.gui_input.connect(_on_modal_background_input)
+
+func _on_modal_background_input(event):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		print("DEBUG: Clicked outside inspection panel, accepting character")
+		# Same behavior as accept button
+		_on_approve_button_pressed()
 
 func _hide_all_panels():
 	if dialogue_panel:
@@ -537,20 +565,25 @@ func _show_transcript_view():
 				image = transcript_panel.find_child("TranscriptImage", true, false)
 			
 			if image:
-				var transcript_number = get_transcript_number(char_data["name"])
-				var transcript_name = char_data["name"].replace(" ", "") # Remove spaces
-				var transcript_path = "res://assets/L1_transcripts/" + transcript_name + "_Transcript_" + str(transcript_number) + ".png"
+				# Use the new transcript system
+				var transcript_path = get_transcript_for_character(char_data)
 				print("DEBUG: Attempting to load transcript from: ", transcript_path)
 				var transcript_texture = load(transcript_path)
 				if transcript_texture:
 					image.texture = transcript_texture
 					print("DEBUG: Transcript texture loaded successfully")
+					
+					# Log what type of transcript was loaded for debugging
+					if transcript_path.contains("berkeley"):
+						print("DEBUG: Loaded Berkeley transcript for ", char_data["name"], " - this should be suspicious!")
+					else:
+						print("DEBUG: Loaded Stanford transcript for ", char_data["name"])
 				else:
 					print("DEBUG: Failed to load transcript texture from: ", transcript_path)
 					# Print the directory contents to debug
-					var dir = DirAccess.open("res://assets/L1_transcripts")
+					var dir = DirAccess.open("res://assets/transcripts")
 					if dir:
-						print("DEBUG: Contents of L1_transcripts directory:")
+						print("DEBUG: Contents of transcripts directory:")
 						dir.list_dir_begin()
 						var file_name = dir.get_next()
 						while file_name != "":
@@ -583,6 +616,10 @@ func show_character_info(character):
 	# Make the panel visible
 	visible = true
 	
+	# Show the modal background to capture outside clicks
+	if modal_background:
+		modal_background.visible = true
+	
 	# Show the main view
 	_show_main_view()
 	
@@ -603,6 +640,17 @@ func show_character_info(character):
 	# Update the ID card section - only show name
 	var id_label = $PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard/VBoxContainer/Label
 	id_label.text = char_data["name"]
+	
+	# Load the pixelated font and apply it to the character name
+	var pixelated_font = load("res://assets/PressStart2P-Regular.ttf")
+	if pixelated_font:
+		id_label.add_theme_font_override("font", pixelated_font)
+		print("INSPECTION: Applied pixelated font to character name")
+	else:
+		print("INSPECTION: Failed to load pixelated font")
+	
+	# Make the font bigger for the character name and keep it pixelated
+	id_label.add_theme_font_size_override("font_size", 24)
 	
 	# Load the L1ID image based on character name
 	var id_image = $PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard/VBoxContainer/IDPlaceholder
@@ -630,6 +678,11 @@ func show_character_info(character):
 
 func hide_panel():
 	visible = false
+	
+	# Hide the modal background
+	if modal_background:
+		modal_background.visible = false
+	
 	if current_character:
 		# Re-enable input on the character before clearing reference
 		current_character.input_pickable = true
@@ -649,12 +702,28 @@ func _on_exit_button_pressed():
 			var sprite = current_character.get_node("AnimatedSprite2D")
 			sprite.play("walk")
 		current_character.resume_walking()
+	
+	# Hide the modal background
+	if modal_background:
+		modal_background.visible = false
+	
 	exit_pressed.emit(current_character)
 	visible = false
 
 func _on_approve_button_pressed():
 	if current_character:
 		AudioManager.play_ui_click() # Play UI click when approving
+		
+		# Resume walking and ensure animation is playing (same as exit button)
+		if current_character.has_node("AnimatedSprite2D"):
+			var sprite = current_character.get_node("AnimatedSprite2D")
+			sprite.play("walk")
+		current_character.resume_walking()
+		
+		# Hide the modal background
+		if modal_background:
+			modal_background.visible = false
+		
 		character_approved.emit(current_character)
 		visible = false
 
@@ -664,6 +733,11 @@ func _on_reject_button_pressed():
 		# Play pop sound after a short delay to match the disappear animation
 		await get_tree().create_timer(0.3).timeout
 		AudioManager.play_pop()
+		
+		# Hide the modal background
+		if modal_background:
+			modal_background.visible = false
+		
 		character_rejected.emit(current_character)
 		visible = false
 
@@ -689,6 +763,30 @@ func get_transcript_number(character_name: String) -> int:
 		"Sam Green": return 9
 		"Tenzin Sherpa": return 10
 		_: return 1 # Default to first transcript if name not found
+
+# Helper function to get appropriate transcript for character
+func get_transcript_for_character(char_data: Dictionary) -> String:
+	var is_berkeley = char_data["type"] == 1  # Berkeley students are type 1
+	var character_name = char_data["name"]
+	
+	if is_berkeley:
+		# Berkeley students (Hannah Scott, Sam Green, Tenzin Sherpa) should sometimes get Berkeley transcripts
+		# This makes them suspicious since they're claiming to be Stanford students
+		var chance = randf()
+		if chance < 0.7:  # 70% chance to get a Berkeley transcript (suspicious!)
+			var berkeley_transcripts = ["berkeley1", "berkeley2", "berkeley3"]
+			var random_berkeley = berkeley_transcripts[randi() % berkeley_transcripts.size()]
+			return "res://assets/transcripts/" + random_berkeley + ".png"
+		else:
+			# 30% chance to get a Stanford transcript (they prepared well)
+			var stanford_transcripts = ["stanford1", "stanford3", "stanford4", "stanford5", "stanford6", "stanford7"]
+			var random_stanford = stanford_transcripts[randi() % stanford_transcripts.size()]
+			return "res://assets/transcripts/" + random_stanford + ".png"
+	else:
+		# Real Stanford students always get legitimate Stanford transcripts
+		var stanford_transcripts = ["stanford1", "stanford3", "stanford4", "stanford5", "stanford6", "stanford7"]
+		var random_stanford = stanford_transcripts[randi() % stanford_transcripts.size()]
+		return "res://assets/transcripts/" + random_stanford + ".png"
 
 func _get_character_items(char_data: Dictionary) -> Array:
 	# Check if we already have items for this character

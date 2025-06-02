@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c0stslo2iwpf6"
-path="res://.godot/imported/JessicaLi_Transcript_2.png-46a6f56242d4534173fbed69702a8cf4.ctex"
+uid="uid://damqe1xn4egbj"
+path="res://.godot/imported/berkeley1.png-43741bbf2665a5694d116bb8e9dba215.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/L1_transcripts/JessicaLi_Transcript_2.png"
-dest_files=["res://.godot/imported/JessicaLi_Transcript_2.png-46a6f56242d4534173fbed69702a8cf4.ctex"]
+source_file="res://assets/transcripts/berkeley1.png"
+dest_files=["res://.godot/imported/berkeley1.png-43741bbf2665a5694d116bb8e9dba215.ctex"]
 
 [params]
 
