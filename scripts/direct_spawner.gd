@@ -8,7 +8,7 @@ extends Node2D
 @export var characters_per_round_increase: int = 2 # Increase by 2 each round
 
 # Round timing configuration
-var round_duration: float = 15.0  # Total round duration in seconds
+var round_duration: float = 30.0  # Total round duration in seconds (updated to 30s)
 var spawn_window_fraction: float = 0.5  # Spawn within first 50% of round
 
 # Calculated max characters based on current level
@@ -130,9 +130,22 @@ func start_spawning():
 	# Calculate spawn times for this round
 	calculate_spawn_times()
 	
+	# Inform GameManager about how many characters we plan to spawn
+	var game_manager = get_node_or_null("/root/GameManager")
+	if not game_manager:
+		# Try to find it in the current scene
+		game_manager = get_tree().get_first_node_in_group("game_manager")
+	if game_manager and game_manager.has_method("set_planned_characters_for_round"):
+		game_manager.set_planned_characters_for_round(max_characters)
+		print("[SPAWN DEBUG] Informed GameManager of planned characters:", max_characters)
+	
 	# Start the first spawn timer if we have any spawns scheduled
 	if spawn_times.size() > 0:
 		set_next_spawn_time()
+	elif max_characters == 0:
+		# If no characters planned, mark all as spawned immediately
+		if game_manager and game_manager.has_method("mark_all_planned_characters_spawned"):
+			game_manager.mark_all_planned_characters_spawned()
 
 func set_next_spawn_time():
 	"""Set timer for the next scheduled spawn"""
@@ -170,8 +183,22 @@ func _on_spawn_timer_timeout():
 			set_next_spawn_time()
 		else:
 			print("[SPAWN DEBUG] All characters spawned or spawn window closed")
+			# Notify GameManager that all planned characters have been spawned
+			var game_manager = get_node_or_null("/root/GameManager")
+			if not game_manager:
+				game_manager = get_tree().get_first_node_in_group("game_manager")
+			if game_manager and game_manager.has_method("mark_all_planned_characters_spawned"):
+				game_manager.mark_all_planned_characters_spawned()
+				print("[SPAWN DEBUG] Notified GameManager that all planned characters spawned")
 	else:
 		print("[SPAWN DEBUG] Spawn window closed, no more spawning")
+		# Even if spawn window closed, notify that we're done spawning
+		var game_manager = get_node_or_null("/root/GameManager")
+		if not game_manager:
+			game_manager = get_tree().get_first_node_in_group("game_manager")
+		if game_manager and game_manager.has_method("mark_all_planned_characters_spawned"):
+			game_manager.mark_all_planned_characters_spawned()
+			print("[SPAWN DEBUG] Notified GameManager that spawning finished (window closed)")
 
 func spawn_character():
 	print("[SPAWN DEBUG] spawn_character() called")

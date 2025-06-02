@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cv4bqt625tefx"
-path="res://.godot/imported/SibanaAdhana_ID_6.PNG-87cef49955e83ce4a857c93a99892fe5.ctex"
+path="res://.godot/imported/SibanaAdhana_ID_6.PNG-6f9e0277b84b2e926173415cb4095f88.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/L1_id/SibanaAdhana_ID_6.PNG"
-dest_files=["res://.godot/imported/SibanaAdhana_ID_6.PNG-87cef49955e83ce4a857c93a99892fe5.ctex"]
+source_file="res://assets/ids/SibanaAdhana_ID_6.PNG"
+dest_files=["res://.godot/imported/SibanaAdhana_ID_6.PNG-6f9e0277b84b2e926173415cb4095f88.ctex"]
 
 [params]
 

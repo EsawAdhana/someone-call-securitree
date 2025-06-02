@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b8dtkfshwpthx"
-path="res://.godot/imported/RyanField_ID_3.PNG-dfa0692a3d9f64f3184abef60bc7d4a0.ctex"
+uid="uid://dvjdo3g2by3nb"
+path="res://.godot/imported/DanielChen_ID_5.PNG-e94f99fc06ca3522315623abcaa5a698.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/L1_id/RyanField_ID_3.PNG"
-dest_files=["res://.godot/imported/RyanField_ID_3.PNG-dfa0692a3d9f64f3184abef60bc7d4a0.ctex"]
+source_file="res://assets/ids/DanielChen_ID_5.PNG"
+dest_files=["res://.godot/imported/DanielChen_ID_5.PNG-e94f99fc06ca3522315623abcaa5a698.ctex"]
 
 [params]
 

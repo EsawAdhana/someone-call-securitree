@@ -93,6 +93,7 @@ func _ready():
 	if inspection_panel:
 		inspection_panel.exit_pressed.connect(_on_inspection_exit.bind())
 		inspection_panel.character_rejected.connect(_on_character_rejected.bind())
+		inspection_panel.character_approved.connect(_on_character_approved.bind())
 		print("CHARACTER DEBUG: Connected to inspection panel signals")
 	else:
 		push_warning("CHARACTER DEBUG: Could not find InspectionPanel")
@@ -243,23 +244,8 @@ func _handle_click():
 		animated_sprite.frame = 0 # Reset to first frame
 		print("CHARACTER DEBUG: Animation stopped")
 	
-	# Mark as interacted and hide exclamation mark
-	if not has_been_interacted:
-		has_been_interacted = true
-		if exclamation_mark:
-			exclamation_mark.visible = false
-		
-		# Notify game manager that this character has been interacted with
-		var game_manager = get_node_or_null("/root/GameManager")
-		if not game_manager:
-			# Try to find game manager in the current scene
-			var current_scene = get_tree().current_scene
-			if current_scene:
-				game_manager = current_scene.get_node_or_null("GameManager")
-		
-		if game_manager and game_manager.has_method("increment_interacted_characters"):
-			game_manager.increment_interacted_characters()
-			print("CHARACTER DEBUG: Notified game manager of character interaction")
+	# Mark as interacted and hide exclamation mark only after a decision is made
+	# Removed the automatic processing here - only happens on Accept/Reject
 	
 	emit_signal("character_clicked", self)
 	print("CHARACTER DEBUG: character_clicked signal emitted")
@@ -412,7 +398,66 @@ func find_inspection_panel_recursive(node: Node) -> Node:
 
 func _on_character_rejected(character):
 	if character == self:
+		print("CHARACTER DEBUG: Starting rejection process for:", variant_name)
+		
+		# Mark as processed when rejected
+		if not has_been_interacted:
+			has_been_interacted = true
+			# Hide exclamation mark when actually processed
+			if exclamation_mark:
+				exclamation_mark.visible = false
+			
+			# Notify game manager that this character has been processed
+			var game_manager = get_node_or_null("/root/GameManager")
+			if not game_manager:
+				# Try to find game manager in the current scene
+				var current_scene = get_tree().current_scene
+				if current_scene:
+					game_manager = current_scene.get_node_or_null("GameManager")
+			
+			if game_manager:
+				if game_manager.has_method("increment_interacted_characters"):
+					game_manager.increment_interacted_characters()
+					print("CHARACTER DEBUG: Notified game manager of character processing (rejected)")
+				
+				# Removed duplicate call - location template handles this through signals
+		
 		has_been_rejected = true
 		was_rejected = true
+		
+		# Add a small delay to ensure GameManager processes the rejection first
+		await get_tree().create_timer(0.1).timeout
+		print("CHARACTER DEBUG: About to disappear after delay:", variant_name)
+		
 		# No morale decrease here - handled by game_manager
 		disappear()
+
+func _on_character_approved(character):
+	if character == self:
+		print("CHARACTER DEBUG: Starting approval process for:", variant_name)
+		
+		# Mark as processed when approved
+		if not has_been_interacted:
+			has_been_interacted = true
+			# Hide exclamation mark when actually processed
+			if exclamation_mark:
+				exclamation_mark.visible = false
+			
+			# Notify game manager that this character has been processed
+			var game_manager = get_node_or_null("/root/GameManager")
+			if not game_manager:
+				# Try to find game manager in the current scene
+				var current_scene = get_tree().current_scene
+				if current_scene:
+					game_manager = current_scene.get_node_or_null("GameManager")
+			
+			if game_manager:
+				if game_manager.has_method("increment_interacted_characters"):
+					game_manager.increment_interacted_characters()
+					print("CHARACTER DEBUG: Notified game manager of character processing (approved)")
+				
+				# Removed duplicate call - location template handles this through signals
+		
+		print("CHARACTER DEBUG: Approved character will resume walking:", variant_name)
+		# Character approved - just resume walking, no disappearing
+		resume_walking()

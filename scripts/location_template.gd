@@ -112,6 +112,14 @@ func setup_game_manager():
 				print("LOCATION: Using existing game manager in this scene")
 		else:
 			print("LOCATION: Using existing game manager from root")
+	else:
+		print("LOCATION: Found game manager in local scene")
+	
+	# Debug: Print game manager info
+	print("LOCATION: Final game_manager reference:", game_manager)
+	if game_manager:
+		print("LOCATION: Game manager has _on_character_rejected method:", game_manager.has_method("_on_character_rejected"))
+		print("LOCATION: Game manager path:", game_manager.get_path())
 
 func setup_global_character_manager():
 	# Try to find the global character manager in the scene tree
@@ -131,9 +139,6 @@ func setup_ui_elements():
 	
 	# Set up the scroll button and book interface
 	setup_scroll_button_and_book()
-	
-	# Set up the minimap button
-	setup_minimap_button()
 
 func setup_inspection_panel():
 	print("LOCATION: Setting up inspection panel...")
@@ -191,11 +196,17 @@ func setup_inspection_panel():
 			inspection_panel.camera_reset_requested.disconnect(reset_camera_position)
 		
 		# Connect signals
+		print("LOCATION: Connecting inspection panel signals...")
 		inspection_panel.character_approved.connect(_on_character_approved)
+		print("LOCATION: Connected character_approved signal")
 		inspection_panel.character_rejected.connect(_on_character_rejected)
+		print("LOCATION: Connected character_rejected signal")
 		inspection_panel.exit_pressed.connect(_on_exit_pressed)
+		print("LOCATION: Connected exit_pressed signal")
 		inspection_panel.remove_npc_pressed.connect(_on_remove_npc_pressed)
+		print("LOCATION: Connected remove_npc_pressed signal")
 		inspection_panel.camera_reset_requested.connect(reset_camera_position)
+		print("LOCATION: Connected camera_reset_requested signal")
 		print("LOCATION: Connected all inspection panel signals")
 	else:
 		push_error("LOCATION: Failed to create inspection panel!")
@@ -340,6 +351,8 @@ func _on_character_approved(character):
 # Handle character rejected
 func _on_character_rejected(character):
 	print("LOCATION: Character rejected:", character.variant_name)
+	print("LOCATION: Character type:", "Stanford" if character.character_type == 0 else "Berkeley")
+	
 	# Clear the current selected character
 	current_selected_character = null
 	# Reset camera position (character is still walking)
@@ -347,7 +360,11 @@ func _on_character_rejected(character):
 	
 	# If the game manager exists, notify it of the character rejection
 	if game_manager and game_manager.has_method("_on_character_rejected"):
+		print("LOCATION: Calling game manager's _on_character_rejected")
 		game_manager._on_character_rejected(character)
+	else:
+		print("LOCATION: ERROR - Game manager not found or doesn't have _on_character_rejected method!")
+		print("LOCATION: game_manager is:", game_manager)
 
 # Handle exit button pressed
 func _on_exit_pressed(character):
@@ -421,12 +438,6 @@ func _input(event):
 				inspection_panel.hide_panel()
 			# Reset camera
 			reset_camera_position()
-	
-	# Check for ESC key to return to map
-	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-		print("LOCATION: ESC key pressed, returning to map")
-		save_characters_to_global_manager()
-		get_tree().change_scene_to_file("res://scenes/main_map.tscn")
 
 # Handle mouse enter event for scroll button
 func _on_scroll_button_mouse_entered():
@@ -445,43 +456,6 @@ func advance_time(added_minutes):
 	# If the game manager exists, forward time updates to it
 	if game_manager and game_manager.has_method("advance_time"):
 		game_manager.advance_time(added_minutes)
-
-func setup_minimap_button():
-	print("LOCATION: Setting up minimap button...")
-	
-	# Connect the minimap button pressed signal
-	var minimap_button = $CanvasLayer/Control/MinimapButton
-	if minimap_button:
-		minimap_button.pressed.connect(_on_minimap_button_pressed)
-		
-		# Add a border to the minimap with a distinct style
-		var minimap_border = minimap_button.get_node("MinimapBorder")
-		if minimap_border:
-			var stylebox = StyleBoxFlat.new()
-			stylebox.border_width_left = 4
-			stylebox.border_width_top = 4
-			stylebox.border_width_right = 4
-			stylebox.border_width_bottom = 4
-			stylebox.border_color = Color(0.8, 0.7, 0.3, 0.9) # Gold color for better visibility
-			stylebox.corner_radius_top_left = 10
-			stylebox.corner_radius_top_right = 10
-			stylebox.corner_radius_bottom_right = 10
-			stylebox.corner_radius_bottom_left = 10
-			stylebox.bg_color = Color(0.1, 0.1, 0.1, 0.15) # Very subtle dark tint for background
-			stylebox.content_margin_left = 10
-			stylebox.content_margin_top = 10
-			stylebox.content_margin_right = 10
-			stylebox.content_margin_bottom = 10
-			minimap_border.add_theme_stylebox_override("panel", stylebox)
-		
-		print("LOCATION: Minimap button connected")
-
-# Handle minimap button pressed
-func _on_minimap_button_pressed():
-	print("LOCATION: Minimap button pressed, going to main map")
-	AudioManager.play_ui_click() # Play UI click when going to minimap
-	save_characters_to_global_manager()
-	get_tree().change_scene_to_file("res://scenes/main_map.tscn")
 
 # Restore characters for this location
 func restore_location_characters():

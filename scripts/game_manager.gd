@@ -23,12 +23,14 @@ var berkeley_people_cleared: int = 0
 # Auto-skip tracking
 var total_characters_in_location: int = 0
 var characters_interacted_with: int = 0
+var planned_characters_for_round: int = 0  # Total characters planned to spawn this round
+var all_planned_characters_spawned: bool = false  # Whether all planned characters have spawned
 
 signal time_updated(time_data)
 signal workday_ended
 
 func _ready():
-	# Set up the time timer (15 real seconds = 15 game minutes, so 1 real second = 1 game minute)
+	# Set up the time timer (30 real seconds = 30 game minutes, so 1 real second = 1 game minute)
 	time_timer.wait_time = 1.0
 	time_timer.timeout.connect(_on_time_timer_timeout)
 	time_timer.name = "time_timer"
@@ -81,10 +83,11 @@ func _on_level_started(level_number: int):
 	# Reset character interaction tracking
 	total_characters_in_location = 0
 	characters_interacted_with = 0
+	planned_characters_for_round = 0
+	all_planned_characters_spawned = false
 	
 	# Set the time based on level progression
-	# Level 1: Start at 9:00, ends at 9:15
-	# Level 2: Start at 9:15, ends at 9:30, etc.
+	# Level 1: 9:00-9:30 AM, Level 2: 9:30-10:00 AM, Level 3: 10:00-10:30 AM, etc.
 	set_time_for_level(level_number)
 	
 	# Mark that we're in a location and start the timer
@@ -110,17 +113,36 @@ func _on_level_completed(level_number: int):
 	print("Game Manager: Timer paused on main map at", get_time_string())
 
 func set_time_for_level(level_number: int):
-	# Calculate starting time for this level
-	# Level 1: 9:00 AM
-	# Level 2: 9:15 AM  
-	# Level 3: 9:30 AM, etc.
-	var total_minutes = (level_number - 1) * 15
-	current_hour = WORKDAY_START_HOUR
-	current_minute = total_minutes % 60
+	# Level 1 always starts at 9:00 AM (beginning of game)
+	if level_number == 1:
+		current_hour = WORKDAY_START_HOUR
+		current_minute = 0
+		am_pm = "AM"
+		print("Game Manager: Starting first location at 9:00 AM")
+		return
+	
+	# For subsequent levels, calculate target time and handle early exits
+	# Level 2: 9:30 AM, Level 3: 10:00 AM, Level 4: 10:30 AM, etc.
+	var target_total_minutes = level_number * 30  # Each level represents 30 game minutes
+	var target_hour = WORKDAY_START_HOUR
+	var target_minute = target_total_minutes % 60
 	
 	# Handle hour overflow
-	if total_minutes >= 60:
-		current_hour += total_minutes / 60
+	if target_total_minutes >= 60:
+		target_hour += target_total_minutes / 60
+	
+	# If we're ahead of the target time (early exit), jump to the target time
+	# If we're at or past the target time (natural progression), keep current time
+	var current_total_minutes = (current_hour - WORKDAY_START_HOUR) * 60 + current_minute
+	
+	if current_total_minutes < target_total_minutes:
+		# Early exit - jump to next 30-minute mark
+		current_hour = target_hour
+		current_minute = target_minute
+		print("Game Manager: Jumped time to next 30-minute mark:", get_time_string())
+	else:
+		# Natural progression or already past target - keep current time
+		print("Game Manager: Keeping current time (natural progression):", get_time_string())
 	
 	# Handle AM/PM conversion
 	if current_hour >= 12:
@@ -136,6 +158,11 @@ func set_time_for_level(level_number: int):
 
 func _on_level_time_limit_reached(level_number: int):
 	print("Game Manager: Time limit reached for level", level_number)
+	
+	# Check if game is already over (paused) before proceeding
+	if get_tree().paused:
+		print("Game Manager: Game is already paused (game over), skipping Berkeley morale decrease")
+		return
 	
 	# Check if there are uncleared Berkeley people
 	var uncleared_berkeley = berkeley_people_in_location - berkeley_people_cleared
@@ -156,6 +183,7 @@ func _on_character_approved(character):
 		# Berkeley student being approved - incorrect but no morale penalty
 		print("Game Manager: Incorrectly approved Berkeley student - no morale penalty")
 	
+	# Character handles increment_interacted_characters() call
 	# Don't advance time automatically - time is managed by level system
 	# advance_time(1)
 
@@ -168,11 +196,15 @@ func _on_character_rejected(character):
 	if character.character_type == 1:
 		print("Game Manager: Correctly rejected Berkeley student")
 		berkeley_people_cleared += 1
+		print("Game Manager: Berkeley cleared count is now:", berkeley_people_cleared, "/", berkeley_people_in_location)
 	else:
 		# If it's a Stanford student being rejected, that's wrong - decrease morale
 		print("Game Manager: Incorrectly rejected Stanford student - decreasing morale")
+		print("Game Manager: Current morale before decrease:", MoraleManager.get_morale())
 		MoraleManager.decrease_morale()
+		print("Game Manager: Current morale after decrease:", MoraleManager.get_morale())
 	
+	# Character handles increment_interacted_characters() call
 	# Don't advance time automatically - time is managed by level system
 	# advance_time(1)
 
@@ -228,15 +260,80 @@ func advance_time(minutes):
 	})
 
 func _on_workday_ended():
+	# Play game over sound and stop background audio
+	AudioManager.play_game_over()
+	AudioManager.stop_background_audio()
+	
+	# Stop all timers
+	time_timer.stop()
+	LevelManager.stop_level_timer()
+	
+	# Pause the scene tree (this freezes all animations, movement, etc.)
+	get_tree().paused = true
+	
+	# Show the game over screen for time-based game over
 	if game_over_screen:
-		game_over_screen.show_game_over(current_day, false)
+		# Set the game over screen to process even when paused
+		game_over_screen.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+		# Pass current location number instead of days
+		var current_location = LevelManager.get_current_level()
+		game_over_screen.show_game_over(current_location, false)
+	
 	workday_ended.emit()
+	print("Game Manager: Workday ended - everything frozen, game over sound playing")
 
 func _on_morale_depleted():
+	print("GAME MANAGER DEBUG: ⚠️ RECEIVED morale_depleted signal - starting game over process")
+	
+	# Stop background music immediately
+	AudioManager.stop_background_audio()
+	print("GAME MANAGER DEBUG: Stopped background audio")
+	
+	# Stop all timers
+	time_timer.stop()
+	LevelManager.stop_level_timer()
+	print("GAME MANAGER DEBUG: Stopped all timers")
+	
+	# Find game over screen immediately, don't rely on cached reference
+	var root = get_tree().get_root()
+	var current_scene = root.get_child(root.get_child_count() - 1)
+	var ui_layer = current_scene.get_node_or_null("UI")
+	var found_game_over_screen = null
+	
+	if ui_layer:
+		found_game_over_screen = ui_layer.get_node_or_null("GameOver")
+		print("GAME MANAGER DEBUG: Found game over screen:", found_game_over_screen != null)
+	
+	# If we can't find it in the current scene, try the main map
+	if not found_game_over_screen:
+		var main_map = get_tree().get_first_node_in_group("main_map")
+		if main_map:
+			var main_ui = main_map.get_node_or_null("UI")
+			if main_ui:
+				found_game_over_screen = main_ui.get_node_or_null("GameOver")
+				print("GAME MANAGER DEBUG: Found game over screen in main map:", found_game_over_screen != null)
+	
+	# Pause the scene tree immediately
+	get_tree().paused = true
+	print("GAME MANAGER DEBUG: Game paused")
+	
 	# Show the game over screen with morale depleted reason
-	if game_over_screen:
-		game_over_screen.show_game_over(current_day, true)
-	time_timer.stop() # Stop the timer when game ends
+	if found_game_over_screen:
+		print("GAME MANAGER DEBUG: Found game over screen, showing it...")
+		# Set the game over screen to process even when paused
+		found_game_over_screen.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+		# Pass current location number instead of days
+		var current_location = LevelManager.get_current_level()
+		found_game_over_screen.show_game_over(current_location, true)
+		print("GAME MANAGER DEBUG: ✅ Game over screen should now be visible")
+	else:
+		print("GAME MANAGER DEBUG: ❌ ERROR - Could not find game over screen anywhere!")
+	
+	# Play game over sound AFTER the screen appears
+	AudioManager.play_game_over()
+	print("GAME MANAGER DEBUG: Playing game over sound")
+	
+	print("Game Manager: Game over - everything frozen, game over sound playing")
 
 func get_current_time():
 	return {
@@ -267,29 +364,45 @@ func increment_interacted_characters():
 	check_auto_skip_conditions()
 
 func check_auto_skip_conditions():
-	# Check if all characters have been interacted with
-	var all_characters_checked = (characters_interacted_with >= total_characters_in_location)
+	# Check if all characters have been interacted with (approved or rejected)
+	var all_characters_processed = (characters_interacted_with >= total_characters_in_location)
 	
-	# Check if no Berkeley students remain (all have been cleared)
-	var no_berkeley_remaining = (berkeley_people_in_location - berkeley_people_cleared) <= 0
+	# Check if all Berkeley students have been rejected (cleared)
+	var all_berkeley_rejected = (berkeley_people_in_location - berkeley_people_cleared) <= 0
 	
-	print("Game Manager: Auto-skip check - All checked:", all_characters_checked, ", No Berkeley remaining:", no_berkeley_remaining)
+	print("=== AUTO-SKIP CHECK DEBUG ===")
+	print("Game Manager: Characters processed:", characters_interacted_with, "/", total_characters_in_location)
+	print("Game Manager: Berkeley in location:", berkeley_people_in_location)
+	print("Game Manager: Berkeley cleared:", berkeley_people_cleared)
+	print("Game Manager: Berkeley remaining:", berkeley_people_in_location - berkeley_people_cleared)
+	print("Game Manager: Planned characters for round:", planned_characters_for_round)
+	print("Game Manager: All planned characters spawned:", all_planned_characters_spawned)
+	print("Game Manager: All characters processed:", all_characters_processed)
+	print("Game Manager: All Berkeley rejected:", all_berkeley_rejected)
+	print("Game Manager: Total characters > 0:", total_characters_in_location > 0)
+	print("============================")
 	
-	# Only auto-skip if BOTH conditions are met AND we have characters in the location
-	if all_characters_checked and no_berkeley_remaining and total_characters_in_location > 0:
-		print("Game Manager: Auto-skip conditions met! Advancing time and returning to main map.")
+	# End round early ONLY if ALL three conditions are met:
+	# 1. All characters have been processed (approved/rejected)
+	# 2. All Berkeley students have been rejected 
+	# 3. All planned characters for the round have actually spawned
+	if all_characters_processed and all_berkeley_rejected and all_planned_characters_spawned and total_characters_in_location > 0:
+		print("Game Manager: ✅ Early round completion conditions met! All Berkeley students rejected, all characters processed, and all planned characters spawned.")
 		
-		# Advance time to the end of the level (15 minutes total)
-		var minutes_to_advance = 15 - (current_minute % 15)
-		if minutes_to_advance == 0:
-			minutes_to_advance = 15
-		
-		advance_time(minutes_to_advance)
-		
-		# Complete the level after a short delay
+		# Complete the level immediately - don't advance time since we're ending early
 		await get_tree().create_timer(0.5).timeout
 		var current_level = LevelManager.get_current_level()
 		LevelManager.complete_level(current_level)
+	else:
+		print("Game Manager: ❌ Early completion conditions NOT met:")
+		if not all_characters_processed:
+			print("  - Not all characters processed")
+		if not all_berkeley_rejected:
+			print("  - Berkeley students still remaining")
+		if not all_planned_characters_spawned:
+			print("  - Not all planned characters have spawned yet")
+		if total_characters_in_location <= 0:
+			print("  - No characters in location")
 
 func get_berkeley_stats():
 	return {
@@ -310,3 +423,14 @@ func emit_initial_time():
 		"minute": current_minute,
 		"am_pm": am_pm
 	})
+
+func set_planned_characters_for_round(count: int):
+	planned_characters_for_round = count
+	all_planned_characters_spawned = false
+	print("Game Manager: Set planned characters for round:", count)
+
+func mark_all_planned_characters_spawned():
+	all_planned_characters_spawned = true
+	print("Game Manager: All planned characters have spawned")
+	# Check auto-skip conditions when all characters are spawned
+	check_auto_skip_conditions()

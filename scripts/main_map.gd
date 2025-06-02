@@ -39,13 +39,16 @@ var tooltip_label: Label
 var darkness_rect: ColorRect
 
 func _ready():
+	# Add this node to the main_map group for reference
+	add_to_group("main_map")
+	
 	# Set up darkness overlay reference first to prevent flashing
 	darkness_rect = $DarknessOverlay/DarknessRect
 	# Update darkness immediately before anything else
 	update_darkness_overlay()
 	
 	# Start playing background music
-	AudioManager.play_background_music()
+	# AudioManager.play_background_music()  # MUTED: Music disabled for now
 	
 	# Connect to level manager signals
 	LevelManager.location_unlocked.connect(_on_location_unlocked)

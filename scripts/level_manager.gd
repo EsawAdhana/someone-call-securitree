@@ -7,8 +7,8 @@ signal location_unlocked(location_name)
 signal time_limit_reached(level_number)
 
 # Level configuration
-const LEVEL_DURATION_SECONDS = 1 # 1 second per level/round for testing
-const TIME_INCREMENT_PER_LEVEL = 15 # Each level adds 15 minutes (15 seconds of real time = 15 minutes game time)
+const LEVEL_DURATION_SECONDS = 30 # 30 seconds per level/round per user request
+const TIME_INCREMENT_PER_LEVEL = 30 # Each level adds 30 minutes (30 seconds of real time = 30 minutes game time)
 
 # Level progression order - first location to last
 const LOCATION_ORDER = [
@@ -78,6 +78,11 @@ func _on_level_timer_timeout():
 	print("LEVEL: Level", current_level, "time limit reached")
 	is_timer_running = false
 	
+	# Check if game is already over (paused) before proceeding
+	if get_tree().paused:
+		print("LEVEL: Game is paused (likely game over), skipping level completion")
+		return
+	
 	# Emit signal that time limit was reached
 	time_limit_reached.emit(current_level)
 	
@@ -86,6 +91,11 @@ func _on_level_timer_timeout():
 
 func complete_level(level_number: int):
 	print("LEVEL: Completing level", level_number)
+	
+	# Check if game is already over (paused) before proceeding with level completion
+	if get_tree().paused:
+		print("LEVEL: Game is paused (likely game over), skipping level completion")
+		return
 	
 	# Stop the timer
 	stop_level_timer()
@@ -135,8 +145,8 @@ func get_unlocked_locations() -> Array:
 	return unlocked_locations.duplicate()
 
 func get_level_target_time() -> int:
-	# Calculate target time: 9:00 AM + (level * 15 minutes)
-	# Level 1: 9:15, Level 2: 9:30, etc.
+	# Calculate target time: 9:00 AM + (level * 30 minutes)
+	# Level 1: 9:30, Level 2: 10:00, etc.
 	return 9 * 60 + (current_level * TIME_INCREMENT_PER_LEVEL) # Return minutes since midnight
 
 func set_game_manager_reference(gm: Node):
