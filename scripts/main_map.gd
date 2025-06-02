@@ -70,11 +70,11 @@ func _update_location_states():
 	for child in get_children():
 		if child is Area2D and child.name.ends_with("Area"):
 			var is_unlocked = LevelManager.is_location_unlocked(child.name)
-			var collision_shape = child.get_node("CollisionShape2D")
-			if collision_shape:
-				var grayed_overlay = collision_shape.get_node("GrayedOverlay")
-				if grayed_overlay:
-					grayed_overlay.visible = not is_unlocked
+			
+			# Hide/show the grayscale sprite based on unlock status
+			var sprite = child.get_node_or_null("Sprite2D")
+			if sprite:
+				sprite.visible = not is_unlocked  # Show grayscale when locked, hide when unlocked
 			
 			# Always allow input for tooltips, but we'll block clicks in the input event handler
 			child.input_pickable = true
@@ -242,29 +242,17 @@ func setup_location_areas():
 				highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
 				highlight.name = "Highlight"
 				
-				# Add grayed out overlay for locked locations
-				var grayed_overlay = ColorRect.new()
-				grayed_overlay.color = Color(0.3, 0.3, 0.3, 0.7)  # Dark gray overlay
-				grayed_overlay.visible = false
-				grayed_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				grayed_overlay.name = "GrayedOverlay"
-				
-				# Size both overlays to match the collision shape
+				# Size highlight to match the collision shape
 				var shape = collision_shape.shape as RectangleShape2D
 				if shape:
 					highlight.size = shape.size
 					highlight.position = -shape.size / 2  # Center on the collision shape
-					grayed_overlay.size = shape.size
-					grayed_overlay.position = -shape.size / 2
 					
 					# Apply the same transform as the collision shape
 					highlight.rotation = collision_shape.rotation
 					highlight.scale = collision_shape.scale
-					grayed_overlay.rotation = collision_shape.rotation
-					grayed_overlay.scale = collision_shape.scale
 					
 				collision_shape.add_child(highlight)
-				collision_shape.add_child(grayed_overlay)
 			
 			# Connect signals
 			child.mouse_entered.connect(_on_area_mouse_entered.bind(child))
