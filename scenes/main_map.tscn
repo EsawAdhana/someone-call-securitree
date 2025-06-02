@@ -1,9 +1,10 @@
-[gd_scene load_steps=17 format=3 uid="uid://c601osuc2aat"]
+[gd_scene load_steps=18 format=3 uid="uid://c601osuc2aat"]
 
 [ext_resource type="Script" uid="uid://dlnb8jsdsw2go" path="res://scripts/main_map.gd" id="1_1xo34"]
 [ext_resource type="Texture2D" uid="uid://b7a5pslagpjde" path="res://assets/map.png" id="2_kdyc3"]
 [ext_resource type="Script" uid="uid://bkh4tbmwy4iyp" path="res://scripts/game_manager.gd" id="3_hd37j"]
 [ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="6_s3jbg"]
+[ext_resource type="PackedScene" path="res://scenes/time_display.tscn" id="7_time"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dyl4d"]
 size = Vector2(891.25, 601)
@@ -48,7 +49,7 @@ script = ExtResource("1_1xo34")
 texture = ExtResource("2_kdyc3")
 
 [node name="Camera2D" type="Camera2D" parent="MapBackground"]
-zoom = Vector2(0.45, 0.45)
+zoom = Vector2(0.25, 0.25)
 
 [node name="StadiumArea" type="Area2D" parent="."]
 
@@ -130,3 +131,8 @@ layer = 10
 
 [node name="GameOver" parent="UI" instance=ExtResource("6_s3jbg")]
 visible = false
+
+[node name="TimeUI" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="TimeDisplay" parent="TimeUI" instance=ExtResource("7_time")]
