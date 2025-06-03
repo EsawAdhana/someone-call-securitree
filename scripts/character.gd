@@ -109,10 +109,12 @@ func _ready():
 	if exclamation_mark:
 		exclamation_mark.visible = true
 		
-		# Set blue exclamation mark for Berkeley students (testing purposes)
-		if character_type == 1:  # Berkeley student
-			set_blue_exclamation_mark()
-			print("CHARACTER DEBUG: Set blue exclamation mark for Berkeley student")
+		# Set exclamation mark color/marker based on easy mode setting for all characters
+		update_exclamation_mark_color()
+	
+	# Connect to easy mode changes
+	if game_manager and game_manager.has_signal("easy_mode_changed"):
+		game_manager.easy_mode_changed.connect(_on_easy_mode_changed)
 	
 	# Start walking after a small delay
 	start_walking()
@@ -153,6 +155,117 @@ func set_blue_exclamation_mark():
 			var bottom_style = bottom_panel.get_theme_stylebox("panel").duplicate()
 			bottom_style.bg_color = Color(0, 0.5, 1, 1)  # Blue color
 			bottom_panel.add_theme_stylebox_override("panel", bottom_style)
+
+func set_red_exclamation_mark():
+	# Change exclamation mark color to red (default color)
+	if exclamation_mark and exclamation_mark.has_node("VBoxContainer"):
+		var vbox = exclamation_mark.get_node("VBoxContainer")
+		
+		# Reset exclamation mark position to original
+		exclamation_mark.position.y = -100  # Reset to original position
+		
+		# Hide any letter label that might exist
+		hide_letter_label()
+		
+		# Show the original exclamation mark panels
+		show_exclamation_panels()
+		
+		# Change both top and bottom parts to red
+		if vbox.has_node("ExclamationTop"):
+			var top_panel = vbox.get_node("ExclamationTop")
+			var top_style = top_panel.get_theme_stylebox("panel").duplicate()
+			top_style.bg_color = Color(1, 0, 0, 1)  # Red color
+			top_panel.add_theme_stylebox_override("panel", top_style)
+		
+		if vbox.has_node("ExclamationBottom"):
+			var bottom_panel = vbox.get_node("ExclamationBottom")
+			var bottom_style = bottom_panel.get_theme_stylebox("panel").duplicate()
+			bottom_style.bg_color = Color(1, 0, 0, 1)  # Red color
+			bottom_panel.add_theme_stylebox_override("panel", bottom_style)
+
+func set_stanford_letter_marker():
+	# Set a big red "S" for Stanford students in easy mode
+	if exclamation_mark and exclamation_mark.has_node("VBoxContainer"):
+		var vbox = exclamation_mark.get_node("VBoxContainer")
+		
+		# Hide the original exclamation mark panels
+		hide_exclamation_panels()
+		
+		# Create or get the letter label
+		var letter_label = get_or_create_letter_label()
+		letter_label.text = "S"
+		letter_label.modulate = Color(1, 0, 0, 1)  # Red color
+		letter_label.visible = true
+
+func set_berkeley_letter_marker():
+	# Set a big blue "B" for Berkeley students in easy mode
+	if exclamation_mark and exclamation_mark.has_node("VBoxContainer"):
+		var vbox = exclamation_mark.get_node("VBoxContainer")
+		
+		# Hide the original exclamation mark panels
+		hide_exclamation_panels()
+		
+		# Create or get the letter label
+		var letter_label = get_or_create_letter_label()
+		letter_label.text = "B"
+		letter_label.modulate = Color(0, 0.5, 1, 1)  # Blue color
+		letter_label.visible = true
+
+func get_or_create_letter_label() -> Label:
+	# Get or create a letter label for easy mode markers
+	if exclamation_mark and exclamation_mark.has_node("VBoxContainer"):
+		var vbox = exclamation_mark.get_node("VBoxContainer")
+		
+		# Check if letter label already exists
+		var letter_label = vbox.get_node_or_null("LetterLabel")
+		if not letter_label:
+			# Create a new letter label
+			letter_label = Label.new()
+			letter_label.name = "LetterLabel"
+			letter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			letter_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			letter_label.add_theme_font_size_override("font_size", 48)  # Increased from 32 to 48
+			letter_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+			letter_label.add_theme_constant_override("shadow_offset_x", 3)  # Increased shadow for larger text
+			letter_label.add_theme_constant_override("shadow_offset_y", 3)
+			letter_label.custom_minimum_size = Vector2(50, 50)  # Increased from 40x40 to 50x50
+			vbox.add_child(letter_label)
+			
+			# Move the entire exclamation mark higher when using letters
+			exclamation_mark.position.y = -130  # Moved up from -100 to -130
+		
+		return letter_label
+	return null
+
+func hide_exclamation_panels():
+	# Hide the original exclamation mark panels
+	if exclamation_mark and exclamation_mark.has_node("VBoxContainer"):
+		var vbox = exclamation_mark.get_node("VBoxContainer")
+		
+		if vbox.has_node("ExclamationTop"):
+			vbox.get_node("ExclamationTop").visible = false
+		
+		if vbox.has_node("ExclamationBottom"):
+			vbox.get_node("ExclamationBottom").visible = false
+
+func show_exclamation_panels():
+	# Show the original exclamation mark panels
+	if exclamation_mark and exclamation_mark.has_node("VBoxContainer"):
+		var vbox = exclamation_mark.get_node("VBoxContainer")
+		
+		if vbox.has_node("ExclamationTop"):
+			vbox.get_node("ExclamationTop").visible = true
+		
+		if vbox.has_node("ExclamationBottom"):
+			vbox.get_node("ExclamationBottom").visible = true
+
+func hide_letter_label():
+	# Hide the letter label
+	if exclamation_mark and exclamation_mark.has_node("VBoxContainer"):
+		var vbox = exclamation_mark.get_node("VBoxContainer")
+		var letter_label = vbox.get_node_or_null("LetterLabel")
+		if letter_label:
+			letter_label.visible = false
 
 # Override _input to handle clicks - this is a backup in case the input_event signal isn't working
 func _input(event):
@@ -449,3 +562,28 @@ func _on_character_approved(character):
 		print("CHARACTER DEBUG: Approved character will resume walking:", variant_name)
 		# Character approved - just resume walking, no disappearing
 		resume_walking()
+
+func update_exclamation_mark_color():
+	"""Update exclamation mark color based on character type and easy mode"""
+	var game_manager = get_node("/root/GameManager")
+	
+	if game_manager and game_manager.is_easy_mode_enabled():
+		# Easy mode: Use letter markers for both Stanford and Berkeley
+		if character_type == 1:  # Berkeley student
+			set_berkeley_letter_marker()
+			print("CHARACTER DEBUG: Set blue 'B' marker for Berkeley student (Easy Mode)")
+		else:  # Stanford student
+			set_stanford_letter_marker()
+			print("CHARACTER DEBUG: Set red 'S' marker for Stanford student (Easy Mode)")
+	else:
+		# Normal mode: All students get red exclamation marks
+		set_red_exclamation_mark()
+		if character_type == 1:
+			print("CHARACTER DEBUG: Set red exclamation mark for Berkeley student (Normal Mode)")
+		else:
+			print("CHARACTER DEBUG: Set red exclamation mark for Stanford student (Normal Mode)")
+
+func _on_easy_mode_changed(enabled: bool):
+	"""Called when easy mode setting changes"""
+	# Update all characters since easy mode now affects both Stanford and Berkeley
+	update_exclamation_mark_color()

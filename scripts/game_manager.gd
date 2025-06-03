@@ -31,8 +31,12 @@ var characters_interacted_with: int = 0
 var planned_characters_for_round: int = 0  # Total characters planned to spawn this round
 var all_planned_characters_spawned: bool = false  # Whether all planned characters have spawned
 
+# Easy mode setting
+var easy_mode_enabled: bool = false
+
 signal time_updated(time_data)
 signal workday_ended
+signal easy_mode_changed(enabled: bool)
 
 func _ready():
 	# Set up the time timer (0.5 real seconds = 1 game minute)
@@ -526,3 +530,23 @@ func find_inspection_panel_recursive(node: Node) -> Node:
 			return result
 	
 	return null
+
+# Easy mode functions
+func set_easy_mode(enabled: bool):
+	if easy_mode_enabled != enabled:
+		easy_mode_enabled = enabled
+		easy_mode_changed.emit(enabled)
+		print("Game Manager: Easy mode set to:", enabled)
+		
+		# Update all existing characters
+		update_all_character_markers()
+
+func is_easy_mode_enabled() -> bool:
+	return easy_mode_enabled
+
+func update_all_character_markers():
+	# Find all characters and update their markers
+	var all_characters = get_tree().get_nodes_in_group("characters")
+	for character in all_characters:
+		character.update_exclamation_mark_color()
+	print("Game Manager: Updated markers for all characters")

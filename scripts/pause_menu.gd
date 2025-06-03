@@ -7,6 +7,7 @@ extends Control
 @onready var volume_up = $PanelContainer/MarginContainer/VBoxContainer/VolumeControl/VolumeHBox/VolumeUp
 @onready var volume_percent = $PanelContainer/MarginContainer/VBoxContainer/VolumeControl/VolumePercent
 @onready var shortcuts_list = $PanelContainer/MarginContainer/VBoxContainer/ShortcutsContainer/ShortcutsList
+@onready var easy_mode_toggle = $PanelContainer/MarginContainer/VBoxContainer/EasyModeControl/EasyModeHBox/EasyModeToggle
 
 const VOLUME_STEP = 0.05  # 5% volume change for button/key presses
 
@@ -25,11 +26,17 @@ func _ready():
 	volume_down.pressed.connect(_on_volume_down_pressed)
 	volume_up.pressed.connect(_on_volume_up_pressed)
 	
+	# Connect easy mode toggle
+	easy_mode_toggle.toggled.connect(_on_easy_mode_toggled)
+	
 	# Connect to PauseManager signals
 	PauseManager.pause_state_changed.connect(_on_pause_state_changed)
 	
 	# Set initial volume
 	_update_volume(db_to_linear(AudioServer.get_bus_volume_db(0)))
+	
+	# Set initial easy mode state
+	easy_mode_toggle.button_pressed = GameManager.is_easy_mode_enabled()
 	
 	# Hide the pause menu initially
 	hide()
@@ -59,6 +66,11 @@ func _on_volume_down_pressed():
 
 func _on_volume_up_pressed():
 	_update_volume(volume_slider.value + VOLUME_STEP)
+	AudioManager.play_ui_click()
+
+func _on_easy_mode_toggled(button_pressed: bool):
+	# Update the easy mode setting in GameManager
+	GameManager.set_easy_mode(button_pressed)
 	AudioManager.play_ui_click()
 
 func _update_volume(value: float):

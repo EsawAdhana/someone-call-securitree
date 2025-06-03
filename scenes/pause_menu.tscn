@@ -133,6 +133,32 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_constants/separation = 10
 
+[node name="EasyModeControl" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="EasyModeLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/EasyModeControl"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Easy Mode"
+horizontal_alignment = 1
+
+[node name="EasyModeHBox" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/EasyModeControl"]
+layout_mode = 2
+alignment = 1
+
+[node name="EasyModeToggle" type="CheckButton" parent="PanelContainer/MarginContainer/VBoxContainer/EasyModeControl/EasyModeHBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 20
+text = "Show Letter Markers (Red S / Blue B)"
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
 [node name="ShortcutsContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
