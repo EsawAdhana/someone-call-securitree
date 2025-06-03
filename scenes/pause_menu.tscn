@@ -159,6 +159,39 @@ text = "Show Letter Markers (Red S / Blue B)"
 layout_mode = 2
 theme_override_constants/separation = 10
 
+[node name="SpeedyModeControl" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="SpeedyModeLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/SpeedyModeControl"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Speedy Mode"
+horizontal_alignment = 1
+
+[node name="SpeedyModeHBox" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/SpeedyModeControl"]
+layout_mode = 2
+alignment = 1
+
+[node name="SpeedyModeButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/SpeedyModeControl/SpeedyModeHBox"]
+custom_minimum_size = Vector2(300, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 20
+text = "Jump to Level 12 (Levels 1-2 only)"
+
+[node name="SpeedyModeDesc" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/SpeedyModeControl"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Skip directly to the final level"
+horizontal_alignment = 1
+
+[node name="HSeparator3" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
 [node name="ShortcutsContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10

@@ -204,3 +204,32 @@ func verify_level_consistency() -> bool:
 		is_consistent = false
 	
 	return is_consistent 
+
+# Speedy mode function to jump directly to level 12 (Stadium)
+func speedy_mode_to_level_12():
+	print("LEVEL: Activating speedy mode - jumping to level 12!")
+	
+	# Only allow if we're in level 1 or 2
+	if current_level > 2:
+		print("LEVEL: Speedy mode only available in levels 1-2, current level is:", current_level)
+		return false
+	
+	# Stop any running timer
+	stop_level_timer()
+	
+	# Set current level to 12 (Stadium)
+	current_level = 12
+	max_level = 12
+	
+	# Unlock all locations up to Stadium
+	unlocked_locations.clear()
+	for i in range(LOCATION_ORDER.size()):
+		unlocked_locations.append(LOCATION_ORDER[i])
+	
+	print("LEVEL: Speedy mode activated - jumped to level 12 with all locations unlocked")
+	print("LEVEL: Unlocked locations:", unlocked_locations)
+	
+	# Return to main map to show all unlocked locations
+	get_tree().change_scene_to_file("res://scenes/main_map.tscn")
+	
+	return true 
