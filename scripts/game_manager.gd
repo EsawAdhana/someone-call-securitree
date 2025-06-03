@@ -23,6 +23,7 @@ var is_in_location = false # Track if player is in a location
 # Level integration
 var berkeley_people_in_location: int = 0
 var berkeley_people_cleared: int = 0
+var berkeley_people_accepted: int = 0  # Track Berkeley students that were incorrectly accepted
 
 # Auto-skip tracking
 var total_characters_in_location: int = 0
@@ -83,6 +84,7 @@ func _on_level_started(level_number: int):
 	# Reset berkeley people counters
 	berkeley_people_in_location = 0
 	berkeley_people_cleared = 0
+	berkeley_people_accepted = 0
 	
 	# Reset character interaction tracking
 	total_characters_in_location = 0
@@ -166,12 +168,20 @@ func _on_level_time_limit_reached(level_number: int):
 		print("Game Manager: Game is already paused (game over), skipping Berkeley morale decrease")
 		return
 	
-	# Check if there are uncleared Berkeley people
-	var uncleared_berkeley = berkeley_people_in_location - berkeley_people_cleared
-	if uncleared_berkeley > 0:
-		print("Game Manager:", uncleared_berkeley, "Berkeley people not cleared, decreasing morale")
-		for i in range(uncleared_berkeley):
+	# Apply morale penalties for Berkeley students that were accepted instead of rejected
+	if berkeley_people_accepted > 0:
+		print("Game Manager: Applying morale penalties for", berkeley_people_accepted, "Berkeley students that were accepted")
+		for i in range(berkeley_people_accepted):
 			MoraleManager.decrease_morale()
+			print("Game Manager: Decreased morale for accepted Berkeley student", i + 1, "/", berkeley_people_accepted)
+	
+	# Apply morale penalties for unprocessed Berkeley students (those that were never interacted with)
+	var unprocessed_berkeley = berkeley_people_in_location - berkeley_people_cleared
+	if unprocessed_berkeley > 0:
+		print("Game Manager: Applying morale penalties for", unprocessed_berkeley, "unprocessed Berkeley students")
+		for i in range(unprocessed_berkeley):
+			MoraleManager.decrease_morale()
+			print("Game Manager: Decreased morale for unprocessed Berkeley student", i + 1, "/", unprocessed_berkeley)
 
 func _on_character_approved(character):
 	# Handle character approval logic
@@ -182,9 +192,15 @@ func _on_character_approved(character):
 	if character.character_type == 0:
 		print("Game Manager: Correctly approved Stanford student")
 	else:
-		# Berkeley student being approved - incorrect but no morale penalty
-		print("Game Manager: Incorrectly approved Berkeley student - no morale penalty")
-		# Even though this is incorrect, mark them as "cleared" so round can end
+		# Berkeley student being approved - incorrect but no morale penalty here
+		# Morale penalty will be applied when round ends for unrejected Berkeley students
+		print("Game Manager: Incorrectly approved Berkeley student - morale penalty will be applied at round end")
+		
+		# Track that this Berkeley student was accepted
+		berkeley_people_accepted += 1
+		print("Game Manager: Berkeley accepted count incremented to:", berkeley_people_accepted)
+		
+		# Mark them as "cleared" so round can end
 		berkeley_people_cleared += 1
 		print("Game Manager: Berkeley cleared count incremented to:", berkeley_people_cleared)
 	
@@ -422,6 +438,13 @@ func check_auto_skip_conditions():
 	# 3. All planned characters for the round have actually spawned
 	if all_characters_processed and all_berkeley_rejected and all_planned_characters_spawned and total_characters_in_location > 0:
 		print("Game Manager: ✅ Early round completion conditions met! All Berkeley students handled, all characters processed, and all planned characters spawned.")
+		
+		# Apply morale penalties for Berkeley students that were accepted instead of rejected
+		if berkeley_people_accepted > 0:
+			print("Game Manager: Applying morale penalties for", berkeley_people_accepted, "Berkeley students that were accepted")
+			for i in range(berkeley_people_accepted):
+				MoraleManager.decrease_morale()
+				print("Game Manager: Decreased morale for accepted Berkeley student", i + 1, "/", berkeley_people_accepted)
 		
 		# Complete the level immediately - don't advance time since we're ending early
 		await get_tree().create_timer(0.5).timeout

@@ -65,7 +65,7 @@ position = Vector2(9, 11)
 texture = ExtResource("2_kdyc3")
 
 [node name="Camera2D" type="Camera2D" parent="MapBackground"]
-zoom = Vector2(0.25, 0.25)
+zoom = Vector2(0.35, 0.35)
 
 [node name="StadiumArea" type="Area2D" parent="."]
 
