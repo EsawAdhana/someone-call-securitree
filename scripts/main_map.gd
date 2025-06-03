@@ -38,6 +38,9 @@ var tooltip_label: Label
 # Darkening overlay reference
 var darkness_rect: ColorRect
 
+# Envelope UI reference
+var envelope_ui: Control
+
 func _ready():
 	# Add this node to the main_map group for reference
 	add_to_group("main_map")
@@ -76,6 +79,9 @@ func _ready():
 	
 	# Set up all location areas
 	setup_location_areas()
+	
+	# Set up envelope UI
+	setup_envelope_ui()
 
 func _update_location_states():
 	# Update visual state for all locations based on level manager
@@ -86,7 +92,7 @@ func _update_location_states():
 			# Hide/show the grayscale sprite based on unlock status
 			var sprite = child.get_node_or_null("Sprite2D")
 			if sprite:
-				sprite.visible = not is_unlocked  # Show grayscale when locked, hide when unlocked
+				sprite.visible = not is_unlocked # Show grayscale when locked, hide when unlocked
 			
 			# Always allow input for tooltips, but we'll block clicks in the input event handler
 			child.input_pickable = true
@@ -120,7 +126,7 @@ func _play_unlock_animation(location_name: String):
 	
 	# Create a subtle flash effect
 	var original_color = highlight.color
-	var flash_color = Color(1, 1, 0.7, 0.5)  # Subtle yellow flash
+	var flash_color = Color(1, 1, 0.7, 0.5) # Subtle yellow flash
 	
 	# Make sure the highlight is visible for the animation
 	highlight.visible = true
@@ -141,7 +147,7 @@ func _play_unlock_animation(location_name: String):
 	tween.tween_callback(func():
 		highlight.color = original_color
 		highlight.modulate.a = 1.0
-		highlight.visible = false  # Hide after animation
+		highlight.visible = false # Hide after animation
 		print("MAP: Simple flash animation completed for:", location_name)
 	)
 
@@ -215,6 +221,11 @@ func _on_area_input_event(viewport, event, shape_idx, area):
 		elif location_level > current_level:
 			print("MAP: Cannot skip ahead to future level:", location_level, "(current:", current_level, ")")
 			return
+			
+		# Check if we need to read the envelope first
+		if EnvelopeManager.should_show_envelope(area.name):
+			print("MAP: Must read envelope before entering location:", area.name)
+			return
 		
 		var scene_path = location_scenes.get(area.name)
 		if scene_path:
@@ -222,7 +233,7 @@ func _on_area_input_event(viewport, event, shape_idx, area):
 			# Start the level timer when entering a location
 			LevelManager.start_level(location_level)
 			
-			AudioManager.play_npc_click()  # Play swish sound when changing locations
+			AudioManager.play_npc_click() # Play swish sound when changing locations
 			get_tree().change_scene_to_file(scene_path)
 
 func update_time_display():
@@ -255,7 +266,7 @@ func setup_location_areas():
 			var collision_shape = child.get_node("CollisionShape2D")
 			if collision_shape and collision_shape.shape:
 				var highlight = ColorRect.new()
-				highlight.color = Color(1, 1, 0.5, 0.3)  # Soft yellow
+				highlight.color = Color(1, 1, 0.5, 0.3) # Soft yellow
 				highlight.visible = false
 				highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
 				highlight.name = "Highlight"
@@ -264,7 +275,7 @@ func setup_location_areas():
 				var shape = collision_shape.shape as RectangleShape2D
 				if shape:
 					highlight.size = shape.size
-					highlight.position = -shape.size / 2  # Center on the collision shape
+					highlight.position = - shape.size / 2 # Center on the collision shape
 					
 					# Apply the same transform as the collision shape
 					highlight.rotation = collision_shape.rotation
@@ -293,8 +304,8 @@ func update_darkness_overlay():
 	# Start darkening from the 7th location (MainQuadArea)
 	# Since locations are unlocked sequentially, we can use unlocked count
 	var darkness_level = 0
-	if unlocked_count >= 7:  # Starting from 7th location
-		darkness_level = unlocked_count - 6  # 7th location = 1/12, 8th = 2/12, etc.
+	if unlocked_count >= 7: # Starting from 7th location
+		darkness_level = unlocked_count - 6 # 7th location = 1/12, 8th = 2/12, etc.
 	
 	# Cap at 6/12 darkness (since we have 12 locations total, and start at 7th)
 	darkness_level = min(darkness_level, 6)
@@ -323,3 +334,23 @@ func _on_victory_achieved(final_morale: float):
 		print("MAP: Victory screen displayed")
 	else:
 		print("MAP: ERROR - Victory screen not found!")
+
+func setup_envelope_ui():
+	# Load and instance the envelope UI scene
+	var envelope_scene = load("res://scenes/envelope_ui.tscn")
+	if envelope_scene:
+		envelope_ui = envelope_scene.instantiate()
+		$UI.add_child(envelope_ui)
+		
+		# Initially hide the envelope UI
+		envelope_ui.visible = false
+		
+		# Show envelope if needed for current level
+		update_envelope_visibility()
+
+func update_envelope_visibility():
+	if not envelope_ui:
+		return
+		
+	var current_location = LevelManager.get_location_for_level(LevelManager.get_current_level())
+	envelope_ui.visible = EnvelopeManager.should_show_envelope(current_location)
