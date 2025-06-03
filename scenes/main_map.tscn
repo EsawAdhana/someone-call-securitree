@@ -1,23 +1,25 @@
-[gd_scene load_steps=30 format=3 uid="uid://c601osuc2aat"]
+[gd_scene load_steps=33 format=3 uid="uid://c601osuc2aat"]
 
 [ext_resource type="Script" uid="uid://dlnb8jsdsw2go" path="res://scripts/main_map.gd" id="1_1xo34"]
 [ext_resource type="Texture2D" uid="uid://b7a5pslagpjde" path="res://assets/map.png" id="2_kdyc3"]
 [ext_resource type="Script" uid="uid://bkh4tbmwy4iyp" path="res://scripts/game_manager.gd" id="3_hd37j"]
 [ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="6_s3jbg"]
-[ext_resource type="PackedScene" uid="uid://wde3c8fgujl3" path="res://scenes/victory_screen.tscn" id="7_victory"]
 [ext_resource type="PackedScene" path="res://scenes/time_display.tscn" id="7_time"]
-[ext_resource type="Texture2D" uid="uid://vbakkyrkpe52" path="res://assets/grayscaled/grayscale stadium.png" id="8_stadium"]
-[ext_resource type="Texture2D" uid="uid://blgm1vbr6l5pm" path="res://assets/grayscaled/grayscale hoover.png" id="9_hoover"]
-[ext_resource type="Texture2D" uid="uid://brlayrhqnllcp" path="res://assets/grayscaled/grayscale memchu.png" id="10_memchu"]
-[ext_resource type="Texture2D" uid="uid://bte87ll814ai1" path="res://assets/grayscaled/grayscale  GSB.png" id="11_gsb"]
-[ext_resource type="Texture2D" uid="uid://dgg1aniijyuw" path="res://assets/grayscaled/grayscale green.png" id="12_green"]
-[ext_resource type="Texture2D" uid="uid://dd5uwjnfheylg" path="res://assets/grayscaled/grayscale meyer green.png" id="13_meyer"]
-[ext_resource type="Texture2D" uid="uid://xdo7o7kjeeto" path="res://assets/grayscaled/grayscale tressider.png" id="14_tresidder"]
-[ext_resource type="Texture2D" uid="uid://br180fjs8pu4e" path="res://assets/grayscaled/grayscale farillaga.png" id="15_farillaga"]
-[ext_resource type="Texture2D" uid="uid://d2ijwd5cg1srg" path="res://assets/grayscaled/grayscale  Y2E2.png" id="16_y2e2"]
-[ext_resource type="Texture2D" uid="uid://bwxu7d7s8oylw" path="res://assets/grayscaled/grayscale coda.png" id="17_coda"]
-[ext_resource type="Texture2D" uid="uid://bc1qy1kyqeue2" path="res://assets/grayscaled/grayscale cantor.png" id="18_cantor"]
-[ext_resource type="Texture2D" uid="uid://d2hfwryax1a2r" path="res://assets/grayscaled/grayscale flomo.png" id="19_flomo"]
+[ext_resource type="PackedScene" uid="uid://wde3c8fgujl3" path="res://scenes/victory_screen.tscn" id="7_victory"]
+[ext_resource type="PackedScene" path="res://scenes/pause_button.tscn" id="8_pause"]
+[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="9_pause"]
+[ext_resource type="Texture2D" uid="uid://vbakkyrkpe52" path="res://assets/grayscaled/grayscale stadium.png" id="10_stadium"]
+[ext_resource type="Texture2D" uid="uid://blgm1vbr6l5pm" path="res://assets/grayscaled/grayscale hoover.png" id="11_hoover"]
+[ext_resource type="Texture2D" uid="uid://brlayrhqnllcp" path="res://assets/grayscaled/grayscale memchu.png" id="12_memchu"]
+[ext_resource type="Texture2D" uid="uid://bte87ll814ai1" path="res://assets/grayscaled/grayscale  GSB.png" id="13_gsb"]
+[ext_resource type="Texture2D" uid="uid://dgg1aniijyuw" path="res://assets/grayscaled/grayscale green.png" id="14_green"]
+[ext_resource type="Texture2D" uid="uid://dd5uwjnfheylg" path="res://assets/grayscaled/grayscale meyer green.png" id="15_meyer"]
+[ext_resource type="Texture2D" uid="uid://xdo7o7kjeeto" path="res://assets/grayscaled/grayscale tressider.png" id="16_tresidder"]
+[ext_resource type="Texture2D" uid="uid://br180fjs8pu4e" path="res://assets/grayscaled/grayscale farillaga.png" id="17_farillaga"]
+[ext_resource type="Texture2D" uid="uid://d2ijwd5cg1srg" path="res://assets/grayscaled/grayscale  Y2E2.png" id="18_y2e2"]
+[ext_resource type="Texture2D" uid="uid://bwxu7d7s8oylw" path="res://assets/grayscaled/grayscale coda.png" id="19_coda"]
+[ext_resource type="Texture2D" uid="uid://bc1qy1kyqeue2" path="res://assets/grayscaled/grayscale cantor.png" id="20_cantor"]
+[ext_resource type="Texture2D" uid="uid://d2hfwryax1a2r" path="res://assets/grayscaled/grayscale flomo.png" id="21_flomo"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dyl4d"]
 size = Vector2(891.25, 601)
@@ -73,7 +75,7 @@ shape = SubResource("RectangleShape2D_dyl4d")
 [node name="Sprite2D" type="Sprite2D" parent="StadiumArea"]
 position = Vector2(1912.52, -1187.73)
 scale = Vector2(1.001, 1.00153)
-texture = ExtResource("8_stadium")
+texture = ExtResource("10_stadium")
 
 [node name="HooverTowerArea" type="Area2D" parent="."]
 
@@ -83,7 +85,7 @@ shape = SubResource("RectangleShape2D_km2bi")
 
 [node name="Sprite2D" type="Sprite2D" parent="HooverTowerArea"]
 position = Vector2(1167, 297)
-texture = ExtResource("9_hoover")
+texture = ExtResource("11_hoover")
 
 [node name="MainQuadArea" type="Area2D" parent="."]
 
@@ -93,7 +95,7 @@ shape = SubResource("RectangleShape2D_kdyc3")
 
 [node name="Sprite2D" type="Sprite2D" parent="MainQuadArea"]
 position = Vector2(200, 179)
-texture = ExtResource("10_memchu")
+texture = ExtResource("12_memchu")
 
 [node name="GSBArea" type="Area2D" parent="."]
 
@@ -103,7 +105,7 @@ shape = SubResource("RectangleShape2D_4synu")
 
 [node name="Sprite2D" type="Sprite2D" parent="GSBArea"]
 position = Vector2(1670, -79)
-texture = ExtResource("11_gsb")
+texture = ExtResource("13_gsb")
 
 [node name="GreenLibraryArea" type="Area2D" parent="."]
 
@@ -113,7 +115,7 @@ shape = SubResource("RectangleShape2D_cyf2o")
 
 [node name="Sprite2D" type="Sprite2D" parent="GreenLibraryArea"]
 position = Vector2(724, 878)
-texture = ExtResource("12_green")
+texture = ExtResource("14_green")
 
 [node name="MeyerGreenArea" type="Area2D" parent="."]
 
@@ -124,7 +126,7 @@ shape = SubResource("RectangleShape2D_64gt2")
 [node name="Sprite2D" type="Sprite2D" parent="MeyerGreenArea"]
 position = Vector2(1487, 973)
 scale = Vector2(1.17871, 1.17871)
-texture = ExtResource("13_meyer")
+texture = ExtResource("15_meyer")
 
 [node name="TresidderArea" type="Area2D" parent="."]
 
@@ -134,7 +136,7 @@ shape = SubResource("RectangleShape2D_2xk3c")
 
 [node name="Sprite2D" type="Sprite2D" parent="TresidderArea"]
 position = Vector2(-300, 994)
-texture = ExtResource("14_tresidder")
+texture = ExtResource("16_tresidder")
 
 [node name="FarrillagaArea" type="Area2D" parent="."]
 
@@ -144,7 +146,7 @@ shape = SubResource("RectangleShape2D_ulx81")
 
 [node name="Sprite2D" type="Sprite2D" parent="FarrillagaArea"]
 position = Vector2(-1497, 841)
-texture = ExtResource("15_farillaga")
+texture = ExtResource("17_farillaga")
 
 [node name="Y2E2Area" type="Area2D" parent="."]
 
@@ -154,7 +156,7 @@ shape = SubResource("RectangleShape2D_6adrn")
 
 [node name="Sprite2D" type="Sprite2D" parent="Y2E2Area"]
 position = Vector2(-1565, 46)
-texture = ExtResource("16_y2e2")
+texture = ExtResource("18_y2e2")
 
 [node name="CoDaArea" type="Area2D" parent="."]
 
@@ -164,7 +166,7 @@ shape = SubResource("RectangleShape2D_cyt25")
 
 [node name="Sprite2D" type="Sprite2D" parent="CoDaArea"]
 position = Vector2(-1067, -625)
-texture = ExtResource("17_coda")
+texture = ExtResource("19_coda")
 
 [node name="CantorArea" type="Area2D" parent="."]
 
@@ -174,7 +176,7 @@ shape = SubResource("RectangleShape2D_ubaj7")
 
 [node name="Sprite2D" type="Sprite2D" parent="CantorArea"]
 position = Vector2(-842, -1483)
-texture = ExtResource("18_cantor")
+texture = ExtResource("20_cantor")
 
 [node name="FloMoArea" type="Area2D" parent="."]
 
@@ -184,7 +186,7 @@ shape = SubResource("RectangleShape2D_sa572")
 
 [node name="Sprite2D" type="Sprite2D" parent="FloMoArea"]
 position = Vector2(-771, 1728)
-texture = ExtResource("19_flomo")
+texture = ExtResource("21_flomo")
 
 [node name="GameManager" type="Node" parent="."]
 script = ExtResource("3_hd37j")
@@ -198,17 +200,20 @@ visible = false
 [node name="VictoryScreen" parent="UI" instance=ExtResource("7_victory")]
 visible = false
 
+[node name="PauseButton" parent="UI" instance=ExtResource("8_pause")]
+
+[node name="PauseMenu" parent="UI" instance=ExtResource("9_pause")]
+
 [node name="TimeUI" type="CanvasLayer" parent="."]
 layer = 5
 
 [node name="TimeDisplay" parent="TimeUI" instance=ExtResource("7_time")]
 
 [node name="DarknessOverlay" type="CanvasLayer" parent="."]
-layer = 1
 
 [node name="DarknessRect" type="ColorRect" parent="DarknessOverlay"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0, 0, 0, 0.1)
 mouse_filter = 2
+color = Color(0, 0, 0, 0.1)

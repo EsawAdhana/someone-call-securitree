@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://yb8duu47d4v0"]
+[gd_scene load_steps=11 format=3 uid="uid://yb8duu47d4v0"]
 
 [ext_resource type="Script" uid="uid://0gajywupkcfc" path="res://scripts/location_template.gd" id="1_1xo34"]
 [ext_resource type="Texture2D" uid="uid://dty67hnup4k7c" path="res://assets/grass.png" id="1_r81h7"]
@@ -8,6 +8,8 @@
 [ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="6_s3jbg"]
 [ext_resource type="PackedScene" uid="uid://wde3c8fgujl3" path="res://scenes/victory_screen.tscn" id="7_victory"]
 [ext_resource type="PackedScene" path="res://scenes/time_display.tscn" id="8_time"]
+[ext_resource type="PackedScene" path="res://scenes/pause_button.tscn" id="9_pause"]
+[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="10_pause"]
 [ext_resource type="Script" uid="uid://0wwaor83r1da" path="res://scripts/location_template.gd" id="1_location"]
 [ext_resource type="Texture2D" uid="uid://clglovunkpcbs" path="res://assets/grass.png" id="2_grass"]
 
@@ -178,6 +180,10 @@ visible = false
 
 [node name="VictoryScreen" parent="UI" instance=ExtResource("7_victory")]
 visible = false
+
+[node name="PauseButton" parent="UI" instance=ExtResource("9_pause")]
+
+[node name="PauseMenu" parent="UI" instance=ExtResource("10_pause")]
 
 [node name="DarknessOverlay" type="CanvasLayer" parent="."]
 layer = 1
