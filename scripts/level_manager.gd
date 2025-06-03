@@ -8,7 +8,7 @@ signal time_limit_reached(level_number)
 signal victory_achieved(final_morale)
 
 # Level configuration
-const LEVEL_DURATION_SECONDS = 30 # 30 seconds per level/round per user request
+const LEVEL_DURATION_SECONDS = 60 # 30 seconds per level/round per user request
 const TIME_INCREMENT_PER_LEVEL = 60 # Each level adds 60 minutes (1 hour) of game time
 
 # Level progression order - first location to last
