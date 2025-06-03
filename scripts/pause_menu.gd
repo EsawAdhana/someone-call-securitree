@@ -1,7 +1,8 @@
 extends Control
 
-# Get the resume button node
+# Get the nodes
 @onready var resume_button = $PanelContainer/MarginContainer/VBoxContainer/ResumeButton
+@onready var volume_slider = $PanelContainer/MarginContainer/VBoxContainer/VolumeControl/VolumeSlider
 
 func _ready():
 	# Add to pause_menu group for easy access
@@ -13,8 +14,14 @@ func _ready():
 	# Connect the resume button's pressed signal
 	resume_button.pressed.connect(_on_resume_button_pressed)
 	
+	# Connect volume slider
+	volume_slider.value_changed.connect(_on_volume_changed)
+	
 	# Connect to PauseManager signals
 	PauseManager.pause_state_changed.connect(_on_pause_state_changed)
+	
+	# Set initial volume
+	volume_slider.value = db_to_linear(AudioServer.get_bus_volume_db(0))
 	
 	# Hide the pause menu initially
 	hide()
@@ -45,3 +52,10 @@ func _on_resume_button_pressed():
 	
 	# Unpause the game
 	PauseManager.unpause()
+
+func _on_volume_changed(value: float):
+	# Convert linear volume (0-1) to decibels and set it
+	AudioServer.set_bus_volume_db(0, linear_to_db(value))
+	
+	# Play UI click sound to give feedback about the current volume
+	AudioManager.play_ui_click()
