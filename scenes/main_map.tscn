@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://c601osuc2aat"]
+[gd_scene load_steps=32 format=3 uid="uid://c601osuc2aat"]
 
 [ext_resource type="Script" uid="uid://dlnb8jsdsw2go" path="res://scripts/main_map.gd" id="1_1xo34"]
 [ext_resource type="Texture2D" uid="uid://cawvtivp07wm0" path="res://assets/new_map.png" id="2_kdyc3"]
@@ -6,8 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="6_s3jbg"]
 [ext_resource type="PackedScene" path="res://scenes/time_display.tscn" id="7_time"]
 [ext_resource type="PackedScene" uid="uid://wde3c8fgujl3" path="res://scenes/victory_screen.tscn" id="7_victory"]
-[ext_resource type="PackedScene" path="res://scenes/pause_button.tscn" id="8_pause"]
-[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="9_pause"]
+[ext_resource type="PackedScene" uid="uid://dxxx" path="res://scenes/pause_menu.tscn" id="9_pause"]
 [ext_resource type="Texture2D" uid="uid://vbakkyrkpe52" path="res://assets/grayscaled/grayscale stadium.png" id="10_stadium"]
 [ext_resource type="Texture2D" uid="uid://blgm1vbr6l5pm" path="res://assets/grayscaled/grayscale hoover.png" id="11_hoover"]
 [ext_resource type="Texture2D" uid="uid://brlayrhqnllcp" path="res://assets/grayscaled/grayscale memchu.png" id="12_memchu"]
@@ -208,7 +207,7 @@ visible = false
 
 [node name="VictoryScreen" parent="UI" instance=ExtResource("7_victory")]
 
-[node name="PauseButton" parent="UI" instance=ExtResource("8_pause")]
+[node name="PauseButton" parent="UI" instance=ExtResource("9_pause")]
 
 [node name="PauseMenu" parent="UI" instance=ExtResource("9_pause")]
 

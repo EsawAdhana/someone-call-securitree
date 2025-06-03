@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Someone Call Securitree"
-run/main_scene="res://scenes/main_map.tscn"
+run/main_scene="uid://ccckmotbkssa1"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -26,6 +26,7 @@ GlobalUI="*res://scenes/global_ui.tscn"
 AudioManager="*res://scripts/audio_manager.gd"
 BackpackItemsManager="*res://scripts/backpack_items_manager.gd"
 PauseManager="*res://scripts/pause_manager.gd"
+EnvelopeManager="*res://scripts/envelope_manager.gd"
 
 [display]
 
