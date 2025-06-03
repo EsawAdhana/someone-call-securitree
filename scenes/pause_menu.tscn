@@ -55,10 +55,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -200.0
-offset_right = 200.0
-offset_bottom = 200.0
+offset_left = -250.0
+offset_top = -250.0
+offset_right = 250.0
+offset_bottom = 250.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
@@ -92,7 +92,19 @@ theme_override_font_sizes/font_size = 24
 text = "Volume"
 horizontal_alignment = 1
 
-[node name="VolumeSlider" type="HSlider" parent="PanelContainer/MarginContainer/VBoxContainer/VolumeControl"]
+[node name="VolumeHBox" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/VolumeControl"]
+layout_mode = 2
+alignment = 1
+
+[node name="VolumeDown" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/VolumeControl/VolumeHBox"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 24
+text = "−"
+
+[node name="VolumeSlider" type="HSlider" parent="PanelContainer/MarginContainer/VBoxContainer/VolumeControl/VolumeHBox"]
 custom_minimum_size = Vector2(300, 40)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -102,6 +114,56 @@ theme_override_styles/slider = SubResource("StyleBoxFlat_slider")
 max_value = 1.0
 step = 0.01
 value = 1.0
+
+[node name="VolumeUp" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/VolumeControl/VolumeHBox"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 24
+text = "+"
+
+[node name="VolumePercent" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/VolumeControl"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "100%"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ShortcutsContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ShortcutsLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/ShortcutsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Controls"
+horizontal_alignment = 1
+
+[node name="ShortcutsList" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/ShortcutsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PauseShortcut" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/ShortcutsContainer/ShortcutsList"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Press ESC or ⏸ to Pause/Resume"
+horizontal_alignment = 1
+
+[node name="VolumeShortcuts" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/ShortcutsContainer/ShortcutsList"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Use ← → keys or buttons to adjust volume"
+horizontal_alignment = 1
+
+[node name="SliderTip" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/ShortcutsContainer/ShortcutsList"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Or drag the slider to set volume"
+horizontal_alignment = 1
 
 [node name="ResumeButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(200, 50)

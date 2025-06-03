@@ -1,7 +1,7 @@
 [gd_scene load_steps=33 format=3 uid="uid://c601osuc2aat"]
 
 [ext_resource type="Script" uid="uid://dlnb8jsdsw2go" path="res://scripts/main_map.gd" id="1_1xo34"]
-[ext_resource type="Texture2D" uid="uid://b7a5pslagpjde" path="res://assets/map.png" id="2_kdyc3"]
+[ext_resource type="Texture2D" uid="uid://cawvtivp07wm0" path="res://assets/new_map.png" id="2_kdyc3"]
 [ext_resource type="Script" uid="uid://bkh4tbmwy4iyp" path="res://scripts/game_manager.gd" id="3_hd37j"]
 [ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="6_s3jbg"]
 [ext_resource type="PackedScene" path="res://scenes/time_display.tscn" id="7_time"]
@@ -22,45 +22,46 @@
 [ext_resource type="Texture2D" uid="uid://d2hfwryax1a2r" path="res://assets/grayscaled/grayscale flomo.png" id="21_flomo"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dyl4d"]
-size = Vector2(891.25, 601)
+size = Vector2(1213.62, 820)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_km2bi"]
-size = Vector2(369.75, 660)
+size = Vector2(472.875, 740)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kdyc3"]
-size = Vector2(1054.5, 615)
+size = Vector2(1070.25, 656.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4synu"]
-size = Vector2(620.5, 443)
+size = Vector2(821.25, 686.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cyf2o"]
-size = Vector2(635, 445)
+size = Vector2(895.5, 635.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_64gt2"]
-size = Vector2(779, 430)
+size = Vector2(947.5, 579)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2xk3c"]
-size = Vector2(650, 532)
+size = Vector2(740, 558)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ulx81"]
-size = Vector2(551, 528)
+size = Vector2(656.5, 651)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6adrn"]
-size = Vector2(777, 385.5)
+size = Vector2(838.5, 481.75)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cyt25"]
-size = Vector2(739, 410)
+size = Vector2(739, 422)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ubaj7"]
 size = Vector2(653, 464.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sa572"]
-size = Vector2(818, 424.5)
+size = Vector2(818, 664.25)
 
 [node name="MainMap" type="Node2D"]
 script = ExtResource("1_1xo34")
 
 [node name="MapBackground" type="Sprite2D" parent="."]
+position = Vector2(9, 11)
 texture = ExtResource("2_kdyc3")
 
 [node name="Camera2D" type="Camera2D" parent="MapBackground"]
@@ -69,123 +70,131 @@ zoom = Vector2(0.25, 0.25)
 [node name="StadiumArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StadiumArea"]
-position = Vector2(1902.62, -1149.5)
+position = Vector2(1647.19, -956)
 shape = SubResource("RectangleShape2D_dyl4d")
 
 [node name="Sprite2D" type="Sprite2D" parent="StadiumArea"]
-position = Vector2(1912.52, -1187.73)
-scale = Vector2(1.001, 1.00153)
+position = Vector2(1648, -980)
+scale = Vector2(1.32645, 1.3154)
 texture = ExtResource("10_stadium")
 
 [node name="HooverTowerArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HooverTowerArea"]
-position = Vector2(1150, 309)
+position = Vector2(1094, -187)
 shape = SubResource("RectangleShape2D_km2bi")
 
 [node name="Sprite2D" type="Sprite2D" parent="HooverTowerArea"]
-position = Vector2(1167, 297)
+position = Vector2(1088, -200.875)
+scale = Vector2(1.16335, 1.1929)
 texture = ExtResource("11_hoover")
 
 [node name="MainQuadArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MainQuadArea"]
-position = Vector2(186.75, 220.5)
+position = Vector2(119.875, 422.25)
 shape = SubResource("RectangleShape2D_kdyc3")
 
 [node name="Sprite2D" type="Sprite2D" parent="MainQuadArea"]
-position = Vector2(200, 179)
+position = Vector2(141.75, 398.25)
+scale = Vector2(1.07975, 1.06795)
 texture = ExtResource("12_memchu")
 
 [node name="GSBArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GSBArea"]
-position = Vector2(1673.75, -80.5)
+position = Vector2(2010.38, 99.25)
 shape = SubResource("RectangleShape2D_4synu")
 
 [node name="Sprite2D" type="Sprite2D" parent="GSBArea"]
-position = Vector2(1670, -79)
+position = Vector2(2010, 81.5006)
+scale = Vector2(1.47189, 1.5213)
 texture = ExtResource("13_gsb")
 
 [node name="GreenLibraryArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GreenLibraryArea"]
-position = Vector2(713.5, 922.5)
+position = Vector2(542.25, 1266.25)
 shape = SubResource("RectangleShape2D_cyf2o")
 
 [node name="Sprite2D" type="Sprite2D" parent="GreenLibraryArea"]
-position = Vector2(724, 878)
+position = Vector2(559.5, 1198.5)
+scale = Vector2(1.40799, 1.41369)
 texture = ExtResource("14_green")
 
 [node name="MeyerGreenArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MeyerGreenArea"]
-position = Vector2(1486, 1066)
+position = Vector2(1577.25, 983.5)
 shape = SubResource("RectangleShape2D_64gt2")
 
 [node name="Sprite2D" type="Sprite2D" parent="MeyerGreenArea"]
-position = Vector2(1487, 973)
-scale = Vector2(1.17871, 1.17871)
+position = Vector2(1571.13, 929.875)
+scale = Vector2(1.43249, 1.34717)
 texture = ExtResource("15_meyer")
 
 [node name="TresidderArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="TresidderArea"]
-position = Vector2(-304, 981)
+position = Vector2(-1137, 478)
 shape = SubResource("RectangleShape2D_2xk3c")
 
 [node name="Sprite2D" type="Sprite2D" parent="TresidderArea"]
-position = Vector2(-300, 994)
+position = Vector2(-1135, 521.5)
+scale = Vector2(1.06169, 1.06026)
 texture = ExtResource("16_tresidder")
 
 [node name="FarrillagaArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="FarrillagaArea"]
-position = Vector2(-1499.5, 879)
+position = Vector2(-1800.25, 1160.5)
 shape = SubResource("RectangleShape2D_ulx81")
 
 [node name="Sprite2D" type="Sprite2D" parent="FarrillagaArea"]
-position = Vector2(-1497, 841)
+position = Vector2(-1798.75, 1143.75)
+scale = Vector2(1.18966, 1.23321)
 texture = ExtResource("17_farillaga")
 
 [node name="Y2E2Area" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Y2E2Area"]
-position = Vector2(-1560.5, 44.75)
+position = Vector2(-1981.25, 126.125)
 shape = SubResource("RectangleShape2D_6adrn")
 
 [node name="Sprite2D" type="Sprite2D" parent="Y2E2Area"]
-position = Vector2(-1565, 46)
+position = Vector2(-1979.5, 110.5)
+scale = Vector2(1.08891, 1.09122)
 texture = ExtResource("18_y2e2")
 
 [node name="CoDaArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CoDaArea"]
-position = Vector2(-1053.5, -631)
+position = Vector2(-1266, -453)
 shape = SubResource("RectangleShape2D_cyt25")
 
 [node name="Sprite2D" type="Sprite2D" parent="CoDaArea"]
-position = Vector2(-1067, -625)
+position = Vector2(-1277, -452)
 texture = ExtResource("19_coda")
 
 [node name="CantorArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CantorArea"]
-position = Vector2(-841.5, -1403.25)
+position = Vector2(-1042, -1095)
 shape = SubResource("RectangleShape2D_ubaj7")
 
 [node name="Sprite2D" type="Sprite2D" parent="CantorArea"]
-position = Vector2(-842, -1483)
+position = Vector2(-1046, -1171)
 texture = ExtResource("20_cantor")
 
 [node name="FloMoArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="FloMoArea"]
-position = Vector2(-769, 1773)
+position = Vector2(-696, 1302.88)
 shape = SubResource("RectangleShape2D_sa572")
 
 [node name="Sprite2D" type="Sprite2D" parent="FloMoArea"]
-position = Vector2(-771, 1728)
+position = Vector2(-685.25, 1230.5)
+scale = Vector2(1.02471, 1.51458)
 texture = ExtResource("21_flomo")
 
 [node name="GameManager" type="Node" parent="."]
@@ -198,7 +207,6 @@ layer = 10
 visible = false
 
 [node name="VictoryScreen" parent="UI" instance=ExtResource("7_victory")]
-visible = false
 
 [node name="PauseButton" parent="UI" instance=ExtResource("8_pause")]
 
@@ -215,5 +223,11 @@ layer = 5
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 847.0
+offset_top = -581.0
+offset_right = -582.0
+offset_bottom = -861.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0.1)

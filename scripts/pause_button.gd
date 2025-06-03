@@ -11,13 +11,5 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _on_pressed():
-	# Play UI click sound
-	AudioManager.play_ui_click()
-	
-	# Find the pause menu in the scene tree
-	var pause_menu = get_tree().get_first_node_in_group("pause_menu")
-	if pause_menu:
-		pause_menu.toggle_pause()
-	else:
-		# If we can't find the pause menu, use PauseManager directly
-		PauseManager.toggle_pause() 
+	# Tell PauseManager to toggle pause state
+	PauseManager.toggle_pause() 

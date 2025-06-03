@@ -34,6 +34,7 @@ func pause():
 		is_paused = true
 		get_tree().paused = true
 		pause_state_changed.emit(true)
+		AudioManager.play_ui_click()  # Add audio feedback
 
 func unpause():
 	if is_paused:
@@ -41,8 +42,10 @@ func unpause():
 		is_paused = false
 		get_tree().paused = false
 		pause_state_changed.emit(false)
+		AudioManager.play_ui_click()  # Add audio feedback
 
-# Handle input to catch the ESC key
+# Handle input to catch both ESC key and pause action
 func _input(event):
-	if event.is_action_pressed("ui_cancel"):
+	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
+		print("PauseManager: Input detected - toggling pause")
 		toggle_pause() 
