@@ -216,21 +216,33 @@ func setup_scroll_button_and_book():
 		scroll_button.mouse_exited.connect(_on_scroll_button_mouse_exited)
 		print("LOCATION: Scroll button connected")
 	
-	# Connect book interface buttons
+	# Connect book interface buttons with debug info
 	var close_button = $CanvasLayer/Control/BookInterface/CloseButton
 	if close_button:
 		close_button.pressed.connect(_on_book_close_button_pressed)
 		print("LOCATION: Book close button connected")
+	else:
+		print("LOCATION: ERROR - Close button not found!")
 	
-	var next_button = $CanvasLayer/Control/BookInterface/NextButton
+	var next_button = $CanvasLayer/Control/BookInterface/NavigationContainer/NextButton
 	if next_button:
+		# Disconnect if already connected to avoid duplicate connections
+		if next_button.pressed.is_connected(_on_book_next_button_pressed):
+			next_button.pressed.disconnect(_on_book_next_button_pressed)
 		next_button.pressed.connect(_on_book_next_button_pressed)
 		print("LOCATION: Book next button connected")
+	else:
+		print("LOCATION: ERROR - Next button not found!")
 	
-	var prev_button = $CanvasLayer/Control/BookInterface/PrevButton
+	var prev_button = $CanvasLayer/Control/BookInterface/NavigationContainer/PrevButton
 	if prev_button:
+		# Disconnect if already connected to avoid duplicate connections
+		if prev_button.pressed.is_connected(_on_book_prev_button_pressed):
+			prev_button.pressed.disconnect(_on_book_prev_button_pressed)
 		prev_button.pressed.connect(_on_book_prev_button_pressed)
 		print("LOCATION: Book previous button connected")
+	else:
+		print("LOCATION: ERROR - Previous button not found!")
 	
 	# Hide book interface initially
 	var book_interface = $CanvasLayer/Control/BookInterface
@@ -241,36 +253,62 @@ func setup_scroll_button_and_book():
 func _on_scroll_button_pressed():
 	# Show the book interface
 	book_open = true
-	$CanvasLayer/Control/BookInterface.visible = true
+	var book_interface = $CanvasLayer/Control/BookInterface
+	book_interface.visible = true
+	
+	# Set the book interface to process when paused
+	book_interface.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	
 	current_page = 0
 	update_book_content()
 	AudioManager.play_ui_click() # Play UI click when opening book
-	print("LOCATION: Book interface opened")
+	
+	# Pause the game while reading
+	get_tree().paused = true
+	
+	print("LOCATION: Book interface opened and game paused")
 
 func _on_book_close_button_pressed():
 	# Hide the book interface
 	book_open = false
-	$CanvasLayer/Control/BookInterface.visible = false
+	var book_interface = $CanvasLayer/Control/BookInterface
+	book_interface.visible = false
+	
+	# Reset process mode
+	book_interface.process_mode = Node.PROCESS_MODE_INHERIT
+	
 	AudioManager.play_ui_click() # Play UI click when closing book
-	print("LOCATION: Book interface closed")
+	
+	# Unpause the game
+	get_tree().paused = false
+	
+	print("LOCATION: Book interface closed and game unpaused")
 
 func _on_book_next_button_pressed():
+	print("LOCATION: Next button pressed! Current page:", current_page, "Total pages:", total_pages)
 	if current_page < total_pages - 1:
 		current_page += 1
 		update_book_content()
 		AudioManager.play_npc_click() # Play funny swish sound when changing pages
-		print("LOCATION: Book page turned to next page")
+		print("LOCATION: Book page turned to next page:", current_page + 1)
+	else:
+		print("LOCATION: Already on last page")
 
 func _on_book_prev_button_pressed():
+	print("LOCATION: Previous button pressed! Current page:", current_page, "Total pages:", total_pages)
 	if current_page > 0:
 		current_page -= 1
 		update_book_content()
 		AudioManager.play_npc_click() # Play funny swish sound when changing pages
-		print("LOCATION: Book page turned to previous page")
+		print("LOCATION: Book page turned to previous page:", current_page + 1)
+	else:
+		print("LOCATION: Already on first page")
 
 func update_book_content():
 	var content = $CanvasLayer/Control/BookInterface/Content
 	var page_label = $CanvasLayer/Control/BookInterface/PageLabel
+	var prev_button = $CanvasLayer/Control/BookInterface/NavigationContainer/PrevButton
+	var next_button = $CanvasLayer/Control/BookInterface/NavigationContainer/NextButton
 	
 	if not content or not page_label:
 		push_error("LOCATION: Book content or page label not found")
@@ -279,16 +317,48 @@ func update_book_content():
 	# Update page number display
 	page_label.text = "Page " + str(current_page + 1) + " of " + str(total_pages)
 	
-	# Set placeholder content based on current page
+	# Enable/disable navigation buttons
+	if prev_button:
+		prev_button.disabled = (current_page <= 0)
+	if next_button:
+		next_button.disabled = (current_page >= total_pages - 1)
+	
+	# Set content with improved BBCode formatting (Stanford = red, Berkeley = blue)
 	match current_page:
 		0:
-			content.text = "Welcome to StanfordTree's Guide to Campus!\n\nThis book contains important information about Stanford University and the mysterious events unfolding on campus."
+			content.text = "[center][font_size=24][color=darkred]MISSION BRIEFING[/color][/font_size][/center]\n\n" + \
+			"[center]──────────────────────────────[/center]\n\n" + \
+			"Your mission: [b]Protect Stanford University from Berkeley infiltrators![/b]\n\n" + \
+			"Some characters you encounter will be [color=blue][b]Berkeley students[/b][/color] attempting to infiltrate our campus, while others will be legitimate [color=red][b]Stanford students[/b][/color] who belong here.\n\n" + \
+			"[i]Stay alert, Tree! The campus depends on you![/i]"
 		1:
-			content.text = "As you explore the campus, be on the lookout for clues and talk to various characters to uncover the mystery."
+			content.text = "[center][font_size=24][color=darkblue]IDENTIFICATION PROTOCOL[/color][/font_size][/center]\n\n" + \
+			"[center]──────────────────────────────[/center]\n\n" + \
+			"[color=red]✅ [b]ACCEPT:[/b] Stanford students[/color]\n" + \
+			"[indent]They belong on our campus[/indent]\n\n" + \
+			"[color=blue]❌ [b]REJECT:[/b] Berkeley students[/color]\n" + \
+			"[indent]Remove these infiltrators immediately![/indent]\n\n" + \
+			"[center]──────────────────────────────[/center]\n\n" + \
+			"[b]Detection Methods:[/b]\n" + \
+			"• Examine their [i]dialogue and responses[/i]\n" + \
+			"• Check their [i]inventory items[/i]\n" + \
+			"• Review their [i]academic transcripts[/i]\n\n" + \
+			"[color=orange]Look for Berkeley-related clues![/color]"
 		2:
-			content.text = "Remember, time is passing and events may occur at specific times and locations. Keep track of the time and visit locations accordingly."
+			content.text = "[center][font_size=24][color=purple]ROUND PROGRESSION[/color][/font_size][/center]\n\n" + \
+			"[center]──────────────────────────────[/center]\n\n" + \
+			"Each round contains an [b]unknown number[/b] of Berkeley students mixed with Stanford students.\n\n" + \
+			"[b]The round automatically advances when:[/b]\n\n" + \
+			"[color=blue]🎯 [b]All Berkeley students[/b] have been rejected[/color]\n" + \
+			"[center][i]OR[/i][/center]\n" + \
+			"[color=red]🎯 [b]All Stanford students[/b] have been accepted[/color]\n" + \
+			"[center][i]OR[/i][/center]\n" + \
+			"[color=orange]⏰ [b]30 minutes pass[/b] (30 seconds real time)[/color]\n\n" + \
+			"[center]──────────────────────────────[/center]\n\n" + \
+			"[center][font_size=20][color=darkred][b]STAY VIGILANT, TREE![/b][/color][/font_size][/center]\n" + \
+			"[center][i]The campus depends on your keen eye![/i][/center]"
 		_:
-			content.text = "Page content not available."
+			content.text = "[center][color=red]Page content not available.[/color][/center]"
 
 func setup_direct_spawner():
 	print("LOCATION: Setting up direct spawner...")
@@ -403,8 +473,22 @@ func reset_camera_position():
 	tween.tween_property(game_camera, "position", center_pos, 0.5).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 	tween.parallel().tween_property(game_camera, "zoom", Vector2(1, 1), 0.5).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 
-# Handle clicking away from a character
+# Handle input for book navigation
 func _input(event):
+	# Handle keyboard shortcuts for book navigation
+	if book_open and $CanvasLayer/Control/BookInterface.visible:
+		if event is InputEventKey and event.pressed:
+			match event.keycode:
+				KEY_LEFT, KEY_A:
+					if current_page > 0:
+						_on_book_prev_button_pressed()
+				KEY_RIGHT, KEY_D:
+					if current_page < total_pages - 1:
+						_on_book_next_button_pressed()
+				KEY_ESCAPE, KEY_Q:
+					_on_book_close_button_pressed()
+		return # Don't process other input when book is open
+	
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		# Check if the inspection panel is visible - if so, don't process any input here
 		if inspection_panel and inspection_panel.visible:

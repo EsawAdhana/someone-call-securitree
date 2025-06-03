@@ -71,13 +71,9 @@ texture = ExtResource("4_dx7wg")
 [node name="BookInterface" type="Control" parent="CanvasLayer/Control"]
 visible = false
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_right = 40.0
-offset_bottom = 40.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -88,31 +84,51 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -300.0
-offset_right = 400.0
-offset_bottom = 300.0
+offset_left = -500.0
+offset_top = -350.0
+offset_right = 500.0
+offset_bottom = 350.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_6qk4c")
 
-[node name="Content" type="Label" parent="CanvasLayer/Control/BookInterface"]
+[node name="Title" type="Label" parent="CanvasLayer/Control/BookInterface"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -350.0
-offset_top = -250.0
-offset_right = 350.0
-offset_bottom = 200.0
+offset_left = -450.0
+offset_top = -320.0
+offset_right = 450.0
+offset_bottom = -280.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_font_sizes/font_size = 28
+text = "StanfordTree's Campus Security Manual"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Content" type="RichTextLabel" parent="CanvasLayer/Control/BookInterface"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -450.0
+offset_top = -250.0
+offset_right = 450.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/normal_font_size = 18
+bbcode_enabled = true
 text = "Welcome to StanfordTree's Guide to Campus!
 
 This book contains important information about Stanford University and the mysterious events unfolding on campus."
-autowrap_mode = 2
+fit_content = true
 
 [node name="PageLabel" type="Label" parent="CanvasLayer/Control/BookInterface"]
 layout_mode = 1
@@ -121,12 +137,13 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -44.0
-offset_top = -100.0
-offset_right = 44.0
-offset_bottom = -74.0
+offset_left = -50.0
+offset_top = -120.0
+offset_right = 50.0
+offset_bottom = -90.0
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_font_sizes/font_size = 16
 text = "Page 1 of 3"
 horizontal_alignment = 1
 
@@ -135,42 +152,43 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = 370.0
-offset_top = -290.0
-offset_right = 390.0
-offset_bottom = -270.0
+offset_left = -520.0
+offset_top = 20.0
+offset_right = -470.0
+offset_bottom = 70.0
 grow_horizontal = 0
-text = "X"
+theme_override_font_sizes/font_size = 24
+text = "✕"
 
-[node name="PrevButton" type="Button" parent="CanvasLayer/Control/BookInterface"]
+[node name="NavigationContainer" type="HBoxContainer" parent="CanvasLayer/Control/BookInterface"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -100.0
+offset_left = -150.0
 offset_top = -80.0
-offset_right = -60.0
-offset_bottom = -50.0
+offset_right = 150.0
+offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 0
-text = "<"
 
-[node name="NextButton" type="Button" parent="CanvasLayer/Control/BookInterface"]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = 60.0
-offset_top = -80.0
-offset_right = 100.0
-offset_bottom = -50.0
-grow_horizontal = 2
-grow_vertical = 0
-text = ">"
+[node name="PrevButton" type="Button" parent="CanvasLayer/Control/BookInterface/NavigationContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "◀ Previous"
+
+[node name="Spacer" type="Control" parent="CanvasLayer/Control/BookInterface/NavigationContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NextButton" type="Button" parent="CanvasLayer/Control/BookInterface/NavigationContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "Next ▶"
 
 [node name="UI" type="CanvasLayer" parent="."]
 layer = 10
