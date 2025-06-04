@@ -90,6 +90,9 @@ func _on_play_again_button_pressed():
 		game_manager.planned_characters_for_round = 0
 		game_manager.all_planned_characters_spawned = false
 		
+		# Reset all player statistics
+		game_manager.reset_all_stats()
+		
 		# Stop any running timers
 		if game_manager.time_timer:
 			game_manager.time_timer.stop()

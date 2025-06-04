@@ -25,6 +25,12 @@ var berkeley_people_in_location: int = 0
 var berkeley_people_cleared: int = 0
 var berkeley_people_accepted: int = 0  # Track Berkeley students that were incorrectly accepted
 
+# Comprehensive player statistics tracking
+var stats_stanford_accepted: int = 0      # Correctly accepted Stanford students
+var stats_stanford_rejected: int = 0      # Incorrectly rejected Stanford students  
+var stats_berkeley_rejected: int = 0      # Correctly rejected Berkeley students
+var stats_berkeley_accepted: int = 0      # Incorrectly accepted Berkeley students
+
 # Auto-skip tracking
 var total_characters_in_location: int = 0
 var characters_interacted_with: int = 0
@@ -89,6 +95,8 @@ func _on_level_started(level_number: int):
 	berkeley_people_in_location = 0
 	berkeley_people_cleared = 0
 	berkeley_people_accepted = 0
+	
+	# Don't reset overall stats - they accumulate across levels
 	
 	# Reset character interaction tracking
 	total_characters_in_location = 0
@@ -192,9 +200,16 @@ func _on_character_approved(character):
 	print("Game Manager: Character approved:", character.variant_name)
 	print("Game Manager: Character type:", "Stanford" if character.character_type == 0 else "Berkeley")
 	
+	# Check for first level tutorial feedback
+	if LevelManager.get_current_level() == 1 and character.character_type == 1:
+		# Player incorrectly approved a Berkeley student on first level
+		show_tutorial_feedback("Careful! That was a Berkeley student trying to infiltrate Stanford. Remember to thoroughly investigate each person by checking their [color=orange]dialogue[/color], [color=orange]inventory[/color], and [color=orange]transcripts[/color] before making your decision.")
+	
 	# If it's a Stanford student being approved, that's correct
 	if character.character_type == 0:
 		print("Game Manager: Correctly approved Stanford student")
+		stats_stanford_accepted += 1
+		print("Game Manager: Stanford accepted count:", stats_stanford_accepted)
 	else:
 		# Berkeley student being approved - incorrect but no morale penalty here
 		# Morale penalty will be applied when round ends for unrejected Berkeley students
@@ -202,7 +217,9 @@ func _on_character_approved(character):
 		
 		# Track that this Berkeley student was accepted
 		berkeley_people_accepted += 1
+		stats_berkeley_accepted += 1
 		print("Game Manager: Berkeley accepted count incremented to:", berkeley_people_accepted)
+		print("Game Manager: Overall Berkeley accepted stats:", stats_berkeley_accepted)
 		
 		# Mark them as "cleared" so round can end
 		berkeley_people_cleared += 1
@@ -222,11 +239,18 @@ func _on_character_rejected(character):
 	print("  - berkeley_people_cleared:", berkeley_people_cleared)
 	print("  - Remaining:", berkeley_people_in_location - berkeley_people_cleared)
 	
+	# Check for first level tutorial feedback
+	if LevelManager.get_current_level() == 1 and character.character_type == 0:
+		# Player incorrectly rejected a Stanford student on first level
+		show_tutorial_feedback("Wait! That was a legitimate Stanford student. Be more careful when examining their credentials. Check their [color=orange]dialogue[/color], [color=orange]inventory[/color], and [color=orange]transcripts[/color] to make sure they belong here before rejecting them.")
+	
 	# If it's a Berkeley student being rejected, that's correct
 	if character.character_type == 1:
 		print("Game Manager: ✅ Correctly rejected Berkeley student")
 		berkeley_people_cleared += 1
+		stats_berkeley_rejected += 1
 		print("Game Manager: ✅ Berkeley cleared count incremented to:", berkeley_people_cleared)
+		print("Game Manager: Overall Berkeley rejected stats:", stats_berkeley_rejected)
 		print("Game Manager: Berkeley stats AFTER rejection:")
 		print("  - berkeley_people_in_location:", berkeley_people_in_location)
 		print("  - berkeley_people_cleared:", berkeley_people_cleared)
@@ -235,6 +259,8 @@ func _on_character_rejected(character):
 		# If it's a Stanford student being rejected, that's wrong - decrease morale
 		print("Game Manager: ❌ Incorrectly rejected Stanford student - decreasing morale")
 		print("Game Manager: Current morale before decrease:", MoraleManager.get_morale())
+		stats_stanford_rejected += 1
+		print("Game Manager: Stanford rejected stats:", stats_stanford_rejected)
 		MoraleManager.decrease_morale()
 		print("Game Manager: Current morale after decrease:", MoraleManager.get_morale())
 	
@@ -550,3 +576,64 @@ func update_all_character_markers():
 	for character in all_characters:
 		character.update_exclamation_mark_color()
 	print("Game Manager: Updated markers for all characters")
+
+# Function to get comprehensive player statistics
+func get_player_stats() -> Dictionary:
+	return {
+		"stanford_accepted": stats_stanford_accepted,
+		"stanford_rejected": stats_stanford_rejected,
+		"berkeley_rejected": stats_berkeley_rejected,
+		"berkeley_accepted": stats_berkeley_accepted,
+		"total_processed": stats_stanford_accepted + stats_stanford_rejected + stats_berkeley_rejected + stats_berkeley_accepted
+	}
+
+# Function to reset all statistics (for game restart)
+func reset_all_stats():
+	stats_stanford_accepted = 0
+	stats_stanford_rejected = 0
+	stats_berkeley_rejected = 0
+	stats_berkeley_accepted = 0
+	berkeley_people_accepted = 0
+	print("Game Manager: All statistics reset")
+
+# Tutorial feedback system for first level
+func show_tutorial_feedback(message: String):
+	print("TUTORIAL FEEDBACK: Showing message:", message)
+	
+	# Find the security dialogue manager to show tutorial feedback
+	var security_dialogue_manager = get_node_or_null("/root/SecurityDialogueManager")
+	if security_dialogue_manager:
+		# Use the security dialogue system to show tutorial feedback
+		show_tutorial_popup(message)
+	else:
+		print("TUTORIAL FEEDBACK: SecurityDialogueManager not found, using fallback")
+
+func show_tutorial_popup(message: String):
+	# Find the current scene's UI layer
+	var root = get_tree().get_root()
+	var current_scene = root.get_child(root.get_child_count() - 1)
+	var ui_layer = current_scene.get_node_or_null("UI")
+	
+	if not ui_layer:
+		ui_layer = current_scene.get_node_or_null("CanvasLayer/Control")
+	
+	if ui_layer:
+		# Load and instance the security dialogue scene for tutorial feedback
+		var dialogue_scene = load("res://scenes/security_dialogue.tscn")
+		if dialogue_scene:
+			var tutorial_feedback_instance = dialogue_scene.instantiate()
+			ui_layer.add_child(tutorial_feedback_instance)
+			
+			# Register this instance with the SecurityDialogueManager for tracking
+			var security_dialogue_manager = get_node_or_null("/root/SecurityDialogueManager")
+			if security_dialogue_manager:
+				security_dialogue_manager.register_tutorial_feedback_instance(tutorial_feedback_instance)
+			
+			# Show custom tutorial feedback
+			tutorial_feedback_instance.show_tutorial_feedback(message)
+			
+			print("TUTORIAL FEEDBACK: Popup shown successfully and registered with SecurityDialogueManager")
+		else:
+			print("TUTORIAL FEEDBACK: Could not load dialogue scene")
+	else:
+		print("TUTORIAL FEEDBACK: Could not find UI layer")

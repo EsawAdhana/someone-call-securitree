@@ -83,11 +83,26 @@ func _on_level_timer_timeout():
 		print("LEVEL: Game is paused (likely game over), skipping level completion")
 		return
 	
+	# Check if security dialogue is currently active
+	var security_dialogue_manager = get_node_or_null("/root/SecurityDialogueManager")
+	if security_dialogue_manager and security_dialogue_manager.is_dialogue_active():
+		print("LEVEL: Time limit reached but security dialogue is active, waiting for completion")
+		# Connect to the dialogue completion signal and wait
+		security_dialogue_manager.dialogue_completed.connect(_on_security_dialogue_completed_for_timeout.bind(current_level), CONNECT_ONE_SHOT)
+		return
+	
 	# Emit signal that time limit was reached
 	time_limit_reached.emit(current_level)
 	
 	# Boot player back to main map and unlock next location
 	complete_level(current_level)
+
+func _on_security_dialogue_completed_for_timeout(level_number: int):
+	print("LEVEL: Security dialogue completed after timeout, now finishing level", level_number)
+	# Emit signal that time limit was reached
+	time_limit_reached.emit(level_number)
+	# Complete the level
+	complete_level(level_number)
 
 func complete_level(level_number: int):
 	print("LEVEL: Completing level", level_number)
@@ -97,6 +112,22 @@ func complete_level(level_number: int):
 		print("LEVEL: Game is paused (likely game over), skipping level completion")
 		return
 	
+	# Check if security dialogue is currently active
+	var security_dialogue_manager = get_node_or_null("/root/SecurityDialogueManager")
+	if security_dialogue_manager and security_dialogue_manager.is_dialogue_active():
+		print("LEVEL: Security dialogue is active, waiting for completion before ending level")
+		# Connect to the dialogue completion signal and wait
+		security_dialogue_manager.dialogue_completed.connect(_on_security_dialogue_completed_for_level_end.bind(level_number), CONNECT_ONE_SHOT)
+		return
+	
+	# If no active dialogue, proceed with normal level completion
+	_finish_level_completion(level_number)
+
+func _on_security_dialogue_completed_for_level_end(level_number: int):
+	print("LEVEL: Security dialogue completed, now finishing level", level_number)
+	_finish_level_completion(level_number)
+
+func _finish_level_completion(level_number: int):
 	# Stop the timer
 	stop_level_timer()
 	

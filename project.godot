@@ -26,7 +26,7 @@ GlobalUI="*res://scenes/global_ui.tscn"
 AudioManager="*res://scripts/audio_manager.gd"
 BackpackItemsManager="*res://scripts/backpack_items_manager.gd"
 PauseManager="*res://scripts/pause_manager.gd"
-EnvelopeManager="*res://scripts/envelope_manager.gd"
+SecurityDialogueManager="*res://scripts/security_dialogue_manager.gd"
 
 [display]
 
