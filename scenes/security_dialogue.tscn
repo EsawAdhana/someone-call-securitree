@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://bh8xk9pqr7fwi"]
+[gd_scene load_steps=4 format=3 uid="uid://bh8xlapqr7fwi"]
 
 [ext_resource type="Script" path="res://scripts/security_dialogue.gd" id="1_security_script"]
 [ext_resource type="Texture2D" path="res://assets/security_portrait.png" id="2_security_portrait"]
