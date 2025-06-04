@@ -57,6 +57,7 @@ func _ready():
 	LevelManager.location_unlocked.connect(_on_location_unlocked)
 	LevelManager.level_completed.connect(_on_level_completed)
 	LevelManager.victory_achieved.connect(_on_victory_achieved)
+	LevelManager.level_started.connect(_on_level_started)
 	
 	# Set up game manager reference for level manager
 	LevelManager.set_game_manager_reference(get_node("GameManager"))
@@ -103,6 +104,9 @@ func _on_location_unlocked(location_name: String):
 	
 	# Update darkness overlay when a new location is unlocked
 	update_darkness_overlay()
+	
+	# Update envelope visibility since we might have a new current location
+	update_envelope_visibility()
 	
 	# Add flash/glow animation for the newly unlocked location
 	_play_unlock_animation(location_name)
@@ -157,6 +161,9 @@ func _on_level_completed(level_number: int):
 	
 	# Update darkness overlay when level is completed
 	update_darkness_overlay()
+	
+	# Update envelope visibility
+	update_envelope_visibility()
 
 func _process(_delta):
 	if tooltip_label.visible:
@@ -223,7 +230,7 @@ func _on_area_input_event(viewport, event, shape_idx, area):
 			return
 			
 		# Check if we need to read the envelope first
-		if EnvelopeManager.should_show_envelope(area.name):
+		if EnvelopeManager.should_require_envelope_read(area.name):
 			print("MAP: Must read envelope before entering location:", area.name)
 			return
 		
@@ -340,17 +347,41 @@ func setup_envelope_ui():
 	var envelope_scene = load("res://scenes/envelope_ui.tscn")
 	if envelope_scene:
 		envelope_ui = envelope_scene.instantiate()
+		# Add to the UI CanvasLayer instead of directly to MainMap
 		$UI.add_child(envelope_ui)
+		
+		# Connect to envelope read signal to update visibility
+		EnvelopeManager.envelope_read.connect(_on_envelope_read)
 		
 		# Initially hide the envelope UI
 		envelope_ui.visible = false
 		
 		# Show envelope if needed for current level
 		update_envelope_visibility()
+		
+		print("MAP: Envelope UI setup completed")
+	else:
+		print("MAP: ERROR - Could not load envelope UI scene")
 
 func update_envelope_visibility():
 	if not envelope_ui:
+		print("MAP: Cannot update envelope visibility - envelope_ui not found")
 		return
 		
-	var current_location = LevelManager.get_location_for_level(LevelManager.get_current_level())
-	envelope_ui.visible = EnvelopeManager.should_show_envelope(current_location)
+	var current_level = LevelManager.get_current_level()
+	var current_location = LevelManager.get_location_for_level(current_level)
+	var should_show = EnvelopeManager.should_show_envelope(current_location)
+	
+	print("MAP: Updating envelope visibility - Level:", current_level, "Location:", current_location, "Should show:", should_show)
+	print("MAP: Envelope locations:", EnvelopeManager.ENVELOPE_LOCATIONS)
+	print("MAP: Envelope read for level:", EnvelopeManager.envelope_read_for_level)
+	
+	envelope_ui.visible = should_show
+
+func _on_envelope_read():
+	print("MAP: Envelope was read, updating visibility")
+	update_envelope_visibility()
+
+func _on_level_started(level_number: int):
+	print("MAP: Level", level_number, "started, updating envelope visibility")
+	update_envelope_visibility()

@@ -1,20 +1,33 @@
-[gd_scene load_steps=2 format=3 uid="uid://dxxx"]
+[gd_scene load_steps=3 format=3 uid="uid://dxxx"]
 
-[ext_resource type="Script" path="res://scripts/pause_button.gd" id="1_pause_button"]
+[ext_resource type="Script" uid="uid://ceqy2f133ygtd" path="res://scripts/pause_button.gd" id="1_pause_button"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+bg_color = Color(0.2, 0.2, 0.2, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="PauseButton" type="Button"]
 process_mode = 3
-custom_minimum_size = Vector2(50, 50)
+custom_minimum_size = Vector2(60, 60)
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -60.0
-offset_top = 70.0
+offset_left = -80.0
+offset_top = 85.0
 offset_right = -10.0
-offset_bottom = 120.0
+offset_bottom = 155.0
 grow_horizontal = 0
 focus_mode = 0
 mouse_default_cursor_shape = 2
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxFlat_1")
 text = "⏸"
-script = ExtResource("1_pause_button") 
+script = ExtResource("1_pause_button")

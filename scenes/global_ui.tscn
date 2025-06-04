@@ -1,8 +1,16 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/top_morale_bar.tscn" id="1"]
+[ext_resource type="Script" uid="uid://b6g3xrv3qlnxh" path="res://scripts/global_ui.gd" id="2_global"]
+[ext_resource type="PackedScene" uid="uid://dxxx" path="res://scenes/pause_button.tscn" id="3_pause"]
+[ext_resource type="PackedScene" uid="uid://dxxx_pause_menu" path="res://scenes/pause_menu.tscn" id="4_pause_menu"]
 
 [node name="GlobalUI" type="CanvasLayer"]
 layer = 100
+script = ExtResource("2_global")
 
-[node name="TopMoraleBar" parent="." instance=ExtResource("1")] 
+[node name="TopMoraleBar" parent="." instance=ExtResource("1")]
+
+[node name="PauseButton" parent="." instance=ExtResource("3_pause")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("4_pause_menu")] 
