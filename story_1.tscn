@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3 uid="uid://b8p530m0s6pi"]
+
+[ext_resource type="Texture2D" uid="uid://d04ig0yy8k2fv" path="res://Story1.png" id="1_orj4f"]
+[ext_resource type="Script" uid="uid://b5acnuvffjnwk" path="res://next_1.gd" id="2_lmjr0"]
+
+[node name="Story1" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(959.5, 539.5)
+scale = Vector2(1.24805, 1.05371)
+texture = ExtResource("1_orj4f")
+
+[node name="Next1" type="Button" parent="."]
+layout_mode = 0
+offset_left = 1820.0
+offset_top = 1031.0
+offset_right = 1900.0
+offset_bottom = 1062.0
+text = "Next
+"
+script = ExtResource("2_lmjr0")
+
+[connection signal="pressed" from="Next1" to="Next1" method="_on_pressed"]
