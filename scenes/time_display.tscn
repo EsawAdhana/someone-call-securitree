@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=3 format=3 uid="uid://cjxpikdcxr8rt"]
 
-[ext_resource type="Script" path="res://scripts/time_display.gd" id="1_time"]
+[ext_resource type="Script" uid="uid://c8el0t6x6qxb5" path="res://scripts/time_display.gd" id="1_time"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_time"]
 bg_color = Color(0.141176, 0.2, 0.145098, 0.901961)
@@ -48,4 +48,4 @@ grow_vertical = 2
 theme_override_font_sizes/font_size = 24
 text = "9:00 AM"
 horizontal_alignment = 1
-vertical_alignment = 1 
+vertical_alignment = 1

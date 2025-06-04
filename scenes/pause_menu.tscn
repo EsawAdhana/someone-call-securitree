@@ -1,6 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://dxxx"]
+[gd_scene load_steps=4 format=3 uid="uid://dxxx_pause_menu"]
 
-[ext_resource type="Script" path="res://scripts/pause_menu.gd" id="1_pause"]
+[ext_resource type="Script" uid="uid://c6maat4e1aqj1" path="res://scripts/pause_menu.gd" id="1_pause"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause"]
 bg_color = Color(0.129412, 0.129412, 0.129412, 0.901961)
@@ -61,7 +61,6 @@ offset_right = 250.0
 offset_bottom = 250.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_pause")
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
@@ -231,4 +230,4 @@ size_flags_horizontal = 4
 focus_mode = 0
 mouse_default_cursor_shape = 2
 theme_override_font_sizes/font_size = 24
-text = "Resume" 
+text = "Resume"

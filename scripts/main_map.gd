@@ -38,9 +38,6 @@ var tooltip_label: Label
 # Darkening overlay reference
 var darkness_rect: ColorRect
 
-# Envelope UI reference
-var envelope_ui: Control
-
 func _ready():
 	# Add this node to the main_map group for reference
 	add_to_group("main_map")
@@ -57,6 +54,7 @@ func _ready():
 	LevelManager.location_unlocked.connect(_on_location_unlocked)
 	LevelManager.level_completed.connect(_on_level_completed)
 	LevelManager.victory_achieved.connect(_on_victory_achieved)
+	LevelManager.level_started.connect(_on_level_started)
 	
 	# Set up game manager reference for level manager
 	LevelManager.set_game_manager_reference(get_node("GameManager"))
@@ -79,9 +77,6 @@ func _ready():
 	
 	# Set up all location areas
 	setup_location_areas()
-	
-	# Set up envelope UI
-	setup_envelope_ui()
 
 func _update_location_states():
 	# Update visual state for all locations based on level manager
@@ -222,9 +217,10 @@ func _on_area_input_event(viewport, event, shape_idx, area):
 			print("MAP: Cannot skip ahead to future level:", location_level, "(current:", current_level, ")")
 			return
 			
-		# Check if we need to read the envelope first
-		if EnvelopeManager.should_show_envelope(area.name):
-			print("MAP: Must read envelope before entering location:", area.name)
+		# Check if we need to show security dialogue first
+		if SecurityDialogueManager.should_require_dialogue_completion(area.name):
+			print("MAP: Must view security briefing before entering location:", area.name)
+			SecurityDialogueManager.show_security_dialogue(area.name, $UI)
 			return
 		
 		var scene_path = location_scenes.get(area.name)
@@ -335,22 +331,6 @@ func _on_victory_achieved(final_morale: float):
 	else:
 		print("MAP: ERROR - Victory screen not found!")
 
-func setup_envelope_ui():
-	# Load and instance the envelope UI scene
-	var envelope_scene = load("res://scenes/envelope_ui.tscn")
-	if envelope_scene:
-		envelope_ui = envelope_scene.instantiate()
-		$UI.add_child(envelope_ui)
-		
-		# Initially hide the envelope UI
-		envelope_ui.visible = false
-		
-		# Show envelope if needed for current level
-		update_envelope_visibility()
-
-func update_envelope_visibility():
-	if not envelope_ui:
-		return
-		
-	var current_location = LevelManager.get_location_for_level(LevelManager.get_current_level())
-	envelope_ui.visible = EnvelopeManager.should_show_envelope(current_location)
+func _on_level_started(level_number: int):
+	print("MAP: Level", level_number, "started")
+	# Security dialogue manager handles its own state

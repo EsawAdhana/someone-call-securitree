@@ -122,6 +122,10 @@ const BERKELEY_NAME_MISMATCHES = [
 var used_characters = []
 var character_count = 0
 
+# Track guaranteed spawning for first level
+var first_level_stanford_spawned = false
+var first_level_berkeley_spawned = false
+
 func get_random_character() -> Dictionary:
 	print("[CHARACTER DEBUG] Getting random character")
 	
@@ -132,7 +136,12 @@ func get_random_character() -> Dictionary:
 		
 	character_count += 1
 	
-	# Decide character type - 70% Stanford, 30% Berkeley
+	# Check if this is the first level and apply guaranteed spawning logic
+	var current_level = LevelManager.get_current_level()
+	if current_level == 1:
+		return get_character_for_first_level()
+	
+	# For other levels, use the original random logic
 	var is_stanford = randf() < 0.7
 	var character_type = 0 if is_stanford else 1
 	
@@ -142,6 +151,40 @@ func get_random_character() -> Dictionary:
 		return generate_stanford_student()
 	else:
 		return generate_berkeley_student()
+
+func get_character_for_first_level() -> Dictionary:
+	print("[CHARACTER DEBUG] Getting character for first level")
+	print("[CHARACTER DEBUG] Stanford spawned:", first_level_stanford_spawned, "Berkeley spawned:", first_level_berkeley_spawned)
+	
+	# For the first level, guarantee one Stanford and one Berkeley student
+	if not first_level_stanford_spawned and not first_level_berkeley_spawned:
+		# First character - randomly choose which type to spawn first
+		if randf() < 0.5:
+			first_level_stanford_spawned = true
+			print("[CHARACTER DEBUG] Spawning guaranteed Stanford student first")
+			return generate_stanford_student()
+		else:
+			first_level_berkeley_spawned = true
+			print("[CHARACTER DEBUG] Spawning guaranteed Berkeley student first")
+			return generate_berkeley_student()
+	elif not first_level_stanford_spawned:
+		# Second character - spawn the missing Stanford student
+		first_level_stanford_spawned = true
+		print("[CHARACTER DEBUG] Spawning guaranteed Stanford student second")
+		return generate_stanford_student()
+	elif not first_level_berkeley_spawned:
+		# Second character - spawn the missing Berkeley student
+		first_level_berkeley_spawned = true
+		print("[CHARACTER DEBUG] Spawning guaranteed Berkeley student second")
+		return generate_berkeley_student()
+	else:
+		# Both guaranteed types spawned, use random logic for any additional characters
+		var is_stanford = randf() < 0.7
+		print("[CHARACTER DEBUG] Both guaranteed types spawned, generating random", "Stanford" if is_stanford else "Berkeley", "student")
+		if is_stanford:
+			return generate_stanford_student()
+		else:
+			return generate_berkeley_student()
 
 func generate_stanford_student() -> Dictionary:
 	# For Stanford students, pick a random name-ID pair (everything matches perfectly)
@@ -317,4 +360,7 @@ func _get_random_dialogue(dialogue_list: Array, count: int) -> Array:
 func reset_characters():
 	used_characters.clear() 
 	character_count = 0
-	print("[CHARACTER DEBUG] Character data reset") 
+	# Reset first level guaranteed spawning tracking
+	first_level_stanford_spawned = false
+	first_level_berkeley_spawned = false
+	print("[CHARACTER DEBUG] Character data reset, including first level guarantees") 

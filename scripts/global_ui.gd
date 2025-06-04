@@ -22,13 +22,7 @@ func _ready():
 	pause_menu.hide()
 	print("GlobalUI: Pause menu hidden initially")
 	
-	# Connect pause button directly to pause menu
-	pause_button.pressed.connect(func():
-		print("GlobalUI: Pause button pressed")
-		if pause_menu.visible:
-			pause_menu.hide_pause_menu()
-		else:
-			pause_menu.show_pause_menu()
-	)
+	# The pause button script handles the pause functionality through PauseManager
+	# The pause menu responds to PauseManager.pause_state_changed signal
 	
 	print("GlobalUI: Pause system initialized") 
