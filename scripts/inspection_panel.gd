@@ -396,19 +396,28 @@ func _show_dialogue_view():
 			# Handle specific Berkeley students with revealing dialogue
 			match char_data["name"]:
 				"Hannah Scott": # Berkeley student pretending
+					# Get a random suspicious dialogue response
+					var whats_up_response = char_data["dialogue"][randi() % char_data["dialogue"].size()]
 					questions = [
+						["What's up?", whats_up_response],
 						["Which dorm do you live in?", "Uh... Meier Hall? *nervously*"],
 						["What's your favorite study spot?", "The... uh... Main Quad Library?"],
 						["How often do you eat at Stern?", "Oh, I love Stern! Great... pizza."] # Stern doesn't serve pizza
 					]
 				"Sam Green": # Berkeley student pretending
+					# Get a random suspicious dialogue response
+					var whats_up_response = char_data["dialogue"][randi() % char_data["dialogue"].size()]
 					questions = [
+						["What's up?", whats_up_response],
 						["What clubs are you involved in?", "The Stanford Entrepreneurship Club! We meet in... uh... Building 9."],
 						["Which dining hall do you prefer?", "Definitely Manz dining!"], # Incorrect name for Manz Hall
 						["Where's your next class?", "Over in the Engineering Center."] # Using generic name
 					]
 				"Tenzin Sherpa": # Berkeley student pretending
+					# Get a random suspicious dialogue response
+					var whats_up_response = char_data["dialogue"][randi() % char_data["dialogue"].size()]
 					questions = [
+						["What's up?", whats_up_response],
 						["Can you direct me to Hoover Tower?", "Oh yeah, it's right next to the student union!"], # Wrong location
 						["What's your favorite campus tradition?", "I love when we all run through the fountain before finals!"], # Mixed up traditions
 						["Which year are you?", "Junior, started here right after COVID."] # Timeline might not match
@@ -421,7 +430,11 @@ func _show_dialogue_view():
 					]
 				_: # Default Stanford student questions
 					var clubs_response = ", ".join(char_data["clubs"]) if char_data.get("clubs", []).size() > 0 else "Just focusing on classes this quarter."
+					# Get a random legitimate dialogue response for "What's up?"
+					var whats_up_response = char_data["dialogue"][randi() % char_data["dialogue"].size()]
+					
 					questions = [
+						["What's up?", whats_up_response],
 						["Which dorm do you live in?", char_data["dorm"]],
 						["What's your major?", char_data["major"]],
 						["What clubs are you involved in?", clubs_response]
