@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://c601osuc2aat"]
+[gd_scene load_steps=30 format=3 uid="uid://c601osuc2aat"]
 
 [ext_resource type="Script" uid="uid://dlnb8jsdsw2go" path="res://scripts/main_map.gd" id="1_1xo34"]
 [ext_resource type="Texture2D" uid="uid://cawvtivp07wm0" path="res://assets/new_map.png" id="2_kdyc3"]
@@ -6,8 +6,6 @@
 [ext_resource type="PackedScene" uid="uid://c12svw8yqwhds" path="res://scenes/game_over.tscn" id="6_s3jbg"]
 [ext_resource type="PackedScene" uid="uid://cjxpikdcxr8rt" path="res://scenes/time_display.tscn" id="7_time"]
 [ext_resource type="PackedScene" uid="uid://wde3c8fgujl3" path="res://scenes/victory_screen.tscn" id="7_victory"]
-[ext_resource type="PackedScene" uid="uid://dxxx" path="res://scenes/pause_button.tscn" id="9_pause"]
-[ext_resource type="PackedScene" uid="uid://dxxx_pause_menu" path="res://scenes/pause_menu.tscn" id="10_pause_menu"]
 [ext_resource type="Texture2D" uid="uid://vbakkyrkpe52" path="res://assets/grayscaled/grayscale stadium.png" id="10_stadium"]
 [ext_resource type="Texture2D" uid="uid://blgm1vbr6l5pm" path="res://assets/grayscaled/grayscale hoover.png" id="11_hoover"]
 [ext_resource type="Texture2D" uid="uid://brlayrhqnllcp" path="res://assets/grayscaled/grayscale memchu.png" id="12_memchu"]
@@ -73,8 +71,8 @@ position = Vector2(1647.19, -956)
 shape = SubResource("RectangleShape2D_dyl4d")
 
 [node name="Sprite2D" type="Sprite2D" parent="StadiumArea"]
-position = Vector2(1648, -980)
-scale = Vector2(1.32645, 1.3154)
+position = Vector2(1658, -964)
+scale = Vector2(1.35773, 1.33308)
 texture = ExtResource("10_stadium")
 
 [node name="HooverTowerArea" type="Area2D" parent="."]
