@@ -12,6 +12,7 @@ const TIME_SCALE_MINUTES_PER_TICK = 1
 @onready var inspection_panel = null
 @onready var game_over_screen = null
 @onready var time_timer = Timer.new()
+@onready var auto_end_timer = Timer.new()  # New timer for 30-second auto-end
 
 # Game state
 var current_day = 1
@@ -49,10 +50,20 @@ func _ready():
 	time_timer.wait_time = 0.5
 	time_timer.timeout.connect(_on_time_timer_timeout)
 	time_timer.name = "time_timer"
+	time_timer.process_mode = Node.PROCESS_MODE_PAUSABLE # Make sure it respects pause
 	add_child(time_timer)
+	
+	# Set up the auto-end timer (30 seconds for rounds 1-11)
+	auto_end_timer.wait_time = 30.0  # 30 seconds
+	auto_end_timer.timeout.connect(_on_auto_end_timer_timeout)
+	auto_end_timer.name = "auto_end_timer"
+	auto_end_timer.process_mode = Node.PROCESS_MODE_PAUSABLE
+	auto_end_timer.one_shot = true  # Only fire once per round
+	add_child(auto_end_timer)
 	
 	# Don't start timer immediately - only runs in locations
 	print("Game Manager: Timer created (1 game minute every 0.5 real seconds)")
+	print("Game Manager: Auto-end timer created (30 seconds for rounds 1-11)")
 	
 	# Find the UI nodes
 	call_deferred("setup_ui_references")
@@ -114,6 +125,11 @@ func _on_level_started(level_number: int):
 	time_timer.start()
 	print("Game Manager: Timer started for location visit")
 	
+	# Start auto-end timer for rounds 1-11
+	if level_number <= 11:
+		auto_end_timer.start()
+		print("Game Manager: Auto-end timer started for round", level_number, "- will end automatically after 30 seconds")
+	
 	# Emit initial time
 	time_updated.emit({
 		"day": current_day,
@@ -125,8 +141,9 @@ func _on_level_started(level_number: int):
 func _on_level_completed(level_number: int):
 	print("Game Manager: Level", level_number, "completed")
 	
-	# Stop the timer and mark that we're no longer in a location
+	# Stop the timers and mark that we're no longer in a location
 	time_timer.stop()
+	auto_end_timer.stop()  # Stop the auto-end timer
 	is_in_location = false
 	
 	print("Game Manager: Timer paused on main map at", get_time_string())
@@ -282,11 +299,15 @@ func _on_remove_npc_pressed(character):
 	# advance_time(1)
 
 func _on_time_timer_timeout():
-	# Only advance time if we're in a location
-	if is_in_location:
+	# Only advance time if we're in a location and game is not paused
+	if is_in_location and not get_tree().paused:
 		advance_time(TIME_SCALE_MINUTES_PER_TICK) # Advance 1 minute every half second
 
 func advance_time(minutes):
+	# Don't advance time if game is already paused (game over or victory)
+	if get_tree().paused:
+		return
+	
 	current_minute += minutes
 	
 	# Handle minute rollover
@@ -304,14 +325,7 @@ func advance_time(minutes):
 				current_hour = 12
 			am_pm = "PM"
 	
-	# Check for workday end (9:00 PM)
-	var time_in_24hr = current_hour
-	if am_pm == "PM" and current_hour != 12:
-		time_in_24hr += 12
-	
-	if time_in_24hr >= WORKDAY_END_HOUR:
-		_on_workday_ended()
-		time_timer.stop() # Stop the timer when workday ends
+	# Note: No global 9pm time limit - only individual level timers matter
 	
 	# Emit signal with updated time
 	time_updated.emit({
@@ -321,37 +335,15 @@ func advance_time(minutes):
 		"am_pm": am_pm
 	})
 
-func _on_workday_ended():
-	# Hide inspection panel if it exists and is visible
-	var inspection_panel = find_inspection_panel()
-	if inspection_panel and inspection_panel.visible:
-		inspection_panel.visible = false
-		print("GAME MANAGER: Closed inspection panel due to workday end")
-	
-	# Play game over sound and stop background audio
-	AudioManager.play_game_over()
-	AudioManager.stop_background_audio()
-	
-	# Stop all timers
-	time_timer.stop()
-	LevelManager.stop_level_timer()
-	
-	# Pause the scene tree (this freezes all animations, movement, etc.)
-	get_tree().paused = true
-	
-	# Show the game over screen for time-based game over
-	if game_over_screen:
-		# Set the game over screen to process even when paused
-		game_over_screen.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
-		# Pass current location number instead of days
-		var current_location = LevelManager.get_current_level()
-		game_over_screen.show_game_over(current_location, false)
-	
-	workday_ended.emit()
-	print("Game Manager: Workday ended - everything frozen, game over sound playing")
+# Note: _on_workday_ended function removed - no global 9pm timer
 
 func _on_morale_depleted():
 	print("GAME MANAGER DEBUG: ⚠️ RECEIVED morale_depleted signal - starting game over process")
+	
+	# Check if game is already paused (could be victory) - don't override victory
+	if get_tree().paused:
+		print("GAME MANAGER DEBUG: Game already paused (possibly victory), skipping morale game over")
+		return
 	
 	# Hide inspection panel if it exists and is visible
 	var inspection_panel = find_inspection_panel()
@@ -469,6 +461,10 @@ func check_auto_skip_conditions():
 	if all_characters_processed and all_berkeley_rejected and all_planned_characters_spawned and total_characters_in_location > 0:
 		print("Game Manager: ✅ Early round completion conditions met! All Berkeley students handled, all characters processed, and all planned characters spawned.")
 		
+		# Stop the auto-end timer since we're completing early
+		auto_end_timer.stop()
+		print("Game Manager: Stopped auto-end timer due to early completion")
+		
 		# Apply morale penalties for Berkeley students that were accepted instead of rejected
 		if berkeley_people_accepted > 0:
 			print("Game Manager: Applying morale penalties for", berkeley_people_accepted, "Berkeley students that were accepted")
@@ -510,6 +506,16 @@ func emit_initial_time():
 		"minute": current_minute,
 		"am_pm": am_pm
 	})
+
+func emit_time_update():
+	# Emit current game time to update the UI
+	time_updated.emit({
+		"day": current_day,
+		"hour": current_hour,
+		"minute": current_minute,
+		"am_pm": am_pm
+	})
+	print("Game Manager: Emitted time update -", get_time_string())
 
 func set_planned_characters_for_round(count: int):
 	planned_characters_for_round = count
@@ -637,3 +643,32 @@ func show_tutorial_popup(message: String):
 			print("TUTORIAL FEEDBACK: Could not load dialogue scene")
 	else:
 		print("TUTORIAL FEEDBACK: Could not find UI layer")
+
+func _on_auto_end_timer_timeout():
+	print("Game Manager: Auto-end timer timeout - 30 seconds elapsed")
+	
+	# Check if game is already over (paused) before proceeding
+	if get_tree().paused:
+		print("Game Manager: Game is already paused (game over), skipping auto-end")
+		return
+	
+	var current_level = LevelManager.get_current_level()
+	print("Game Manager: Auto-ending level", current_level, "after 30 seconds")
+	
+	# Apply morale penalties for Berkeley students that were accepted instead of rejected
+	if berkeley_people_accepted > 0:
+		print("Game Manager: Applying morale penalties for", berkeley_people_accepted, "Berkeley students that were accepted")
+		for i in range(berkeley_people_accepted):
+			MoraleManager.decrease_morale()
+			print("Game Manager: Decreased morale for accepted Berkeley student", i + 1, "/", berkeley_people_accepted)
+	
+	# Apply morale penalties for unprocessed Berkeley students (those that were never interacted with)
+	var unprocessed_berkeley = berkeley_people_in_location - berkeley_people_cleared
+	if unprocessed_berkeley > 0:
+		print("Game Manager: Applying morale penalties for", unprocessed_berkeley, "unprocessed Berkeley students")
+		for i in range(unprocessed_berkeley):
+			MoraleManager.decrease_morale()
+			print("Game Manager: Decreased morale for unprocessed Berkeley student", i + 1, "/", unprocessed_berkeley)
+	
+	# Complete the level
+	LevelManager.complete_level(current_level)

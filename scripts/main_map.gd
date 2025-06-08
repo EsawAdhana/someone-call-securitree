@@ -320,21 +320,25 @@ func update_darkness_overlay():
 	print("MAP: Updated darkness overlay - Level:", current_level, "Unlocked:", unlocked_count, "Darkness:", alpha)
 
 func _on_victory_achieved(final_morale: float):
-	print("MAP: Victory achieved with final morale:", final_morale)
+	print("MAP DEBUG: ✅ VICTORY ACHIEVED! Final morale:", final_morale)
 	
 	# Pause the game
 	get_tree().paused = true
+	print("MAP DEBUG: Game paused for victory")
 	
 	# Stop background audio
 	AudioManager.stop_background_audio()
+	print("MAP DEBUG: Background audio stopped")
 	
 	# Find and show the victory screen
 	var victory_screen = $UI/VictoryScreen
 	if victory_screen:
+		print("MAP DEBUG: Found victory screen, setting process mode and showing...")
+		victory_screen.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
 		victory_screen.show_victory(final_morale)
-		print("MAP: Victory screen displayed")
+		print("MAP DEBUG: ✅ Victory screen should now be visible with final morale:", final_morale)
 	else:
-		print("MAP: ERROR - Victory screen not found!")
+		print("MAP DEBUG: ❌ ERROR - Victory screen not found!")
 
 func _on_level_started(level_number: int):
 	print("MAP: Level", level_number, "started")

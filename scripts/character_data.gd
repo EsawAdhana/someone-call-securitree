@@ -129,9 +129,18 @@ var first_level_berkeley_spawned = false
 func get_random_character() -> Dictionary:
 	print("[CHARACTER DEBUG] Getting random character")
 	
-	# Limit total characters
-	if character_count >= 15:
-		print("[CHARACTER DEBUG] Maximum character limit reached")
+	# Limit total characters for performance - more conservative limits
+	var max_characters = 12  # Slightly reduced from 15 to 12
+	var game_level = LevelManager.get_current_level()
+	
+	# Adjust max based on level to prevent excessive characters in later levels
+	if game_level > 10:
+		max_characters = 10  # Fewer for very late levels
+	elif game_level > 7:
+		max_characters = 11  # Slightly fewer for later levels
+	
+	if character_count >= max_characters:
+		print("[CHARACTER DEBUG] Maximum character limit reached (", max_characters, " for level ", game_level, ")")
 		return {}
 		
 	character_count += 1

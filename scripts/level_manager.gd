@@ -8,7 +8,7 @@ signal time_limit_reached(level_number)
 signal victory_achieved(final_morale)
 
 # Level configuration
-const LEVEL_DURATION_SECONDS = 30 # 30 seconds per level/round per user request
+const LEVEL_DURATION_SECONDS = 60 # 60 seconds per level/round (1 minute)
 const TIME_INCREMENT_PER_LEVEL = 60 # Each level adds 60 minutes (1 hour) of game time
 
 # Level progression order - first location to last
@@ -94,7 +94,7 @@ func _on_level_timer_timeout():
 	# Emit signal that time limit was reached
 	time_limit_reached.emit(current_level)
 	
-	# Boot player back to main map and unlock next location
+	# Complete the level (auto-advance for levels 1-11, victory for level 12)
 	complete_level(current_level)
 
 func _on_security_dialogue_completed_for_timeout(level_number: int):
@@ -131,12 +131,37 @@ func _finish_level_completion(level_number: int):
 	# Stop the timer
 	stop_level_timer()
 	
+	# Clean up characters from current location before changing scene
+	print("LEVEL: Cleaning up characters before level completion")
+	var global_char_manager = get_node_or_null("/root/GlobalCharacterManager")
+	if global_char_manager:
+		global_char_manager.clear_all()
+	
 	# Check if this was the final level (Stadium - level 12)
 	if level_number >= LOCATION_ORDER.size():
-		print("LEVEL: All levels completed! Victory achieved!")
+		print("LEVEL DEBUG: ✅ ALL LEVELS COMPLETED! Victory achieved!")
+		print("LEVEL DEBUG: Final level number:", level_number, "Total locations:", LOCATION_ORDER.size())
+		
+		# VICTORY TAKES PRIORITY - Pause the game immediately to prevent game over
+		get_tree().paused = true
+		print("LEVEL DEBUG: Game paused to prevent game over interference")
+		
+		# Stop all timers to prevent time-based game over
+		if game_manager and game_manager.has_method("time_timer"):
+			game_manager.time_timer.stop()
+			print("LEVEL DEBUG: Stopped game manager timer")
+		
 		# Get final morale and emit victory signal
 		var final_morale = MoraleManager.get_morale()
+		print("LEVEL DEBUG: Final morale for victory:", final_morale)
+		
+		# Force victory even if morale is 0 - player completed all levels!
+		if final_morale <= 0:
+			final_morale = 1  # Give them at least 1% for completing all levels
+			print("LEVEL DEBUG: Adjusted morale from 0 to 1% for victory completion")
+		
 		victory_achieved.emit(final_morale)
+		print("LEVEL DEBUG: ✅ victory_achieved signal emitted with morale:", final_morale)
 		return
 	
 	# Store the next location to unlock (if available)
@@ -256,6 +281,16 @@ func speedy_mode_to_level_12():
 	unlocked_locations.clear()
 	for i in range(LOCATION_ORDER.size()):
 		unlocked_locations.append(LOCATION_ORDER[i])
+	
+	# Update the game time to reflect jumping to level 12
+	# Level 12 should be at 8:00 PM (9:00 AM + 11 hours)
+	if game_manager and game_manager.has_method("set_time_for_level"):
+		game_manager.set_time_for_level(12)
+		print("LEVEL: Updated game time for level 12")
+		
+		# Emit time update signal to update the UI
+		if game_manager.has_method("emit_time_update"):
+			game_manager.emit_time_update()
 	
 	print("LEVEL: Speedy mode activated - jumped to level 12 with all locations unlocked")
 	print("LEVEL: Unlocked locations:", unlocked_locations)

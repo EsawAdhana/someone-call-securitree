@@ -607,21 +607,23 @@ func update_darkness_overlay():
 	print("LOCATION: Updated darkness overlay - Level:", current_level, "Unlocked:", unlocked_count, "Darkness:", alpha)
 
 func _on_victory_achieved(final_morale: float):
-	print("LOCATION: Victory achieved with final morale:", final_morale)
+	print("LOCATION DEBUG: ✅ Victory achieved with final morale:", final_morale)
 	
 	# Hide the inspection panel if it's open
 	if inspection_panel and inspection_panel.visible:
 		inspection_panel.visible = false
-		print("LOCATION: Closed inspection panel due to victory")
+		print("LOCATION DEBUG: Closed inspection panel due to victory")
 	
 	# Clear current selected character
 	current_selected_character = null
 	
 	# Pause the game
 	get_tree().paused = true
+	print("LOCATION DEBUG: Game paused for victory")
 	
 	# Stop background audio
 	AudioManager.stop_background_audio()
+	print("LOCATION DEBUG: Background audio stopped")
 	
 	# Save characters to global manager
 	save_characters_to_global_manager()
@@ -629,7 +631,9 @@ func _on_victory_achieved(final_morale: float):
 	# Find and show the victory screen
 	var victory_screen = $UI/VictoryScreen
 	if victory_screen:
+		print("LOCATION DEBUG: Found victory screen, setting process mode and showing...")
+		victory_screen.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
 		victory_screen.show_victory(final_morale)
-		print("LOCATION: Victory screen displayed")
+		print("LOCATION DEBUG: ✅ Victory screen should now be visible")
 	else:
-		print("LOCATION: ERROR - Victory screen not found!")
+		print("LOCATION DEBUG: ❌ ERROR - Victory screen not found!")

@@ -24,24 +24,31 @@ func _ready():
 	visible = false
 
 func show_victory(final_morale: float):
-	print("VICTORY: Showing victory screen with final morale:", final_morale)
+	print("VICTORY DEBUG: ✅ show_victory called with final morale:", final_morale)
 	
 	# Determine which image and message to show based on morale
 	var victory_texture: Texture2D
 	var victory_message: String
+	var ending_type: String
 	
 	if final_morale <= 30:  # 30% or less morale (Berkeley dominates)
 		victory_texture = berkeley_dominates
 		victory_message = "Victory... at what cost?\nBerkeley dominates in the end."
 		stats_label.text = "You won with only " + str(int(final_morale)) + "% morale remaining!\nStanford's security barely held together."
+		ending_type = "BERKELEY DOMINATES (Bad Ending)"
 	elif final_morale < 60:  # Between 31-59% morale (Berkeley wins)
 		victory_texture = berkeley_wins
 		victory_message = "A close battle... but Berkeley wins."
 		stats_label.text = "Try better next time."
+		ending_type = "BERKELEY WINS (Meh Ending)"
 	else:  # 60% or more morale (Stanford wins)
 		victory_texture = stanford_wins
 		victory_message = "Outstanding work!\nStanford stands strong and secure!"
 		stats_label.text = "You won with " + str(int(final_morale)) + "% morale remaining.\nStanford's security is unbreachable!"
+		ending_type = "STANFORD WINS (Good Ending)"
+	
+	print("VICTORY DEBUG: Selected ending:", ending_type)
+	print("VICTORY DEBUG: Message:", victory_message.replace("\n", " | "))
 	
 	# Apply the image and message
 	victory_image.texture = victory_texture
@@ -49,6 +56,7 @@ func show_victory(final_morale: float):
 	
 	# Show the screen
 	visible = true
+	print("VICTORY DEBUG: ✅ Victory screen is now visible:", visible)
 	
 	# Stop background music and play appropriate victory sound
 	AudioManager.stop_background_audio()
@@ -89,7 +97,6 @@ func _on_play_again_button_pressed():
 		game_manager.berkeley_people_in_location = 0
 		game_manager.berkeley_people_cleared = 0
 		game_manager.berkeley_people_accepted = 0
-		game_manager.berkeley_people_processed = 0
 		game_manager.total_characters_in_location = 0
 		game_manager.characters_interacted_with = 0
 		game_manager.planned_characters_for_round = 0

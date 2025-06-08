@@ -132,11 +132,21 @@ func set_sprite_variant():
 		# Randomly choose between stanford1 and stanford2
 		var variant = randi() % 2 + 1 # This gives us 1 or 2
 		print("CHARACTER DEBUG: Male character %s using stanford%d sprite" % [first_name, variant])
-		animated_sprite.animation = "stanford%d" % variant
+		var sprite_frames = load("res://assets/characters/stanford%d.tres" % variant)
+		if sprite_frames:
+			animated_sprite.sprite_frames = sprite_frames
+			animated_sprite.play("walk")
+		else:
+			print("CHARACTER DEBUG: Failed to load sprite frames for stanford%d" % variant)
 	else:
 		# Female character - always use stanford3
 		print("CHARACTER DEBUG: Female character %s using stanford3 sprite" % first_name)
-		animated_sprite.animation = "stanford3"
+		var sprite_frames = load("res://assets/characters/stanford3.tres")
+		if sprite_frames:
+			animated_sprite.sprite_frames = sprite_frames
+			animated_sprite.play("walk")
+		else:
+			print("CHARACTER DEBUG: Failed to load sprite frames for stanford3")
 
 func set_blue_exclamation_mark():
 	# Change exclamation mark color to blue for Berkeley students (testing)
@@ -293,6 +303,7 @@ func _input(event):
 				get_viewport().set_input_as_handled()
 
 func _physics_process(delta):
+	# Keep original movement logic but with minor optimizations
 	debug_frame_count += 1
 	
 	if is_walking:
@@ -425,7 +436,7 @@ func disappear():
 	tween.tween_property(self, "scale", Vector2(0.1, 0.1), 0.5)
 	tween.parallel().tween_property(self, "modulate:a", 0, 0.5)
 	
-	# Make sure to free the character when the animation completes
+	# Make sure to free the character when the animation completes (back to original behavior)
 	tween.tween_callback(func():
 		print("CHARACTER DEBUG: Tween complete, freeing character:", variant_name)
 		queue_free()

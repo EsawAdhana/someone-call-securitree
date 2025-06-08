@@ -224,7 +224,7 @@ func spawn_character():
 	
 	print("[SPAWN DEBUG] Got character data for:", char_data["name"])
 	
-	# Create a new character instance
+	# Create a new character instance (back to original method)
 	var character = character_scene.instantiate()
 	if not character:
 		push_error("[SPAWN DEBUG] Failed to instantiate character scene")
@@ -278,6 +278,8 @@ func spawn_character():
 		if sprite_frames:
 			sprite.sprite_frames = sprite_frames
 			sprite.play("walk")
+		else:
+			print("[SPAWN DEBUG] Failed to load sprite frames for character:", char_data["name"])
 	
 	# Get viewport size for positioning
 	var viewport_size = get_viewport_rect().size

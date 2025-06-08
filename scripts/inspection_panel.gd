@@ -34,6 +34,9 @@ var modal_background: Control
 # Store character items
 var character_items = {}
 
+# Cache for the pixelated font to avoid repeated loading
+var pixelated_font_cache: FontFile = null
+
 # A list of possible dialogues
 var stanford_dialogues = [
 	"Hi there! I'm just passing through to the library.",
@@ -652,15 +655,29 @@ func show_character_info(character):
 	
 	# Update the ID card section - only show name
 	var id_label = $PanelContainer/MarginContainer/VBoxContainer/MainContent/IDCard/VBoxContainer/Label
+	if not id_label:
+		push_error("INSPECTION: Could not find ID label node")
+		return
+	
 	id_label.text = char_data["name"]
 	
-	# Load the pixelated font and apply it to the character name
-	var pixelated_font = load("res://assets/PressStart2P-Regular.ttf")
-	if pixelated_font:
-		id_label.add_theme_font_override("font", pixelated_font)
-		print("INSPECTION: Applied pixelated font to character name")
+	# Load the pixelated font and apply it to the character name (cache the font to avoid repeated loading)
+	if not pixelated_font_cache:
+		pixelated_font_cache = load("res://assets/PressStart2P-Regular.ttf")
+		if pixelated_font_cache and pixelated_font_cache is FontFile:
+			print("INSPECTION: Successfully loaded and cached pixelated font")
+		else:
+			print("INSPECTION: Failed to load pixelated font. Type: ", typeof(pixelated_font_cache) if pixelated_font_cache else "null")
+			pixelated_font_cache = null
+	
+	if pixelated_font_cache:
+		id_label.add_theme_font_override("font", pixelated_font_cache)
+		print("INSPECTION: Applied cached pixelated font to character name")
 	else:
-		print("INSPECTION: Failed to load pixelated font")
+		print("INSPECTION: Using default font fallback")
+		# Use a fallback - remove the font override if it exists
+		if id_label.has_theme_font_override("font"):
+			id_label.remove_theme_font_override("font")
 	
 	# Make the font bigger for the character name and keep it pixelated
 	id_label.add_theme_font_size_override("font_size", 24)

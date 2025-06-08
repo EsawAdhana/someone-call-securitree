@@ -54,6 +54,8 @@ func set_locations_reached(location_number):
 
 # Show the game over screen with different messages based on reason
 func show_game_over(location_number: int, morale_depleted: bool = false):
+	print("GAME OVER SCREEN DEBUG: show_game_over called - Location:", location_number, "Morale depleted:", morale_depleted)
+	
 	set_locations_reached(location_number)
 	
 	# Set different messages based on the reason for game over
@@ -66,6 +68,7 @@ func show_game_over(location_number: int, morale_depleted: bool = false):
 	# Morale will be reset when restart button is pressed
 	
 	visible = true
+	print("GAME OVER SCREEN DEBUG: Game over screen should now be visible. Visible:", visible)
 
 func _on_restart_button_pressed():
 	# Unpause the game before restarting
@@ -103,7 +106,6 @@ func _on_restart_button_pressed():
 		game_manager.berkeley_people_in_location = 0
 		game_manager.berkeley_people_cleared = 0
 		game_manager.berkeley_people_accepted = 0
-		game_manager.berkeley_people_processed = 0
 		game_manager.total_characters_in_location = 0
 		game_manager.characters_interacted_with = 0
 		game_manager.planned_characters_for_round = 0
