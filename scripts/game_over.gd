@@ -75,6 +75,11 @@ func _on_restart_button_pressed():
 	# Reset morale to 100
 	MoraleManager.reset_morale()
 	
+	# Reset morale bar state so it will be hidden until main map is entered again
+	var global_ui = get_node("/root/GlobalUI")
+	if global_ui:
+		global_ui.reset_morale_bar_state()
+	
 	# Reset level progression (back to level 1, only FloMo unlocked)
 	LevelManager.reset_levels()
 	

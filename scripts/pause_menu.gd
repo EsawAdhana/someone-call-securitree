@@ -36,8 +36,8 @@ func _ready():
 	# Connect to PauseManager signals
 	PauseManager.pause_state_changed.connect(_on_pause_state_changed)
 	
-	# Set initial volume
-	_update_volume(db_to_linear(AudioServer.get_bus_volume_db(0)))
+	# Set initial volume to 0
+	_update_volume(0.0)
 	
 	# Set initial easy mode state
 	easy_mode_toggle.button_pressed = GameManager.is_easy_mode_enabled()

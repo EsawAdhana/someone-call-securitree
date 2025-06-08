@@ -12,7 +12,7 @@ var victory_player: AudioStreamPlayer # Player for victory outcome sounds
 var is_muted: bool = false
 
 # Preload audio resources
-var game_loop = preload("res://audio/game_loop.mp3")
+# var game_loop = preload("res://audio/game_loop.mp3")
 var funny_swish = preload("res://audio/funny-swish.mp3")
 var ui_click = preload("res://audio/ui-click.mp3")
 var pop = preload("res://audio/pop.mp3")
@@ -21,13 +21,13 @@ var good_sound = preload("res://audio/good.mp3")
 var meh_sound = preload("res://audio/meh.mp3")
 var bad_sound = preload("res://audio/bad.mp3")
 
-# Volume settings in decibels (dB)
-var music_volume: float = -3.0 # Normal volume
-var sfx_volume: float = 0.0 # Normal volume
-var ui_volume: float = 0.0 # Normal volume for UI click
-var pop_volume: float = -6.0 # Reduced volume for pop sound
-var game_over_volume: float = 0.0 # Normal volume for game over sound
-var victory_volume: float = 0.0 # Normal volume for victory sounds
+# Volume settings in decibels (dB) - Start at 0 volume (muted)
+var music_volume: float = -80.0 # Start muted (-80dB is effectively silent)
+var sfx_volume: float = -80.0 # Start muted
+var ui_volume: float = -80.0 # Start muted
+var pop_volume: float = -80.0 # Start muted
+var game_over_volume: float = -80.0 # Start muted
+var victory_volume: float = -80.0 # Start muted
 
 func _ready():
 	# Initialize audio players
@@ -46,10 +46,10 @@ func _ready():
 	add_child(game_over_player)
 	add_child(victory_player)
 	
-	# Set up background music
-	music_player.stream = game_loop
+	# Set up background music (commented out since game_loop is not loaded)
+	# music_player.stream = game_loop
 	music_player.volume_db = music_volume
-	music_player.finished.connect(_on_music_finished)
+	# music_player.finished.connect(_on_music_finished)
 	
 	# Set volumes for other players
 	sfx_player.volume_db = sfx_volume

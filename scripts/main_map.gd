@@ -42,6 +42,11 @@ func _ready():
 	# Add this node to the main_map group for reference
 	add_to_group("main_map")
 	
+	# Ensure the morale bar is shown when entering main map
+	var global_ui = get_node("/root/GlobalUI")
+	if global_ui:
+		global_ui.show_morale_bar()
+	
 	# Set up darkness overlay reference first to prevent flashing
 	darkness_rect = $DarknessOverlay/DarknessRect
 	# Update darkness immediately before anything else
