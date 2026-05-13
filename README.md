@@ -1,34 +1,15 @@
 # someone-call-securitree
 
-A Godot 4 game project — "Someone Call Securitree".
+A 2D game built in Godot 4. Main map with multiple levels and locations, plus character, morale, audio, and pause systems wired up as autoloaded singletons. The repo includes the Godot project source as well as a pre-built HTML5 export so you can play it in the browser.
 
-## Overview
+Scenes live in `scenes/`, gameplay scripts in `scripts/`, art and audio in `assets/` and `audio/`. Engine config is in `project.godot`; export setup is in `export_presets.cfg`.
 
-A 2D game built in Godot 4 with a main map, multiple levels and locations, character and morale systems, an audio manager, and an in-game pause menu. The repo includes the Godot project source plus a pre-built HTML5 export.
+## Running it
 
-## Stack
-
-- Godot 4 (GDScript)
-- Forward+ renderer
-- HTML5 export target
-
-## Project layout
-
-- `project.godot` — engine configuration and autoload managers
-- `scenes/` — game scenes (`.tscn`)
-- `scripts/` — gameplay scripts (`.gd`)
-- `assets/`, `audio/` — game assets
-- `*.html`, `*.js`, `*.pck`, `*.wasm` — HTML5 export artifacts
-- `export_presets.cfg` — Godot export configuration
-
-## Getting started
-
-Open `project.godot` in Godot 4 to edit or run. To play the HTML5 build, serve the repo root over HTTP (Godot's web exports require a server, not `file://`) and open `index.html`.
+Open `project.godot` in Godot 4 to edit or run the project. To play the HTML5 build, serve the repo root over HTTP (Godot web exports won't run from `file://`):
 
 ```bash
 python -m http.server
 ```
 
-## Status
-
-Game jam / coursework project.
+Then open `index.html` in your browser.
